@@ -36,6 +36,10 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
         self.value_key = value_key
 
     @property
+    def extra_state_attributes(self):
+        return {"summary_key": self.value_key}
+
+    @property
     def native_value(self):
         return self.coordinator.data.get(self.value_key, 0)
 
@@ -66,6 +70,7 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             return {}
         return {
             "task_id": task["task_id"],
+            "enabled": task.get("enabled", True),
             "category": task.get("category"),
             "description": task.get("description"),
             "schedule_type": task.get("schedule_type"),
@@ -105,6 +110,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
         if item is None:
             return {}
         return {
+            "equipment_id": self.equipment_id,
             key: item.get(key)
             for key in ("category", "manufacturer", "model", "installed_date", "notes", "task_ids")
         }
