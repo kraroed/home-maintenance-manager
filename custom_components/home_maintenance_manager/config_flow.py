@@ -87,7 +87,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         existing = self.config_entry.options.get("task_intervals", {})
         selected = [
             task_id for task_id in self._selected_task_ids
-            if task_id in library and library[task_id].get("schedule_type") == "interval"
+            if task_id in library
+            and library[task_id].get("schedule_type") == "interval"
+            and not library[task_id].get("is_custom")
         ]
         if user_input is not None:
             intervals = dict(existing)
