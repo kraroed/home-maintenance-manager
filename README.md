@@ -23,14 +23,14 @@ Open the integration's **Configure** options, then choose **Add household equipm
 
 Each registered item creates an equipment sensor. Its attributes include the equipment metadata and associated task IDs. A summary sensor reports the number of registered equipment records.
 
-Equipment is currently added through the options flow. Editing and deleting equipment records, and changing associations after creation, are planned follow-up work.
+Equipment can be added, edited, and removed through the integration options flow. To manage an existing record, open **Configure → Manage household equipment**, select the item, then choose whether to edit its details and task associations or remove it. Removing an equipment record does not delete maintenance tasks or completion history; historical records retain the equipment IDs captured when the task was completed.
 
 ## Planned capabilities
 
 - Individual reminders and a configurable due-task summary.
 - CSV and JSON history exports.
 - A companion Lovelace dashboard card.
-- Equipment editing, removal, and reassignment tools.
+- Equipment management through the options flow, including editing metadata, changing task associations, and removing equipment records.
 
 ## Installation
 
