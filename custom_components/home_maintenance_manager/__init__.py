@@ -1,5 +1,6 @@
 from .const import CONF_ENABLED_TASK_IDS, DOMAIN, PLATFORMS
 from .coordinator import MaintenanceCoordinator
+from .notifications import async_setup_notifications
 from .task_manager import TaskManager
 
 
@@ -24,13 +25,17 @@ async def async_setup_entry(hass, entry):
     coordinator = MaintenanceCoordinator(hass, manager)
     await coordinator.async_config_entry_first_refresh()
 
+    cancel_notifications = await async_setup_notifications(hass, entry, manager)
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "manager": manager,
         "coordinator": coordinator,
+        "cancel_notifications": cancel_notifications,
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+    entry.async_on_unload(cancel_notifications)
     return True
 
 
