@@ -9,11 +9,13 @@ async def async_setup_entry(hass, entry):
         entry.data.get(CONF_ENABLED_TASK_IDS, []),
     )
     task_intervals = entry.options.get("task_intervals", {})
+    custom_tasks = entry.options.get("custom_tasks", [])
     manager = TaskManager(
         hass,
         entry.entry_id,
         enabled_task_ids,
         task_intervals,
+        custom_tasks,
     )
     await manager.async_load()
 
