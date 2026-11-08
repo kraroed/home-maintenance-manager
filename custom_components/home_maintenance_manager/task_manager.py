@@ -1,6 +1,6 @@
 import json
 from copy import deepcopy
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from pathlib import Path
 
 from homeassistant.util import dt as dt_util
@@ -15,12 +15,66 @@ def load_library():
     return {item["task_id"]: item for item in items}
 
 
+def _season_contains(day, start, end):
+    month_day = (day.month, day.day)
+    start_month_day = tuple(int(part) for part in start.split("-"))
+    end_month_day = tuple(int(part) for part in end.split("-"))
+    if start_month_day <= end_month_day:
+        return start_month_day <= month_day <= end_month_day
+    return month_day >= start_month_day or month_day <= end_month_day
+
+
+def _next_season_due(task, reference, include_active=False, settings=None):
+    settings = settings or {}
+    windows = settings.get("season_windows", {})
+    season_keys = task.get("season_keys", [])
+    local_now = dt_util.as_local(reference)
+    local_day = local_now.date()
+
+    if include_active:
+        for season in season_keys:
+            window = windows.get(season)
+            if window and _season_contains(
+                local_day, window["start"], window["end"]
+            ):
+                return reference.isoformat()
+
+    candidates = []
+    for year in range(local_day.year - 1, local_day.year + 6):
+        for season in season_keys:
+            window = windows.get(season)
+            if not window:
+                continue
+            month, day = (int(part) for part in window["start"].split("-"))
+            try:
+                start_day = local_day.replace(year=year, month=month, day=day)
+            except ValueError:
+                continue
+            if start_day > local_day:
+                candidates.append(start_day)
+
+    if not candidates:
+        return None
+
+    due_day = min(candidates)
+    local_due = datetime.combine(due_day, time.min, tzinfo=local_now.tzinfo)
+    return dt_util.as_utc(local_due).isoformat()
+
+
 class TaskManager:
     def __init__(self, hass, entry_id, enabled_ids):
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
         self.data = None
         self.enabled_ids = set(enabled_ids)
+
+    def _initial_due(self, task, now):
+        if task.get("schedule_type") == "seasonal":
+            return _next_season_due(
+                task, now, include_active=True, settings=self.data["settings"]
+            )
+        interval = int(task.get("configured_interval_days") or 0)
+        return (now + timedelta(days=interval)).isoformat() if interval else None
 
     async def async_load(self):
         self.data = await self.storage.async_load()
@@ -37,19 +91,26 @@ class TaskManager:
                 continue
             if task_id not in self.data["tasks"]:
                 interval = int(definition.get("recommended_interval_days") or 0)
-                next_due = now + timedelta(days=interval) if interval else None
-                self.data["tasks"][task_id] = {
+                task = {
                     **deepcopy(definition),
                     "configured_interval_days": interval,
                     "enabled": True,
                     "last_completed": None,
-                    "next_due": next_due.isoformat() if next_due else None,
+                    "next_due": None,
                     "equipment_id": None,
                     "notes": "",
                     "created_at": now.isoformat(),
                 }
+                task["next_due"] = self._initial_due(task, now)
+                self.data["tasks"][task_id] = task
             else:
-                self.data["tasks"][task_id]["enabled"] = True
+                task = self.data["tasks"][task_id]
+                task["enabled"] = True
+                # Add newly introduced library metadata without overwriting user settings.
+                for key, value in definition.items():
+                    task.setdefault(key, deepcopy(value))
+                if task.get("schedule_type") == "seasonal" and not task.get("last_completed"):
+                    task["next_due"] = self._initial_due(task, now)
 
         await self.async_save()
 
@@ -84,19 +145,29 @@ class TaskManager:
             raise ValueError(f"Maintenance task is disabled: {task_id}")
 
         now = dt_util.utcnow()
-        interval = int(task.get("configured_interval_days") or 0)
-        next_due = now + timedelta(days=interval) if interval > 0 else None
+        previous_due = task.get("next_due")
+        if task.get("schedule_type") == "seasonal":
+            next_due_value = _next_season_due(
+                task, now, settings=self.data["settings"]
+            )
+        else:
+            interval = int(task.get("configured_interval_days") or 0)
+            next_due_value = (
+                (now + timedelta(days=interval)).isoformat()
+                if interval > 0 else None
+            )
+
         self.data["history"].append({
             "history_id": f"{task_id}:{now.isoformat()}",
             "task_id": task_id,
             "task_name": task["name"],
             "completed_at": now.isoformat(),
-            "previous_due": task.get("next_due"),
-            "next_due": next_due.isoformat() if next_due else None,
+            "previous_due": previous_due,
+            "next_due": next_due_value,
             "notes": notes,
         })
         task["last_completed"] = now.isoformat()
-        task["next_due"] = next_due.isoformat() if next_due else None
+        task["next_due"] = next_due_value
         if notes:
             task["notes"] = notes
         await self.async_save()
