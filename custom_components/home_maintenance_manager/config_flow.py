@@ -55,7 +55,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "add_equipment", "manage_equipment"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment"],
         )
 
     async def async_step_manage_tasks(self, user_input=None):
@@ -181,6 +181,116 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_custom_task",
             data_schema=self._custom_task_schema(),
+        )
+
+    async def async_step_manage_custom_tasks(self, user_input=None):
+        custom_tasks = self.config_entry.options.get("custom_tasks", [])
+        if not custom_tasks:
+            return self.async_abort(reason="no_custom_tasks")
+        if user_input is not None:
+            self._selected_custom_task_id = user_input["task_id"]
+            return self.async_show_menu(
+                step_id="custom_task_actions",
+                menu_options=["edit_custom_task", "remove_custom_task"],
+            )
+        options = [(item["task_id"], item["name"]) for item in custom_tasks]
+        return self.async_show_form(
+            step_id="manage_custom_tasks",
+            data_schema=vol.Schema({
+                vol.Required("task_id"): vol.In(dict(options)),
+            }),
+        )
+
+    async def async_step_edit_custom_task(self, user_input=None):
+        custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
+        current = next(
+            (item for item in custom_tasks
+             if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
+            None,
+        )
+        if current is None:
+            return self.async_abort(reason="custom_task_not_found")
+        if user_input is not None:
+            name = user_input["name"].strip()
+            slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
+            proposed_id = f"custom_{slug}"
+            if not slug or (
+                proposed_id != current["task_id"]
+                and (proposed_id in load_library()
+                     or any(item["task_id"] == proposed_id for item in custom_tasks))
+            ):
+                return self.async_show_form(
+                    step_id="edit_custom_task",
+                    data_schema=self._custom_task_schema(current),
+                    errors={"base": "duplicate_task"},
+                )
+            # Keep the ID stable so existing task state and completion history
+            # remain attached to this custom task when its display name changes.
+            interval = int(user_input["interval_days"])
+            updated = {
+                **current,
+                "name": name,
+                "category": user_input["category"].strip().casefold() or "custom",
+                "description": user_input.get("description", "").strip(),
+                "recommended_interval_days": interval,
+            }
+            custom_tasks = [
+                updated if item["task_id"] == current["task_id"] else item
+                for item in custom_tasks
+            ]
+            intervals = dict(self.config_entry.options.get("task_intervals", {}))
+            intervals[current["task_id"]] = interval
+            return self.async_create_entry(
+                title="",
+                data={
+                    **self.config_entry.options,
+                    "custom_tasks": custom_tasks,
+                    "task_intervals": intervals,
+                },
+            )
+        return self.async_show_form(
+            step_id="edit_custom_task",
+            data_schema=self._custom_task_schema(current),
+        )
+
+    async def async_step_remove_custom_task(self, user_input=None):
+        custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
+        current = next(
+            (item for item in custom_tasks
+             if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
+            None,
+        )
+        if current is None:
+            return self.async_abort(reason="custom_task_not_found")
+        if user_input is not None:
+            if not user_input.get("confirm"):
+                return self.async_abort(reason="remove_cancelled")
+            custom_tasks = [
+                item for item in custom_tasks
+                if item["task_id"] != current["task_id"]
+            ]
+            enabled = list(self.config_entry.options.get(
+                CONF_ENABLED_TASK_IDS,
+                self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
+            ))
+            enabled = [task_id for task_id in enabled if task_id != current["task_id"]]
+            intervals = dict(self.config_entry.options.get("task_intervals", {}))
+            intervals.pop(current["task_id"], None)
+            return self.async_create_entry(
+                title="",
+                data={
+                    **self.config_entry.options,
+                    "custom_tasks": custom_tasks,
+                    CONF_ENABLED_TASK_IDS: enabled,
+                    "task_intervals": intervals,
+                },
+            )
+        return self.async_show_form(
+            step_id="remove_custom_task",
+            data_schema=vol.Schema({
+                vol.Required("confirm", default=False): bool,
+            }),
+            description_placeholders={"task_name": current["name"]},
         )
 
     async def async_step_add_equipment(self, user_input=None):
@@ -321,18 +431,22 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     @staticmethod
-    def _custom_task_schema():
+    def _custom_task_schema(current=None):
+        current = current or {}
         return vol.Schema({
-            vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
-            vol.Required("category", default="general"): vol.All(
+            vol.Required("name", default=current.get("name", "")): vol.All(
+                str, vol.Length(min=1, max=80)
+            ),
+            vol.Required("category", default=current.get("category", "general")): vol.All(
                 str, vol.Length(min=1, max=40)
             ),
-            vol.Optional("description", default=""): vol.All(
+            vol.Optional("description", default=current.get("description", "")): vol.All(
                 str, vol.Length(max=300)
             ),
-            vol.Required("interval_days", default=90): vol.All(
-                vol.Coerce(int), vol.Range(min=1, max=3650)
-            ),
+            vol.Required(
+                "interval_days",
+                default=current.get("recommended_interval_days", 90),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=3650)),
         })
 
     @staticmethod
