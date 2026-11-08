@@ -201,6 +201,12 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         )
 
+    async def async_step_custom_task_actions(self, user_input=None):
+        return self.async_show_menu(
+            step_id="custom_task_actions",
+            menu_options=["edit_custom_task", "remove_custom_task"],
+        )
+
     async def async_step_edit_custom_task(self, user_input=None):
         custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
         current = next(
@@ -365,6 +371,12 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             data_schema=vol.Schema({
                 vol.Required("equipment_id"): vol.In(dict(options)),
             }),
+        )
+
+    async def async_step_equipment_actions(self, user_input=None):
+        return self.async_show_menu(
+            step_id="equipment_actions",
+            menu_options=["edit_equipment", "remove_equipment"],
         )
 
     async def async_step_edit_equipment(self, user_input=None):
