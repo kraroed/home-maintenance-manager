@@ -62,9 +62,10 @@ def _next_season_due(task, reference, include_active=False, settings=None):
 
 
 class TaskManager:
-    def __init__(self, hass, entry_id, enabled_ids, task_intervals=None):
+    def __init__(self, hass, entry_id, enabled_ids, task_intervals=None, custom_tasks=None):
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
+        self.library.update({item["task_id"]: deepcopy(item) for item in (custom_tasks or [])})
         self.data = None
         self.enabled_ids = set(enabled_ids)
         self.task_intervals = task_intervals or {}
