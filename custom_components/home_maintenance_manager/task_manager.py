@@ -84,6 +84,9 @@ class TaskManager:
         self.data = await self.storage.async_load()
         now = dt_util.utcnow()
 
+        # The config entry options are the source of truth for equipment
+        # records, so edits and removals are reflected after a reload.
+        self.data["equipment"] = {}
         for record in self.equipment_records:
             equipment_id = record["equipment_id"]
             self.data["equipment"][equipment_id] = deepcopy(record)
