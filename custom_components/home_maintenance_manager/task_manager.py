@@ -25,9 +25,17 @@ class TaskManager:
     async def async_load(self):
         self.data = await self.storage.async_load()
         now = dt_util.utcnow()
+
+        # Keep records for disabled tasks so their permanent history is retained.
+        for task_id, task in self.data["tasks"].items():
+            task["enabled"] = task_id in self.enabled_ids
+
+        # Create records only for tasks the user has selected.
         for task_id in self.enabled_ids:
             definition = self.library.get(task_id)
-            if definition and task_id not in self.data["tasks"]:
+            if definition is None:
+                continue
+            if task_id not in self.data["tasks"]:
                 interval = int(definition.get("recommended_interval_days") or 0)
                 next_due = now + timedelta(days=interval) if interval else None
                 self.data["tasks"][task_id] = {
@@ -40,6 +48,9 @@ class TaskManager:
                     "notes": "",
                     "created_at": now.isoformat(),
                 }
+            else:
+                self.data["tasks"][task_id]["enabled"] = True
+
         await self.async_save()
 
     async def async_save(self):
@@ -69,6 +80,9 @@ class TaskManager:
         task = self.data["tasks"].get(task_id)
         if task is None:
             raise ValueError(f"Unknown maintenance task: {task_id}")
+        if not task.get("enabled", True):
+            raise ValueError(f"Maintenance task is disabled: {task_id}")
+
         now = dt_util.utcnow()
         interval = int(task.get("configured_interval_days") or 0)
         next_due = now + timedelta(days=interval) if interval > 0 else None
@@ -93,11 +107,12 @@ class TaskManager:
             task = deepcopy(stored_task)
             task["status"] = self.task_status(stored_task)
             tasks.append(task)
+        enabled_tasks = [task for task in tasks if task.get("enabled", True)]
         return {
             "tasks": tasks,
-            "total": sum(bool(t.get("enabled", True)) for t in tasks),
-            "overdue": sum(t["status"] == "overdue" for t in tasks),
-            "due_today": sum(t["status"] == "due_today" for t in tasks),
-            "due_soon": sum(t["status"] == "due_soon" for t in tasks),
+            "total": len(enabled_tasks),
+            "overdue": sum(t["status"] == "overdue" for t in enabled_tasks),
+            "due_today": sum(t["status"] == "due_today" for t in enabled_tasks),
+            "due_soon": sum(t["status"] == "due_soon" for t in enabled_tasks),
             "history_count": len(self.data.get("history", [])),
         }
