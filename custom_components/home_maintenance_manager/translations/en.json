@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Maintenance Manager",
+        "description": "Name your property and individually select maintenance tasks to track.",
+        "data": {
+          "property_name": "Property name",
+          "enabled_task_ids": "Maintenance tasks to enable"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Enter a property name."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Maintenance task selection",
+        "description": "Select the built-in tasks to track.",
+        "data": {
+          "enabled_task_ids": "Enabled maintenance tasks"
+        }
+      }
+    }
+  }
+}
