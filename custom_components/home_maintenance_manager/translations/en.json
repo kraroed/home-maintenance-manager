@@ -18,10 +18,11 @@
     "step": {
       "init": {
         "title": "Home Maintenance Manager",
-        "description": "Manage existing maintenance tasks or add a custom task.",
+        "description": "Manage maintenance tasks, add custom tasks, or register household equipment.",
         "menu_options": {
           "manage_tasks": "Manage enabled tasks and intervals",
-          "add_custom_task": "Add a custom maintenance task"
+          "add_custom_task": "Add a custom maintenance task",
+          "add_equipment": "Add household equipment"
         }
       },
       "manage_tasks": {
@@ -54,10 +55,24 @@
           "description": "Description",
           "interval_days": "Repeat every (days)"
         }
+      },
+      "add_equipment": {
+        "title": "Register household equipment",
+        "description": "Add an appliance or home system and optionally associate existing maintenance tasks with it. You can leave manufacturer, model, installation date, and notes blank.",
+        "data": {
+          "name": "Equipment name",
+          "category": "Category",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "notes": "Notes",
+          "task_ids": "Maintenance tasks associated with this equipment"
+        }
       }
     },
     "error": {
-      "duplicate_task": "A task with this name already exists. Choose a different name."
+      "duplicate_task": "A task with this name already exists. Choose a different name.",
+      "duplicate_equipment": "Equipment with this name already exists. Choose a different name."
     }
   }
 }
