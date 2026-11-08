@@ -8,6 +8,8 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 
 - A built-in library of suggested maintenance tasks, enabled individually.
 - User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
+- Custom task editing, including changing the recurring interval while retaining the task's identity and completion history.
+- Custom task removal from active tracking, with completion history preserved.
 - Editable intervals for recurring built-in tasks.
 - Completion-based scheduling: completing a task restarts its schedule.
 - Permanent completion history.
@@ -16,6 +18,10 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Associate one or more enabled maintenance tasks with registered equipment.
 - Equipment sensors expose equipment details and associated task IDs.
 - Home Assistant entities for task status and household maintenance summaries.
+
+## Custom maintenance task management
+
+Open the integration's **Configure** options and choose **Manage custom maintenance tasks**. Select a custom task to edit its name, category, description, or repeat interval, or remove it from active tracking. Editing keeps the task ID stable so its existing schedule and completion history remain associated with it. Removing a task disables it, removes it from the custom task library and enabled-task list, and clears equipment associations; existing task and completion records are retained.
 
 ## Equipment tracking
 
