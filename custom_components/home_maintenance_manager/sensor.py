@@ -71,6 +71,7 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "category": task.get("category"),
             "description": task.get("description"),
             "schedule_type": task.get("schedule_type"),
+            "season_keys": task.get("season_keys", []),
             "recommended_interval_days": task.get("recommended_interval_days"),
             "configured_interval_days": task.get("configured_interval_days"),
             "last_completed": task.get("last_completed"),
