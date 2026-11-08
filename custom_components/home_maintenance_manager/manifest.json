@@ -1,0 +1,11 @@
+{
+  "domain": "home_maintenance_manager",
+  "name": "Home Maintenance Manager",
+  "codeowners": [
+    "@kraroed"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/kraroed/home-maintenance-manager",
+  "iot_class": "local_push",
+  "version": "0.1.0"
+}
