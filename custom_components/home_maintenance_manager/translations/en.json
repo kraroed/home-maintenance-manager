@@ -23,7 +23,8 @@
           "manage_tasks": "Manage enabled tasks and intervals",
           "add_custom_task": "Add a custom maintenance task",
           "add_equipment": "Add household equipment",
-          "manage_equipment": "Manage household equipment"
+          "manage_equipment": "Manage household equipment",
+          "manage_custom_tasks": "Manage custom maintenance tasks"
         }
       },
       "manage_tasks": {
@@ -104,6 +105,38 @@
         "data": {
           "confirm": "I confirm that I want to remove this equipment record"
         }
+      },
+      "manage_custom_tasks": {
+        "title": "Select a custom maintenance task",
+        "description": "Choose the custom task you want to edit or remove.",
+        "data": {
+          "task_id": "Custom task"
+        }
+      },
+      "custom_task_actions": {
+        "title": "Custom task actions",
+        "description": "Edit the task details and interval, or remove this custom task.",
+        "menu_options": {
+          "edit_custom_task": "Edit custom task",
+          "remove_custom_task": "Remove custom task"
+        }
+      },
+      "edit_custom_task": {
+        "title": "Edit custom maintenance task",
+        "description": "Update the name, category, description, or recurring interval. Existing completion history is retained.",
+        "data": {
+          "name": "Task name",
+          "category": "Category",
+          "description": "Description",
+          "interval_days": "Repeat every (days)"
+        }
+      },
+      "remove_custom_task": {
+        "title": "Remove custom maintenance task",
+        "description": "Confirm removal of {task_name}. Its completion history will be retained.",
+        "data": {
+          "confirm": "I confirm that I want to remove this custom task"
+        }
       }
     },
     "error": {
@@ -113,7 +146,9 @@
     "abort": {
       "no_equipment": "No equipment records have been added yet.",
       "equipment_not_found": "The selected equipment record could not be found.",
-      "remove_cancelled": "Equipment removal was cancelled."
+      "remove_cancelled": "Equipment removal was cancelled.",
+      "no_custom_tasks": "No custom maintenance tasks have been created yet.",
+      "custom_task_not_found": "The selected custom maintenance task could not be found."
     }
   }
 }
