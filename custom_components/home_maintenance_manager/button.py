@@ -29,6 +29,10 @@ class CompleteTaskButton(CoordinatorEntity, ButtonEntity):
         task = self.coordinator.manager.data["tasks"].get(self.task_id)
         return super().available and bool(task and task.get("enabled", True))
 
+    @property
+    def extra_state_attributes(self):
+        return {"task_id": self.task_id}
+
     async def async_press(self):
         await self.coordinator.manager.async_complete_task(self.task_id)
         await self.coordinator.async_request_refresh()
