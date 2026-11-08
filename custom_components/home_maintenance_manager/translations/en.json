@@ -18,9 +18,23 @@
     "step": {
       "init": {
         "title": "Maintenance task selection",
-        "description": "Select the built-in tasks to track.",
+        "description": "Select the built-in tasks to track. You can configure intervals in the next step.",
         "data": {
           "enabled_task_ids": "Enabled maintenance tasks"
+        }
+      },
+      "intervals": {
+        "title": "Maintenance intervals",
+        "description": "Set the interval in days for each selected recurring task. Seasonal tasks use their season windows instead.",
+        "data": {
+          "interval_inspect_hvac_air_filter": "Inspect HVAC air filter (days)",
+          "interval_replace_disposable_hvac_filter": "Replace disposable HVAC filter (days)",
+          "interval_test_smoke_alarms": "Test smoke alarms (days)",
+          "interval_test_carbon_monoxide_alarms": "Test carbon monoxide alarms (days)",
+          "interval_inspect_fire_extinguishers": "Inspect fire extinguishers (days)",
+          "interval_clean_refrigerator_coils": "Clean refrigerator condenser coils (days)",
+          "interval_clean_dryer_vent": "Clean clothes dryer vent (days)",
+          "interval_inspect_sump_pump": "Test sump pump (days)"
         }
       }
     }
