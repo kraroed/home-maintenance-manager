@@ -1,0 +1,15 @@
+export_history:
+  name: Export maintenance history
+  description: Export the completion history to CSV, JSON, or both formats.
+  fields:
+    format:
+      name: Export format
+      description: Choose which file formats to create.
+      required: false
+      default: both
+      selector:
+        select:
+          options:
+            - csv
+            - json
+            - both
