@@ -8,6 +8,10 @@ def default_data():
         "tasks": {},
         "equipment": {},
         "history": [],
+        "notification_state": {
+            "individual": {},
+            "summary_date": None,
+        },
         "settings": {
             "due_soon_days": 7,
             "daily_summary_enabled": True,
