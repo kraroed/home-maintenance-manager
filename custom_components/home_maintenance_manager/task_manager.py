@@ -91,7 +91,7 @@ class TaskManager:
             if definition is None:
                 continue
             if task_id not in self.data["tasks"]:
-                interval = int(definition.get("recommended_interval_days") or 0)
+                interval = int(self.task_intervals.get(task_id, definition.get("recommended_interval_days")) or 0)
                 task = {
                     **deepcopy(definition),
                     "configured_interval_days": interval,
