@@ -22,7 +22,8 @@
         "menu_options": {
           "manage_tasks": "Manage enabled tasks and intervals",
           "add_custom_task": "Add a custom maintenance task",
-          "add_equipment": "Add household equipment"
+          "add_equipment": "Add household equipment",
+          "manage_equipment": "Manage household equipment"
         }
       },
       "manage_tasks": {
@@ -68,11 +69,51 @@
           "notes": "Notes",
           "task_ids": "Maintenance tasks associated with this equipment"
         }
+      },
+      "manage_equipment": {
+        "title": "Select household equipment",
+        "description": "Choose the equipment record you want to edit or remove.",
+        "data": {
+          "equipment_id": "Equipment"
+        }
+      },
+      "equipment_actions": {
+        "title": "Equipment actions",
+        "description": "Edit the selected equipment record or remove it.",
+        "menu_options": {
+          "edit_equipment": "Edit equipment details and task links",
+          "remove_equipment": "Remove equipment"
+        }
+      },
+      "edit_equipment": {
+        "title": "Edit household equipment",
+        "description": "Update the equipment details and associated maintenance tasks.",
+        "data": {
+          "name": "Equipment name",
+          "category": "Category",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "notes": "Notes",
+          "task_ids": "Maintenance tasks associated with this equipment"
+        }
+      },
+      "remove_equipment": {
+        "title": "Remove household equipment",
+        "description": "Confirm removal of {equipment_name}. Existing maintenance history is retained.",
+        "data": {
+          "confirm": "I confirm that I want to remove this equipment record"
+        }
       }
     },
     "error": {
       "duplicate_task": "A task with this name already exists. Choose a different name.",
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name."
+    },
+    "abort": {
+      "no_equipment": "No equipment records have been added yet.",
+      "equipment_not_found": "The selected equipment record could not be found.",
+      "remove_cancelled": "Equipment removal was cancelled."
     }
   }
 }
