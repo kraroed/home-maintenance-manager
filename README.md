@@ -7,7 +7,8 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 ## Planned capabilities
 
 - A built-in library of suggested maintenance tasks, enabled individually.
-- Custom tasks (planned) and editable intervals for recurring built-in tasks.
+- User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
+- Editable intervals for recurring built-in tasks.
 - Completion-based scheduling: completing a task restarts its schedule.
 - Permanent completion history.
 - Seasonal schedules with configurable date windows.
