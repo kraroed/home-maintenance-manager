@@ -37,9 +37,12 @@ Equipment can be added, edited, and removed through the integration options flow
 
 Open **Configure → Configure maintenance notifications** to enable individual task reminders and/or a daily summary. Set how many days ahead to remind, choose the summary time in 24-hour `HH:MM` format, and optionally enter a Home Assistant notify entity ID (for example, `notify.mobile_app_your_phone`). If no target is configured, the integration creates Home Assistant persistent notifications instead. Reminder delivery is tracked in integration storage so a task is not repeatedly announced for the same due date, and the daily summary is sent once per day.
 
+## Maintenance history export
+
+Call **`home_maintenance_manager.export_history`** from Developer Tools → Actions, or use it in an automation. Choose `csv`, `json`, or `both` (the default). The integration writes the files under `/config/www/home_maintenance_manager/<entry_id>/` and creates a persistent notification with links to open each export through Home Assistant. CSV includes one row per completion; JSON includes the full completion records and property name. Export files are overwritten by the next export in the same format.
+
 ## Planned capabilities
 
-- CSV and JSON history exports.
 - A companion Lovelace dashboard card.
 
 ## Installation
