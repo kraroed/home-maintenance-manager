@@ -55,7 +55,49 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "configure_notifications"],
+        )
+
+    async def async_step_configure_notifications(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data={
+                    **self.config_entry.options,
+                    "individual_notifications_enabled": user_input["individual_notifications_enabled"],
+                    "daily_summary_enabled": user_input["daily_summary_enabled"],
+                    "notification_target": user_input.get("notification_target", "").strip(),
+                    "notification_lead_days": user_input["notification_lead_days"],
+                    "daily_summary_time": user_input["daily_summary_time"],
+                },
+            )
+
+        options = self.config_entry.options
+        schema = vol.Schema({
+            vol.Optional(
+                "individual_notifications_enabled",
+                default=options.get("individual_notifications_enabled", True),
+            ): bool,
+            vol.Optional(
+                "daily_summary_enabled",
+                default=options.get("daily_summary_enabled", True),
+            ): bool,
+            vol.Optional(
+                "notification_target",
+                default=options.get("notification_target", ""),
+            ): vol.All(str, vol.Length(max=255)),
+            vol.Required(
+                "notification_lead_days",
+                default=options.get("notification_lead_days", 7),
+            ): vol.All(vol.Coerce(int), vol.Range(min=0, max=90)),
+            vol.Required(
+                "daily_summary_time",
+                default=options.get("daily_summary_time", "08:00"),
+            ): vol.Match(r"^([01]\\d|2[0-3]):[0-5]\\d$"),
+        })
+        return self.async_show_form(
+            step_id="configure_notifications",
+            data_schema=schema,
         )
 
     async def async_step_manage_tasks(self, user_input=None):
