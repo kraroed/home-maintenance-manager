@@ -109,5 +109,5 @@ async def async_setup_notifications(hass, entry, manager):
 
     await check_notifications()
     return async_track_time_interval(
-        hass, check_notifications, timedelta(hours=1)
+        hass, check_notifications, timedelta(minutes=1)
     )
