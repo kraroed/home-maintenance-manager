@@ -55,7 +55,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task"],
+            menu_options=["manage_tasks", "add_custom_task", "add_equipment"],
         )
 
     async def async_step_manage_tasks(self, user_input=None):
@@ -183,6 +183,51 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             data_schema=self._custom_task_schema(),
         )
 
+    async def async_step_add_equipment(self, user_input=None):
+        library = load_library()
+        library.update({
+            item["task_id"]: item
+            for item in self.config_entry.options.get("custom_tasks", [])
+        })
+        enabled = self.config_entry.options.get(
+            CONF_ENABLED_TASK_IDS,
+            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
+        )
+        task_options = [
+            (task_id, library[task_id]["name"])
+            for task_id in enabled if task_id in library
+        ]
+        if user_input is not None:
+            name = user_input["name"].strip()
+            slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
+            equipment_id = f"equipment_{slug}"
+            equipment = list(self.config_entry.options.get("equipment_records", []))
+            if not slug or any(item["equipment_id"] == equipment_id for item in equipment):
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "duplicate_equipment"},
+                )
+            equipment.append({
+                "equipment_id": equipment_id,
+                "name": name,
+                "category": user_input["category"].strip(),
+                "manufacturer": user_input.get("manufacturer", "").strip(),
+                "model": user_input.get("model", "").strip(),
+                "installed_date": user_input.get("installed_date", "").strip(),
+                "notes": user_input.get("notes", "").strip(),
+                "task_ids": user_input.get("task_ids", []),
+            })
+            return self.async_create_entry(
+                title="",
+                data={**self.config_entry.options, "equipment_records": equipment},
+            )
+
+        return self.async_show_form(
+            step_id="add_equipment",
+            data_schema=self._equipment_schema(task_options),
+        )
+
     @staticmethod
     def _custom_task_schema():
         return vol.Schema({
@@ -196,4 +241,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Required("interval_days", default=90): vol.All(
                 vol.Coerce(int), vol.Range(min=1, max=3650)
             ),
+        })
+
+    @staticmethod
+    def _equipment_schema(task_options):
+        return vol.Schema({
+            vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
+            vol.Required("category", default="HVAC"): vol.All(
+                str, vol.Length(min=1, max=40)
+            ),
+            vol.Optional("manufacturer", default=""): vol.All(str, vol.Length(max=80)),
+            vol.Optional("model", default=""): vol.All(str, vol.Length(max=80)),
+            vol.Optional("installed_date", default=""): vol.All(str, vol.Length(max=10)),
+            vol.Optional("notes", default=""): vol.All(str, vol.Length(max=500)),
+            vol.Optional("task_ids", default=[]): cv.multi_select(task_options),
         })
