@@ -82,7 +82,10 @@
     "category": "exterior",
     "description": "Remove leaves and debris and check downspouts.",
     "schedule_type": "seasonal",
-    "season_keys": ["spring", "fall"],
+    "season_keys": [
+      "spring",
+      "fall"
+    ],
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
@@ -94,7 +97,9 @@
     "category": "landscape",
     "description": "Prepare the irrigation system for freezing weather.",
     "schedule_type": "seasonal",
-    "season_keys": ["fall"],
+    "season_keys": [
+      "fall"
+    ],
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
@@ -110,5 +115,286 @@
     "priority": "normal",
     "requires_equipment": true,
     "recommendation_note": "Adjust frequency based on local water conditions and manufacturer guidance."
+  },
+  {
+    "task_id": "test_gfci_outlets",
+    "name": "Test GFCI outlets",
+    "category": "electrical",
+    "description": "Use each GFCI outlet's test and reset buttons; confirm downstream protection where applicable.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "high",
+    "requires_equipment": false,
+    "recommendation_note": "Follow device instructions. Contact a qualified electrician if a device fails to trip or reset."
+  },
+  {
+    "task_id": "inspect_plumbing_for_leaks",
+    "name": "Check visible plumbing for leaks",
+    "category": "plumbing",
+    "description": "Look under sinks and around toilets, supply lines, and exposed pipes for drips or moisture.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "This is a visual check; have persistent moisture or suspected concealed leaks assessed."
+  },
+  {
+    "task_id": "inspect_washing_machine_hoses",
+    "name": "Inspect washing machine hoses",
+    "category": "appliances",
+    "description": "Check accessible washer hoses and connections for bulges, cracks, corrosion, or leaks.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Replace damaged hoses promptly and follow washer and hose manufacturer recommendations."
+  },
+  {
+    "task_id": "clean_washing_machine",
+    "name": "Clean washing machine",
+    "category": "appliances",
+    "description": "Run the manufacturer's washer-cleaning cycle and clean the dispenser and door gasket as directed.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Use only products and procedures approved by the appliance manufacturer."
+  },
+  {
+    "task_id": "clean_dishwasher_filter",
+    "name": "Clean dishwasher filter",
+    "category": "appliances",
+    "description": "Remove and rinse the filter and check the sump area as directed by the manufacturer.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Follow the dishwasher manual; ensure parts are reinstalled correctly."
+  },
+  {
+    "task_id": "clean_range_hood_filter",
+    "name": "Clean range hood filter",
+    "category": "appliances",
+    "description": "Clean or replace the range hood grease filter as directed.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Frequency depends on cooking habits. Do not operate without the required filter."
+  },
+  {
+    "task_id": "replace_refrigerator_water_filter",
+    "name": "Replace refrigerator water filter",
+    "category": "appliances",
+    "description": "Replace the refrigerator water filter if the model uses one.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Use the specified filter and follow the appliance indicator and manufacturer schedule."
+  },
+  {
+    "task_id": "clean_bathroom_exhaust_fan",
+    "name": "Clean bathroom exhaust fan grille",
+    "category": "hvac",
+    "description": "Remove dust from the accessible fan grille and verify the fan operates.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Turn power off before cleaning; leave electrical work or inaccessible components to a qualified person."
+  },
+  {
+    "task_id": "check_water_softener_salt",
+    "name": "Check water softener salt",
+    "category": "plumbing",
+    "description": "Check the brine tank salt level and refill if needed.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Only add the salt type recommended by the water softener manufacturer."
+  },
+  {
+    "task_id": "inspect_toilet_components",
+    "name": "Inspect toilet for leaks and running",
+    "category": "plumbing",
+    "description": "Check for continuous running, leaks at the base, and moisture around supply connections.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Address leaks promptly to prevent water damage."
+  },
+  {
+    "task_id": "inspect_caulking_and_grout",
+    "name": "Inspect bathroom and kitchen caulk",
+    "category": "interior",
+    "description": "Check wet-area caulk and grout for gaps, cracking, or deterioration.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Repair with materials suitable for the surface and location; investigate recurring moisture."
+  },
+  {
+    "task_id": "inspect_weatherstripping",
+    "name": "Inspect door and window weatherstripping",
+    "category": "interior",
+    "description": "Check seals for gaps, compression, cracking, or detachment.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Replace damaged seals with compatible materials."
+  },
+  {
+    "task_id": "clean_window_tracks",
+    "name": "Clean window and sliding-door tracks",
+    "category": "interior",
+    "description": "Remove debris from accessible window and sliding-door tracks and clear drainage paths.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Follow window and door manufacturer cleaning instructions."
+  },
+  {
+    "task_id": "test_garage_door_safety",
+    "name": "Test garage door safety features",
+    "category": "safety",
+    "description": "Test photo-eye sensors and the auto-reverse function using the door manufacturer's procedure.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Keep people and objects clear. Stop using the opener and arrange professional service if safety features fail."
+  },
+  {
+    "task_id": "inspect_deck_and_steps",
+    "name": "Inspect deck, porch, and exterior steps",
+    "category": "exterior",
+    "description": "Look for loose railings, damaged boards, unstable steps, corrosion, and visible deterioration.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Avoid loading unsafe structures; have structural concerns assessed by a qualified professional."
+  },
+  {
+    "task_id": "inspect_exterior_foundation",
+    "name": "Inspect visible foundation and drainage",
+    "category": "exterior",
+    "description": "Look for new cracks, water pooling, soil movement, or blocked drainage near the foundation.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "This is a visual check, not a structural assessment. Seek professional advice for significant changes."
+  },
+  {
+    "task_id": "clean_air_conditioner_condenser",
+    "name": "Inspect and clean accessible outdoor AC unit",
+    "category": "hvac",
+    "description": "Remove loose leaves and debris around the outdoor unit and check that airflow is unobstructed.",
+    "schedule_type": "seasonal",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Schedule for spring. Disconnect power before any permitted cleaning; do not open electrical compartments or bend fins.",
+    "season_keys": [
+      "spring"
+    ]
+  },
+  {
+    "task_id": "winterize_outdoor_faucets",
+    "name": "Prepare outdoor faucets for freezing weather",
+    "category": "plumbing",
+    "description": "Disconnect hoses and prepare hose bibs according to the home's plumbing and faucet design.",
+    "schedule_type": "seasonal",
+    "recommended_interval_days": 365,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Schedule before freezing weather. Follow frost-free faucet instructions; use a plumber if shutoffs or drainage are unclear.",
+    "season_keys": [
+      "fall"
+    ]
+  },
+  {
+    "task_id": "inspect_chimney_fireplace",
+    "name": "Arrange chimney and fireplace inspection",
+    "category": "safety",
+    "description": "Arrange an inspection and cleaning when applicable for the home's fireplace, stove, and chimney.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Use a qualified chimney professional and follow appliance and local fire-safety guidance."
+  },
+  {
+    "task_id": "inspect_roof_from_ground",
+    "name": "Inspect roof and flashing from the ground",
+    "category": "exterior",
+    "description": "From a safe location, look for missing shingles, damaged flashing, debris, or visible sagging.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Do not climb onto the roof. Arrange a qualified roofer for closer inspection or repairs."
+  },
+  {
+    "task_id": "check_dryer_exhaust_outlet",
+    "name": "Check exterior dryer exhaust outlet",
+    "category": "appliances",
+    "description": "Check that the exterior dryer exhaust flap is unobstructed and opens during operation.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Do not insert tools into the vent while the dryer is operating; clean the vent path as needed."
+  },
+  {
+    "task_id": "inspect_attic_for_moisture",
+    "name": "Check accessible attic for moisture",
+    "category": "interior",
+    "description": "From a safe access point, look for visible leaks, damp insulation, or unusual staining.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Do not step off safe walkways or disturb insulation; use a professional if access is unsafe."
+  },
+  {
+    "task_id": "clean_showerheads_aerators",
+    "name": "Clean showerheads and faucet aerators",
+    "category": "plumbing",
+    "description": "Remove mineral buildup from accessible showerheads and faucet aerators as appropriate.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "low",
+    "requires_equipment": false,
+    "recommendation_note": "Use cleaning methods compatible with the fixture finish and manufacturer guidance."
+  },
+  {
+    "task_id": "inspect_sump_pump_backup",
+    "name": "Test sump pump backup system",
+    "category": "plumbing",
+    "description": "If installed, check the backup pump or battery system using its manufacturer's test procedure.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Follow manufacturer instructions; replace batteries on their specified schedule."
+  },
+  {
+    "task_id": "service_water_heater",
+    "name": "Review water heater maintenance requirements",
+    "category": "plumbing",
+    "description": "Check the water heater manual for due maintenance such as flushing or anode-rod inspection.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Actual maintenance varies by model and water conditions. Use a qualified technician for gas, electrical, pressure, or hot-water work."
   }
 ]
