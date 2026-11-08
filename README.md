@@ -17,7 +17,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Household equipment records with name, category, manufacturer, model, installation date, and notes.
 - Associate one or more enabled maintenance tasks with registered equipment.
 - Equipment sensors expose equipment details and associated task IDs.
-- Home Assistant entities for task status and household maintenance summaries.
+- Home Assistant entities for task status and household maintenance summaries.\n- Individual due-soon and overdue reminders, plus a configurable daily summary.\n- Configurable reminder lead time and notification destination, with persistent notifications as the fallback.
 
 ## Custom maintenance task management
 
