@@ -1,6 +1,6 @@
 from .const import CONF_ENABLED_TASK_IDS, DOMAIN, PLATFORMS
-from .history_export import async_setup_history_export, async_unload_history_export
 from .coordinator import MaintenanceCoordinator
+from .history_export import async_setup_history_export, async_unload_history_export
 from .notifications import async_setup_notifications
 from .task_manager import TaskManager
 
