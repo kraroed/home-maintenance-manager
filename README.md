@@ -17,7 +17,9 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Household equipment records with name, category, manufacturer, model, installation date, and notes.
 - Associate one or more enabled maintenance tasks with registered equipment.
 - Equipment sensors expose equipment details and associated task IDs.
-- Home Assistant entities for task status and household maintenance summaries.\n- Individual due-soon and overdue reminders, plus a configurable daily summary.\n- Configurable reminder lead time and notification destination, with persistent notifications as the fallback.
+- Home Assistant entities for task status and household maintenance summaries.
+- Individual due-soon and overdue reminders, plus a configurable daily summary.
+- Configurable reminder lead time and notification destination, with persistent notifications as the fallback.
 
 ## Custom maintenance task management
 
@@ -31,9 +33,12 @@ Each registered item creates an equipment sensor. Its attributes include the equ
 
 Equipment can be added, edited, and removed through the integration options flow. To manage an existing record, open **Configure → Manage household equipment**, select the item, then choose whether to edit its details and task associations or remove it. Removing an equipment record does not delete maintenance tasks or completion history; historical records retain the equipment IDs captured when the task was completed.
 
+## Maintenance notifications
+
+Open **Configure → Configure maintenance notifications** to enable individual task reminders and/or a daily summary. Set how many days ahead to remind, choose the summary time in 24-hour `HH:MM` format, and optionally enter a Home Assistant notify entity ID (for example, `notify.mobile_app_your_phone`). If no target is configured, the integration creates Home Assistant persistent notifications instead. Reminder delivery is tracked in integration storage so a task is not repeatedly announced for the same due date, and the daily summary is sent once per day.
+
 ## Planned capabilities
 
-- Individual reminders and a configurable due-task summary.
 - CSV and JSON history exports.
 - A companion Lovelace dashboard card.
 
