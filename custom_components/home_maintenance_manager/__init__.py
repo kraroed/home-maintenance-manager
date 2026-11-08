@@ -4,10 +4,14 @@ from .task_manager import TaskManager
 
 
 async def async_setup_entry(hass, entry):
+    enabled_task_ids = entry.options.get(
+        CONF_ENABLED_TASK_IDS,
+        entry.data.get(CONF_ENABLED_TASK_IDS, []),
+    )
     manager = TaskManager(
         hass,
         entry.entry_id,
-        entry.data.get(CONF_ENABLED_TASK_IDS, []),
+        enabled_task_ids,
     )
     await manager.async_load()
 
