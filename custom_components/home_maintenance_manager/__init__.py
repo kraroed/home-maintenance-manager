@@ -10,12 +10,14 @@ async def async_setup_entry(hass, entry):
     )
     task_intervals = entry.options.get("task_intervals", {})
     custom_tasks = entry.options.get("custom_tasks", [])
+    equipment_records = entry.options.get("equipment_records", [])
     manager = TaskManager(
         hass,
         entry.entry_id,
         enabled_task_ids,
         task_intervals,
         custom_tasks,
+        equipment_records,
     )
     await manager.async_load()
 
@@ -28,9 +30,7 @@ async def async_setup_entry(hass, entry):
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    entry.async_on_unload(
-        entry.add_update_listener(async_reload_entry)
-    )
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
 
 
