@@ -127,7 +127,13 @@ class TaskManager:
                             anchor_dt = now
                         task["next_due"] = (anchor_dt + timedelta(days=configured_interval)).isoformat()
                 for key, value in definition.items():
-                    task.setdefault(key, deepcopy(value))
+                    if task.get("is_custom") and key in {
+                        "name", "category", "description",
+                        "recommended_interval_days", "recommendation_note",
+                    }:
+                        task[key] = deepcopy(value)
+                    else:
+                        task.setdefault(key, deepcopy(value))
                 if task.get("schedule_type") == "seasonal" and not task.get("last_completed"):
                     task["next_due"] = self._initial_due(task, now)
 
