@@ -276,6 +276,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             enabled = [task_id for task_id in enabled if task_id != current["task_id"]]
             intervals = dict(self.config_entry.options.get("task_intervals", {}))
             intervals.pop(current["task_id"], None)
+            equipment = [
+                {
+                    **item,
+                    "task_ids": [
+                        task_id for task_id in item.get("task_ids", [])
+                        if task_id != current["task_id"]
+                    ],
+                }
+                for item in self.config_entry.options.get("equipment_records", [])
+            ]
             return self.async_create_entry(
                 title="",
                 data={
@@ -283,6 +293,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     "custom_tasks": custom_tasks,
                     CONF_ENABLED_TASK_IDS: enabled,
                     "task_intervals": intervals,
+                    "equipment_records": equipment,
                 },
             )
         return self.async_show_form(
