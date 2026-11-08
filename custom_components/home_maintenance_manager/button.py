@@ -24,6 +24,11 @@ class CompleteTaskButton(CoordinatorEntity, ButtonEntity):
         self._attr_name = f"{name} Mark Complete"
         self._attr_icon = "mdi:check-circle"
 
+    @property
+    def available(self):
+        task = self.coordinator.manager.data["tasks"].get(self.task_id)
+        return super().available and bool(task and task.get("enabled", True))
+
     async def async_press(self):
         await self.coordinator.manager.async_complete_task(self.task_id)
         await self.coordinator.async_request_refresh()
