@@ -4,7 +4,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 
 > **Development status: early development.** This repository is being built incrementally. It is not yet ready for installation or production use.
 
-## Planned capabilities
+## Current capabilities
 
 - A built-in library of suggested maintenance tasks, enabled individually.
 - User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
@@ -12,11 +12,25 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Completion-based scheduling: completing a task restarts its schedule.
 - Permanent completion history.
 - Seasonal schedules with configurable date windows.
-- Equipment records and links between equipment and maintenance tasks.
-- Individual reminders and a configurable due-task summary.
+- Household equipment records with name, category, manufacturer, model, installation date, and notes.
+- Associate one or more enabled maintenance tasks with registered equipment.
+- Equipment sensors expose equipment details and associated task IDs.
 - Home Assistant entities for task status and household maintenance summaries.
+
+## Equipment tracking
+
+Open the integration's **Configure** options, then choose **Add household equipment**. Enter an equipment name and category; manufacturer, model, installation date, and notes are optional. Select any enabled maintenance tasks that apply to that equipment. One task can be associated with multiple equipment records.
+
+Each registered item creates an equipment sensor. Its attributes include the equipment metadata and associated task IDs. A summary sensor reports the number of registered equipment records.
+
+Equipment is currently added through the options flow. Editing and deleting equipment records, and changing associations after creation, are planned follow-up work.
+
+## Planned capabilities
+
+- Individual reminders and a configurable due-task summary.
 - CSV and JSON history exports.
 - A companion Lovelace dashboard card.
+- Equipment editing, removal, and reassignment tools.
 
 ## Installation
 
@@ -28,4 +42,4 @@ Built-in intervals are starting suggestions, not professional or manufacturer in
 
 ## Development
 
-The integration will live in `custom_components/home_maintenance_manager/`. CI workflows will run HACS and Home Assistant validation on pushes and pull requests.
+The integration lives in `custom_components/home_maintenance_manager/`. CI workflows run HACS and Home Assistant validation on pushes and pull requests.
