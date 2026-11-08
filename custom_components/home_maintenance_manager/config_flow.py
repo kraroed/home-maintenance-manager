@@ -52,7 +52,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         existing = self.config_entry.options.get("task_intervals", {})
         selected = [task_id for task_id in self._selected_task_ids if task_id in library and library[task_id].get("schedule_type") == "interval"]
         if user_input is not None:
-            intervals = {task_id: user_input[f"interval_{task_id}"] for task_id in selected if f"interval_{task_id}" in user_input}
+            intervals = dict(existing)
+            intervals.update({task_id: user_input[f"interval_{task_id}"] for task_id in selected if f"interval_{task_id}" in user_input})
             return self.async_create_entry(title="", data={CONF_ENABLED_TASK_IDS: self._selected_task_ids, "task_intervals": intervals})
         fields = {}
         for task_id in selected:
