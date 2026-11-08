@@ -7,6 +7,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 ## Current capabilities
 
 - A built-in library of suggested maintenance tasks, enabled individually.
+- An expanded starter library covering HVAC, plumbing, appliances, electrical safety, fire safety, interior, exterior, and seasonal upkeep.
 - User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
 - Custom task editing, including changing the recurring interval while retaining the task's identity and completion history.
 - Custom task removal from active tracking, with completion history preserved.
