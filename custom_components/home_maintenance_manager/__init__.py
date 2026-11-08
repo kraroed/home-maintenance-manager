@@ -1,7 +1,13 @@
 from .const import CONF_ENABLED_TASK_IDS, DOMAIN, PLATFORMS
+from .history_export import async_setup_history_export, async_unload_history_export
 from .coordinator import MaintenanceCoordinator
 from .notifications import async_setup_notifications
 from .task_manager import TaskManager
+
+
+async def async_setup(hass, config):
+    await async_setup_history_export(hass)
+    return True
 
 
 async def async_setup_entry(hass, entry):
@@ -31,6 +37,7 @@ async def async_setup_entry(hass, entry):
         "manager": manager,
         "coordinator": coordinator,
         "cancel_notifications": cancel_notifications,
+        "property_name": entry.data.get("property_name", entry.title),
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -47,4 +54,6 @@ async def async_unload_entry(hass, entry):
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            await async_unload_history_export(hass)
     return unload_ok
