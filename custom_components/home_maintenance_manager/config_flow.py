@@ -93,7 +93,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Required(
                 "daily_summary_time",
                 default=options.get("daily_summary_time", "08:00"),
-            ): vol.Match(r"^([01]\\d|2[0-3]):[0-5]\\d$"),
+            ): vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$"),
         })
         return self.async_show_form(
             step_id="configure_notifications",
