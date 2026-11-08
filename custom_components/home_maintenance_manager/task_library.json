@@ -1,0 +1,112 @@
+[
+  {
+    "task_id": "inspect_hvac_air_filter",
+    "name": "Inspect HVAC air filter",
+    "category": "hvac",
+    "description": "Check filter condition and airflow.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Starting recommendation only. Follow equipment instructions and local guidance."
+  },
+  {
+    "task_id": "replace_disposable_hvac_filter",
+    "name": "Replace disposable HVAC filter",
+    "category": "hvac",
+    "description": "Replace the filter using the size and rating specified for the system.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Actual interval depends on filter type, system, household conditions, and manufacturer instructions."
+  },
+  {
+    "task_id": "test_smoke_alarms",
+    "name": "Test smoke alarms",
+    "category": "safety",
+    "description": "Test every smoke alarm using its test function.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements."
+  },
+  {
+    "task_id": "test_carbon_monoxide_alarms",
+    "name": "Test carbon monoxide alarms",
+    "category": "safety",
+    "description": "Test every carbon monoxide alarm using its test function.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements."
+  },
+  {
+    "task_id": "inspect_fire_extinguishers",
+    "name": "Inspect fire extinguishers",
+    "category": "safety",
+    "description": "Check accessibility, pressure indicator, seal, and visible condition.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 30,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Follow the extinguisher manufacturer's instructions and applicable fire-safety guidance."
+  },
+  {
+    "task_id": "clean_refrigerator_coils",
+    "name": "Clean refrigerator condenser coils",
+    "category": "appliances",
+    "description": "Clean accessible coils as directed by the appliance manufacturer.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Follow the appliance manufacturer's cleaning and access instructions."
+  },
+  {
+    "task_id": "clean_dryer_vent",
+    "name": "Clean clothes dryer vent",
+    "category": "appliances",
+    "description": "Clean lint from the vent path and verify airflow.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 365,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Frequency depends on use and vent configuration; clean sooner if airflow is reduced."
+  },
+  {
+    "task_id": "clean_gutters",
+    "name": "Clean rain gutters",
+    "category": "exterior",
+    "description": "Remove leaves and debris and check downspouts.",
+    "schedule_type": "seasonal",
+    "recommended_interval_days": 180,
+    "priority": "normal",
+    "requires_equipment": false,
+    "recommendation_note": "Adjust for tree cover, roof design, and local weather."
+  },
+  {
+    "task_id": "winterize_sprinklers",
+    "name": "Winterize irrigation system",
+    "category": "landscape",
+    "description": "Prepare the irrigation system for freezing weather.",
+    "schedule_type": "seasonal",
+    "recommended_interval_days": 365,
+    "priority": "high",
+    "requires_equipment": true,
+    "recommendation_note": "Schedule before freezing conditions; use a qualified service provider when needed."
+  },
+  {
+    "task_id": "inspect_sump_pump",
+    "name": "Test sump pump",
+    "category": "plumbing",
+    "description": "Test operation and inspect the pit and discharge line.",
+    "schedule_type": "interval",
+    "recommended_interval_days": 90,
+    "priority": "normal",
+    "requires_equipment": true,
+    "recommendation_note": "Adjust frequency based on local water conditions and manufacturer guidance."
+  }
+]
