@@ -55,7 +55,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "add_equipment"],
+            menu_options=["manage_tasks", "add_custom_task", "add_equipment", "manage_equipment"],
         )
 
     async def async_step_manage_tasks(self, user_input=None):
@@ -228,6 +228,98 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             data_schema=self._equipment_schema(task_options),
         )
 
+    async def async_step_manage_equipment(self, user_input=None):
+        equipment = self.config_entry.options.get("equipment_records", [])
+        if not equipment:
+            return self.async_abort(reason="no_equipment")
+        if user_input is not None:
+            self._selected_equipment_id = user_input["equipment_id"]
+            return self.async_show_menu(
+                step_id="equipment_actions",
+                menu_options=["edit_equipment", "remove_equipment"],
+            )
+        options = [(item["equipment_id"], item["name"]) for item in equipment]
+        return self.async_show_form(
+            step_id="manage_equipment",
+            data_schema=vol.Schema({
+                vol.Required("equipment_id"): vol.In(dict(options)),
+            }),
+        )
+
+    async def async_step_edit_equipment(self, user_input=None):
+        equipment = list(self.config_entry.options.get("equipment_records", []))
+        current = next(
+            (item for item in equipment
+             if item["equipment_id"] == getattr(self, "_selected_equipment_id", None)),
+            None,
+        )
+        if current is None:
+            return self.async_abort(reason="equipment_not_found")
+
+        library = load_library()
+        library.update({
+            item["task_id"]: item
+            for item in self.config_entry.options.get("custom_tasks", [])
+        })
+        enabled = self.config_entry.options.get(
+            CONF_ENABLED_TASK_IDS,
+            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
+        )
+        task_options = [
+            (task_id, library[task_id]["name"])
+            for task_id in enabled if task_id in library
+        ]
+        if user_input is not None:
+            updated = {
+                **current,
+                "name": user_input["name"].strip(),
+                "category": user_input["category"].strip(),
+                "manufacturer": user_input.get("manufacturer", "").strip(),
+                "model": user_input.get("model", "").strip(),
+                "installed_date": user_input.get("installed_date", "").strip(),
+                "notes": user_input.get("notes", "").strip(),
+                "task_ids": user_input.get("task_ids", []),
+            }
+            equipment = [
+                updated if item["equipment_id"] == current["equipment_id"] else item
+                for item in equipment
+            ]
+            return self.async_create_entry(
+                title="",
+                data={**self.config_entry.options, "equipment_records": equipment},
+            )
+
+        schema = self._equipment_schema(task_options, current)
+        return self.async_show_form(step_id="edit_equipment", data_schema=schema)
+
+    async def async_step_remove_equipment(self, user_input=None):
+        equipment = list(self.config_entry.options.get("equipment_records", []))
+        current = next(
+            (item for item in equipment
+             if item["equipment_id"] == getattr(self, "_selected_equipment_id", None)),
+            None,
+        )
+        if current is None:
+            return self.async_abort(reason="equipment_not_found")
+        if user_input is not None:
+            if user_input.get("confirm"):
+                equipment = [
+                    item for item in equipment
+                    if item["equipment_id"] != current["equipment_id"]
+                ]
+                return self.async_create_entry(
+                    title="",
+                    data={**self.config_entry.options, "equipment_records": equipment},
+                )
+            return self.async_abort(reason="remove_cancelled")
+        return self.async_show_form(
+            step_id="remove_equipment",
+            data_schema=vol.Schema({
+                vol.Required("confirm", default=False): bool,
+            }),
+            description_placeholders={"equipment_name": current["name"]},
+        )
+
     @staticmethod
     def _custom_task_schema():
         return vol.Schema({
@@ -244,15 +336,28 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
 
     @staticmethod
-    def _equipment_schema(task_options):
+    def _equipment_schema(task_options, current=None):
+        current = current or {}
         return vol.Schema({
-            vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
-            vol.Required("category", default="HVAC"): vol.All(
+            vol.Required("name", default=current.get("name", "")): vol.All(
+                str, vol.Length(min=1, max=80)
+            ),
+            vol.Required("category", default=current.get("category", "HVAC")): vol.All(
                 str, vol.Length(min=1, max=40)
             ),
-            vol.Optional("manufacturer", default=""): vol.All(str, vol.Length(max=80)),
-            vol.Optional("model", default=""): vol.All(str, vol.Length(max=80)),
-            vol.Optional("installed_date", default=""): vol.All(str, vol.Length(max=10)),
-            vol.Optional("notes", default=""): vol.All(str, vol.Length(max=500)),
-            vol.Optional("task_ids", default=[]): cv.multi_select(task_options),
+            vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
+                str, vol.Length(max=80)
+            ),
+            vol.Optional("model", default=current.get("model", "")): vol.All(
+                str, vol.Length(max=80)
+            ),
+            vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
+                str, vol.Length(max=10)
+            ),
+            vol.Optional("notes", default=current.get("notes", "")): vol.All(
+                str, vol.Length(max=500)
+            ),
+            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(
+                task_options
+            ),
         })
