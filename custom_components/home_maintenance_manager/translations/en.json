@@ -17,8 +17,16 @@
   "options": {
     "step": {
       "init": {
+        "title": "Home Maintenance Manager",
+        "description": "Manage existing maintenance tasks or add a custom task.",
+        "menu_options": {
+          "manage_tasks": "Manage enabled tasks and intervals",
+          "add_custom_task": "Add a custom maintenance task"
+        }
+      },
+      "manage_tasks": {
         "title": "Maintenance task selection",
-        "description": "Select the built-in tasks to track. You can configure intervals in the next step.",
+        "description": "Select the built-in and custom tasks to track. Configure intervals in the next step.",
         "data": {
           "enabled_task_ids": "Enabled maintenance tasks"
         }
@@ -36,7 +44,20 @@
           "interval_clean_dryer_vent": "Clean clothes dryer vent (days)",
           "interval_inspect_sump_pump": "Test sump pump (days)"
         }
+      },
+      "add_custom_task": {
+        "title": "Add a custom maintenance task",
+        "description": "Create a recurring task for something not included in the built-in library.",
+        "data": {
+          "name": "Task name",
+          "category": "Category",
+          "description": "Description",
+          "interval_days": "Repeat every (days)"
+        }
       }
+    },
+    "error": {
+      "duplicate_task": "A task with this name already exists. Choose a different name."
     }
   }
 }
