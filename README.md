@@ -30,7 +30,6 @@ Equipment can be added, edited, and removed through the integration options flow
 - Individual reminders and a configurable due-task summary.
 - CSV and JSON history exports.
 - A companion Lovelace dashboard card.
-- Equipment management through the options flow, including editing metadata, changing task associations, and removing equipment records.
 
 ## Installation
 
