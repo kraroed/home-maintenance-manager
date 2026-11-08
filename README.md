@@ -42,9 +42,26 @@ Open **Configure → Configure maintenance notifications** to enable individual 
 
 Call **`home_maintenance_manager.export_history`** from Developer Tools → Actions, or use it in an automation. Choose `csv`, `json`, or `both` (the default). The integration writes the files under `/config/www/home_maintenance_manager/<entry_id>/` and creates a persistent notification with links to open each export through Home Assistant. CSV includes one row per completion; JSON includes the full completion records and property name. Export files are overwritten by the next export in the same format.
 
-## Planned capabilities
+## Lovelace dashboard card
 
-- A companion Lovelace dashboard card.
+The repository includes a companion card at `www/home-maintenance-manager-card.js`. The card discovers this integration's task, summary, equipment, and completion-button entities by their attributes, so you do not need to enter individual entity IDs.
+
+### Install the card
+
+1. Copy `www/home-maintenance-manager-card.js` from this repository into your Home Assistant `/config/www/` folder.
+2. In Settings → Dashboards → Resources, add `/local/home-maintenance-manager-card.js` as a JavaScript module. If Resources is not visible, enable Advanced Mode in your user profile.
+3. Add a Manual card to a dashboard and use:
+
+```yaml
+type: custom:home-maintenance-manager-card
+title: Home Maintenance
+show_equipment: true
+show_history: true
+```
+
+The card shows active-task totals, overdue and due-today counts, upcoming work, equipment records, and completion-history count. Use the filters to narrow the task list. The **Mark complete** action calls the integration's existing task completion button, recording the completion and restarting that task's schedule.
+
+After updating the JavaScript file, refresh the browser or clear its frontend cache if the old card remains loaded. The card is a separate manual frontend resource; installing the HACS integration does not automatically copy the JavaScript file into `/config/www/`.
 
 ## Installation
 
