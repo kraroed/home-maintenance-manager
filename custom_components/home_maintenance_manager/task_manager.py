@@ -34,9 +34,7 @@ def _next_season_due(task, reference, include_active=False, settings=None):
     if include_active:
         for season in season_keys:
             window = windows.get(season)
-            if window and _season_contains(
-                local_day, window["start"], window["end"]
-            ):
+            if window and _season_contains(local_day, window["start"], window["end"]):
                 return reference.isoformat()
 
     candidates = []
@@ -62,10 +60,14 @@ def _next_season_due(task, reference, include_active=False, settings=None):
 
 
 class TaskManager:
-    def __init__(self, hass, entry_id, enabled_ids, task_intervals=None, custom_tasks=None):
+    def __init__(
+        self, hass, entry_id, enabled_ids, task_intervals=None,
+        custom_tasks=None, equipment_records=None
+    ):
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
         self.library.update({item["task_id"]: deepcopy(item) for item in (custom_tasks or [])})
+        self.equipment_records = equipment_records or []
         self.data = None
         self.enabled_ids = set(enabled_ids)
         self.task_intervals = task_intervals or {}
@@ -82,11 +84,13 @@ class TaskManager:
         self.data = await self.storage.async_load()
         now = dt_util.utcnow()
 
-        # Keep records for disabled tasks so their permanent history is retained.
+        for record in self.equipment_records:
+            equipment_id = record["equipment_id"]
+            self.data["equipment"][equipment_id] = deepcopy(record)
+
         for task_id, task in self.data["tasks"].items():
             task["enabled"] = task_id in self.enabled_ids
 
-        # Create records only for tasks the user has selected.
         for task_id in self.enabled_ids:
             definition = self.library.get(task_id)
             if definition is None:
@@ -100,6 +104,7 @@ class TaskManager:
                     "last_completed": None,
                     "next_due": None,
                     "equipment_id": None,
+                    "equipment_ids": [],
                     "notes": "",
                     "created_at": now.isoformat(),
                 }
@@ -118,11 +123,19 @@ class TaskManager:
                         if anchor_dt is None:
                             anchor_dt = now
                         task["next_due"] = (anchor_dt + timedelta(days=configured_interval)).isoformat()
-                # Add newly introduced library metadata without overwriting user settings.
                 for key, value in definition.items():
                     task.setdefault(key, deepcopy(value))
                 if task.get("schedule_type") == "seasonal" and not task.get("last_completed"):
                     task["next_due"] = self._initial_due(task, now)
+
+        # Apply equipment links from the configuration options to task records.
+        links = {}
+        for equipment in self.data["equipment"].values():
+            for task_id in equipment.get("task_ids", []):
+                links.setdefault(task_id, []).append(equipment["equipment_id"])
+        for task_id, task in self.data["tasks"].items():
+            task["equipment_ids"] = links.get(task_id, [])
+            task["equipment_id"] = task["equipment_ids"][0] if task["equipment_ids"] else None
 
         await self.async_save()
 
@@ -159,15 +172,10 @@ class TaskManager:
         now = dt_util.utcnow()
         previous_due = task.get("next_due")
         if task.get("schedule_type") == "seasonal":
-            next_due_value = _next_season_due(
-                task, now, settings=self.data["settings"]
-            )
+            next_due_value = _next_season_due(task, now, settings=self.data["settings"])
         else:
             interval = int(task.get("configured_interval_days") or 0)
-            next_due_value = (
-                (now + timedelta(days=interval)).isoformat()
-                if interval > 0 else None
-            )
+            next_due_value = (now + timedelta(days=interval)).isoformat() if interval > 0 else None
 
         self.data["history"].append({
             "history_id": f"{task_id}:{now.isoformat()}",
@@ -177,6 +185,7 @@ class TaskManager:
             "previous_due": previous_due,
             "next_due": next_due_value,
             "notes": notes,
+            "equipment_ids": task.get("equipment_ids", []),
         })
         task["last_completed"] = now.isoformat()
         task["next_due"] = next_due_value
@@ -193,6 +202,8 @@ class TaskManager:
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
         return {
             "tasks": tasks,
+            "equipment": list(self.data.get("equipment", {}).values()),
+            "equipment_count": len(self.data.get("equipment", {})),
             "total": len(enabled_tasks),
             "overdue": sum(t["status"] == "overdue" for t in enabled_tasks),
             "due_today": sum(t["status"] == "due_today" for t in enabled_tasks),
