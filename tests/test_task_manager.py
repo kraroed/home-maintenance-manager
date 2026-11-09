@@ -50,8 +50,6 @@ async def test_completion_resets_interval_and_preserves_history(hass):
     await manager.async_complete_task(
         "test_interval_task",
         notes="Completed in regression test",
-        labor_cost=12.5,
-        parts_cost=7.5,
     )
 
     task = manager.data["tasks"]["test_interval_task"]
@@ -59,9 +57,7 @@ async def test_completion_resets_interval_and_preserves_history(hass):
     assert task["last_completed"] == record["completed_at"]
     assert task["next_due"] == record["next_due"]
     assert record["notes"] == "Completed in regression test"
-    assert record["labor_cost"] == 12.5
-    assert record["parts_cost"] == 7.5
-    assert record["total_cost"] == 20.0
+    assert not {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"} & record.keys()
 
 
 @pytest.mark.asyncio
