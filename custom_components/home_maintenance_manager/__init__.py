@@ -10,11 +10,11 @@ from .task_manager import TaskManager
 
 
 async def async_setup(hass, config):
-    await async_setup_history_export(hass)
     return True
 
 
 async def async_setup_entry(hass, entry):
+    await async_setup_history_export(hass)
     enabled_task_ids = entry.options.get(
         CONF_ENABLED_TASK_IDS,
         entry.data.get(CONF_ENABLED_TASK_IDS, []),
