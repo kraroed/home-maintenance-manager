@@ -374,6 +374,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             interval = int(user_input["interval_days"])
             annual_month = int(user_input["annual_month"])
             annual_day = int(user_input["annual_day"])
+            monthly_week = user_input["monthly_week"]
+            monthly_weekday = int(user_input["monthly_weekday"])
             if schedule_type == "annual":
                 try:
                     date(2000, annual_month, annual_day)
