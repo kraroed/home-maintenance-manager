@@ -40,8 +40,8 @@ def _build_payload(entry_data):
         "schema_version": BACKUP_SCHEMA_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "property_name": entry_data.get("property_name", entry.title),
-        "entry_data": deepcopy(entry.data),
-        "options": deepcopy(entry.options),
+        "entry_data": deepcopy(dict(entry.data)),
+        "options": deepcopy(dict(entry.options)),
         "data": deepcopy(manager.data),
     }
 
