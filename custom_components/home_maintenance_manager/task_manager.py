@@ -134,7 +134,11 @@ class TaskManager:
                         task[key] = deepcopy(value)
                     else:
                         task.setdefault(key, deepcopy(value))
-                if task.get("schedule_type") == "seasonal" and not task.get("last_completed"):
+                if (
+                    task.get("schedule_type") == "seasonal"
+                    and not task.get("last_completed")
+                    and not task.get("next_due")
+                ):
                     task["next_due"] = self._initial_due(task, now)
 
         # Apply equipment links from the configuration options to task records.
