@@ -431,6 +431,14 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             for task_id in enabled if task_id in library
         ]
         if user_input is not None:
+            try:
+                _validate_optional_iso_date(user_input.get("installed_date", "").strip())
+            except vol.Invalid:
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"installed_date": "invalid_date"},
+                )
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
             equipment_id = f"equipment_{slug}"
@@ -509,6 +517,14 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             for task_id in enabled if task_id in library
         ]
         if user_input is not None:
+            try:
+                _validate_optional_iso_date(user_input.get("installed_date", "").strip())
+            except vol.Invalid:
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"installed_date": "invalid_date"},
+                )
             updated = {
                 **current,
                 "name": user_input["name"].strip(),
@@ -595,7 +611,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 str, vol.Length(max=80)
             ),
             vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
-                str, vol.Length(max=10), _validate_optional_iso_date
+                str, vol.Length(max=10), vol.Match(r"^$|^\\d{4}-\\d{2}-\\d{2}$")
             ),
             vol.Optional("notes", default=current.get("notes", "")): vol.All(
                 str, vol.Length(max=500)
