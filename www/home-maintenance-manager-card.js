@@ -11,7 +11,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     };
     if (this._filter === undefined) this._filter = "all";
     if (this._category === undefined) this._category = "all";
-    this._equipmentTask = null;
+    if (this._equipmentTask === undefined) this._equipmentTask = null;
+    if (this._detailTaskKey === undefined) this._detailTaskKey = null;
     this.render();
   }
 
@@ -92,26 +93,59 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     })[status] || status;
   }
 
-  _renderTask(item) {
+  _renderTask(item, equipment) {
     const state = item.state;
     const attrs = state.attributes || {};
     const name = (attrs.friendly_name || state.entity_id).replace(/ Status$/, "");
     const status = state.state;
+    const key = `${attrs.integration_instance || "default"}:${attrs.task_id}`;
     const action = item.button
       ? `<button class="complete" data-entity="${this._escape(item.button)}">Mark complete</button>`
       : '<span class="muted">No completion button</span>';
+    const details = this._detailTaskKey === key ? this._renderTaskDetails(item, equipment) : "";
+    const detailLabel = this._detailTaskKey === key ? "Hide details" : "Details";
     return `
       <article class="task">
         <div class="task-main">
           <div class="task-name">${this._escape(name)}</div>
           <div class="meta">${this._escape(attrs.category || "General")} · Due: ${this._escape(this._date(attrs.next_due))}</div>
           ${attrs.description ? `<div class="description">${this._escape(attrs.description)}</div>` : ""}
+          <button class="details-toggle" data-details="${this._escape(key)}">${detailLabel}</button>
+          ${details}
         </div>
         <div class="task-actions">
           <span class="status ${this._escape(status)}">${this._escape(this._statusLabel(status))}</span>
           ${action}
         </div>
       </article>`;
+  }
+
+  _renderTaskDetails(item, equipment) {
+    const attrs = item.state.attributes || {};
+    const linkedEquipment = equipment.filter((entry) =>
+      (attrs.equipment_ids || []).includes(entry.attributes.equipment_id) &&
+      (entry.attributes.integration_instance || "default") === (attrs.integration_instance || "default")
+    );
+    const equipmentNames = linkedEquipment.length
+      ? linkedEquipment.map((entry) => this._escape(entry.attributes.friendly_name || entry.state)).join(", ")
+      : "None linked";
+    const history = [...(attrs.completion_history || [])].reverse();
+    const historyMarkup = history.length ? history.slice(0, 5).map((record) => `
+      <div class="history-item">
+        <strong>${this._escape(this._date(record.completed_at))}</strong>
+        <span>Previous due: ${this._escape(this._date(record.previous_due))}</span>
+        ${record.notes ? `<div class="description">${this._escape(record.notes)}</div>` : ""}
+      </div>`).join("") : '<div class="muted">No completion history yet.</div>';
+    const interval = attrs.configured_interval_days
+      ? `${this._escape(attrs.configured_interval_days)} days`
+      : (attrs.schedule_type === "seasonal" ? `Seasonal (${this._escape((attrs.season_keys || []).join(", "))})` : "Not set");
+    return `<div class="task-details">
+      <div><span>Last completed</span><strong>${this._escape(this._date(attrs.last_completed))}</strong></div>
+      <div><span>Next due</span><strong>${this._escape(this._date(attrs.next_due))}</strong></div>
+      <div><span>Repeat interval</span><strong>${interval}</strong></div>
+      <div><span>Linked equipment</span><strong>${equipmentNames}</strong></div>
+      <div class="history-list"><strong>Recent completions</strong>${historyMarkup}</div>
+    </div>`;
   }
 
   render() {
@@ -129,7 +163,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     });
     const categoryMarkup = '<div class="category-filters"><button data-category="all" class="' + (this._category === "all" ? "selected" : "") + '">All categories</button>' + categories.map((category) => '<button data-category="' + this._escape(category) + '" class="' + (this._category === category ? "selected" : "") + '">' + this._escape(category) + '</button>').join("") + '</div>';
     const taskMarkup = filtered.length
-      ? filtered.map((item) => this._renderTask(item)).join("")
+      ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
     const equipmentMarkup = equipment.length
       ? equipment.map((item) => {
@@ -170,6 +204,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .category-filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}.category-filters button,.equipment-task,.active-filter button{border:0;border-radius:16px;padding:6px 10px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer;font:inherit;font-size:.8rem}.equipment-task,.active-filter button{background:none;color:var(--primary-color);text-decoration:underline;padding:3px 5px}.active-filter{padding:0 16px 10px;font-size:.82rem;color:var(--secondary-text-color)}
         .tasks{padding:0 16px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--divider-color)}
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
+        .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
         .complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
@@ -184,6 +219,10 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     }));
     this.querySelectorAll("[data-category]").forEach((button) => button.addEventListener("click", () => {
       this._category = button.dataset.category;
+      this.render();
+    }));
+    this.querySelectorAll("[data-details]").forEach((button) => button.addEventListener("click", () => {
+      this._detailTaskKey = this._detailTaskKey === button.dataset.details ? null : button.dataset.details;
       this.render();
     }));
     this.querySelectorAll("[data-task-id]").forEach((button) => button.addEventListener("click", () => {
