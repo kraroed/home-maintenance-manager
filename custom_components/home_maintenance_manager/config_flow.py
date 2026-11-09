@@ -261,7 +261,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "recommended_interval_days": interval,
                 "priority": "normal",
                 "requires_equipment": False,
-                "recommendation_note": "Custom task created by the user.",\n                "how_to_inspect": [line.strip() for line in user_input.get("how_to_inspect", "").splitlines() if line.strip()],\n                "what_to_look_for": [line.strip() for line in user_input.get("what_to_look_for", "").splitlines() if line.strip()],\n                "what_to_do_if_issue": user_input.get("what_to_do_if_issue", "").strip(),\n                "safety_notes": user_input.get("safety_notes", "").strip(),
+                "recommendation_note": "Custom task created by the user.",
+                "how_to_inspect": [line.strip() for line in user_input.get("how_to_inspect", "").splitlines() if line.strip()],
+                "what_to_look_for": [line.strip() for line in user_input.get("what_to_look_for", "").splitlines() if line.strip()],
+                "what_to_do_if_issue": user_input.get("what_to_do_if_issue", "").strip(),
+                "safety_notes": user_input.get("safety_notes", "").strip(),
                 "is_custom": True,
             }
             enabled = list(self.config_entry.options.get(
@@ -588,6 +592,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("description", default=current.get("description", "")): vol.All(
                 str, vol.Length(max=300)
             ),
+            vol.Optional("how_to_inspect", default="\n".join(current.get("how_to_inspect", []))): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("what_to_look_for", default="\n".join(current.get("what_to_look_for", []))): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("what_to_do_if_issue", default=current.get("what_to_do_if_issue", "")): vol.All(str, vol.Length(max=600)),
+            vol.Optional("safety_notes", default=current.get("safety_notes", "")): vol.All(str, vol.Length(max=600)),
             vol.Required(
                 "interval_days",
                 default=current.get("recommended_interval_days", 90),
