@@ -15,6 +15,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         SummarySensor(coordinator, "due_today", "Tasks due today", "due_today"),
         SummarySensor(coordinator, "due_soon", "Tasks due soon", "due_soon"),
         SummarySensor(coordinator, "history_count", "Completion history records", "history_count"),
+        SummarySensor(coordinator, "maintenance_cost", "Total maintenance cost", "maintenance_cost"),
         SummarySensor(coordinator, "equipment_count", "Equipment records", "equipment_count"),
     ]
     entities.extend(
