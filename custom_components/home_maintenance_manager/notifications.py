@@ -22,7 +22,7 @@ def _action_id(entry_id, task_id, action):
     return f"{ACTION_PREFIX}|{entry_id}|{task_id}|{action}"
 
 
-async def async_setup_notifications(hass, entry, manager, coordinator):
+async def async_setup_notifications(hass, entry, manager, coordinator=None):
     """Set up periodic reminders and handle mobile notification actions."""
     options = entry.options
     individual_enabled = options.get("individual_notifications_enabled", True)
@@ -30,6 +30,7 @@ async def async_setup_notifications(hass, entry, manager, coordinator):
     notify_target = options.get("notification_target", "").strip()
     lead_days = int(options.get("notification_lead_days", 7))
     summary_time = options.get("daily_summary_time", "08:00")
+    entry_id = getattr(entry, "entry_id", None)
 
     async def send_message(title, message, notification_id=None, data=None):
         if notify_target:
@@ -83,11 +84,11 @@ async def async_setup_notifications(hass, entry, manager, coordinator):
                     timing = f"due in {(due_date - today).days} day(s)"
 
                 action_data = None
-                if notify_target:
+                if notify_target and entry_id:
                     action_data = {
                         "actions": [
                             {
-                                "action": _action_id(entry.entry_id, task["task_id"], "complete"),
+                                "action": _action_id(entry_id, task["task_id"], "complete"),
                                 "title": "Mark complete",
                             },
                             {
@@ -146,7 +147,7 @@ async def async_setup_notifications(hass, entry, manager, coordinator):
         """Apply actions sent by a Home Assistant mobile app notification."""
         action = event.data.get("action", "")
         parts = action.split("|", 3)
-        if len(parts) != 4 or parts[0] != ACTION_PREFIX or parts[1] != entry.entry_id:
+        if len(parts) != 4 or parts[0] != ACTION_PREFIX or parts[1] != entry_id:
             return
         _, _, task_id, command = parts
         task = manager.data.get("tasks", {}).get(task_id)
@@ -160,7 +161,8 @@ async def async_setup_notifications(hass, entry, manager, coordinator):
 
         if command == "complete":
             await manager.async_complete_task(task_id)
-            await coordinator.async_request_refresh()
+            if coordinator is not None:
+                await coordinator.async_request_refresh()
         elif command in {"snooze_1d", "snooze_7d"}:
             days = 1 if command == "snooze_1d" else 7
             until = dt_util.now() + timedelta(days=days)
@@ -172,8 +174,9 @@ async def async_setup_notifications(hass, entry, manager, coordinator):
     cancel_interval = async_track_time_interval(
         hass, check_notifications, timedelta(minutes=1)
     )
-    cancel_actions = hass.bus.async_listen(
-        "mobile_app_notification_action", handle_mobile_action
+    cancel_actions = (
+        hass.bus.async_listen("mobile_app_notification_action", handle_mobile_action)
+        if entry_id else lambda: None
     )
     await check_notifications()
 
