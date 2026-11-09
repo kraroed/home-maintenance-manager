@@ -51,10 +51,27 @@ class MaintenanceStorage:
         if not isinstance(stored, dict):
             return data
 
-        for key in ("tasks", "equipment", "history"):
-            value = stored.get(key)
-            if isinstance(value, type(data[key])):
-                data[key] = value
+        stored_tasks = stored.get("tasks")
+        if isinstance(stored_tasks, dict):
+            data["tasks"] = {
+                task_id: task
+                for task_id, task in stored_tasks.items()
+                if isinstance(task_id, str) and isinstance(task, dict)
+            }
+
+        stored_equipment = stored.get("equipment")
+        if isinstance(stored_equipment, dict):
+            data["equipment"] = {
+                equipment_id: equipment
+                for equipment_id, equipment in stored_equipment.items()
+                if isinstance(equipment_id, str) and isinstance(equipment, dict)
+            }
+
+        stored_history = stored.get("history")
+        if isinstance(stored_history, list):
+            data["history"] = [
+                record for record in stored_history if isinstance(record, dict)
+            ]
 
         stored_notifications = stored.get("notification_state")
         if isinstance(stored_notifications, dict):
