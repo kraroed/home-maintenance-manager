@@ -44,12 +44,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
   }
 
-  _money(value) {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" })
-      .format(Number(value || 0));
-  }
-
-
   _isValidDateKey(value) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const date = new Date(`${value}T00:00:00.000Z`);
@@ -144,8 +138,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         <div class="history-record-heading"><strong>${this._escape(record.task_name)}</strong><span>${this._escape(this._date(record.completed_at))}</span></div>
         ${record.equipment_names?.length ? `<div class="history-meta">Equipment: ${this._escape(record.equipment_names.join(", "))}</div>` : ""}
         ${record.notes ? `<p>${this._escape(record.notes)}</p>` : ""}
-        <div class="history-costs">Labor: ${this._money(record.labor_cost)} · Parts: ${this._money(record.parts_cost)} · Total: <strong>${this._money(record.total_cost)}</strong></div>
-        ${(record.attachments || []).length ? `<div class="history-attachments">${record.attachments.map((url) => `<a href="${this._escape(url)}" target="_blank" rel="noopener noreferrer">View attachment</a>`).join(" · ")}</div>` : ""}
       </article>`).join("") : '<div class="empty">No completion records match these filters.</div>';
     return `<section class="history-view">
       <div class="history-controls">
@@ -261,8 +253,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         <strong>${this._escape(this._date(record.completed_at))}</strong>
         <span>Previous due: ${this._escape(this._date(record.previous_due))}</span>
         ${record.notes ? `<div class="description">${this._escape(record.notes)}</div>` : ""}
-        <span>Labor: ${this._money(record.labor_cost)} · Parts: ${this._money(record.parts_cost)} · Total: <strong>${this._money(record.total_cost)}</strong></span>
-        ${(record.attachments || []).length ? `<div class="history-attachments">${record.attachments.map((url) => `<a href="${this._escape(url)}" target="_blank" rel="noopener noreferrer">View attachment</a>`).join(" · ")}</div>` : ""}
       </div>`).join("") : '<div class="muted">No completion history yet.</div>';
     const interval = attrs.configured_interval_days
       ? `${this._escape(attrs.configured_interval_days)} days`
@@ -338,8 +328,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .category-filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}.category-filters button,.equipment-task,.active-filter button{border:0;border-radius:16px;padding:6px 10px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer;font:inherit;font-size:.8rem}.equipment-task,.active-filter button{background:none;color:var(--primary-color);text-decoration:underline;padding:3px 5px}.active-filter{padding:0 16px 10px;font-size:.82rem;color:var(--secondary-text-color)}
         .tasks{padding:0 16px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--divider-color)}
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
-        .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}.history-attachments{font-size:.8rem}.history-attachments a{color:var(--primary-color);margin-right:6px}
-        .history-view{padding:10px 16px 16px}.history-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}.history-controls>input,.history-controls label input{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--divider-color);border-radius:7px;padding:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.history-controls>input{grid-column:1/-1}.history-controls label{font-size:.78rem;color:var(--secondary-text-color)}.history-controls label input{display:block;margin-top:3px}.history-controls button{justify-self:start;border:0;background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:16px;padding:7px 12px;cursor:pointer}.history-result-count{font-size:.8rem;color:var(--secondary-text-color);padding:12px 0 4px}.history-record{border-top:1px solid var(--divider-color);padding:11px 0;font-size:.85rem}.history-record-heading{display:flex;justify-content:space-between;gap:8px}.history-record-heading span,.history-meta{color:var(--secondary-text-color);font-size:.8rem}.history-record p{margin:6px 0}.history-costs{font-size:.8rem}.history-note{font-size:.75rem;color:var(--secondary-text-color);margin-top:12px}
+        .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}
+        .history-view{padding:10px 16px 16px}.history-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}.history-controls>input,.history-controls label input{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--divider-color);border-radius:7px;padding:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.history-controls>input{grid-column:1/-1}.history-controls label{font-size:.78rem;color:var(--secondary-text-color)}.history-controls label input{display:block;margin-top:3px}.history-controls button{justify-self:start;border:0;background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:16px;padding:7px 12px;cursor:pointer}.history-result-count{font-size:.8rem;color:var(--secondary-text-color);padding:12px 0 4px}.history-record{border-top:1px solid var(--divider-color);padding:11px 0;font-size:.85rem}.history-record-heading{display:flex;justify-content:space-between;gap:8px}.history-record-heading span,.history-meta{color:var(--secondary-text-color);font-size:.8rem}.history-record p{margin:6px 0}.history-note{font-size:.75rem;color:var(--secondary-text-color);margin-top:12px}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
         .task-action-buttons{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.reschedule{border:1px solid var(--divider-color);border-radius:18px;padding:7px 10px;background:var(--card-background-color);color:var(--primary-color);font-size:.78rem;cursor:pointer}.complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
@@ -434,24 +424,12 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     this.querySelectorAll("[data-complete-task]").forEach((button) => button.addEventListener("click", async () => {
       const notes = window.prompt("Add completion notes (optional):", "");
       if (notes === null) return;
-      const attachments = window.prompt(
-        "Add photo or receipt URLs, one per line. Upload files to /config/www/ first and use /local/ paths. Leave blank if none.",
-        ""
-      );
-      if (attachments === null) return;
-      const laborCost = window.prompt("Labor or service cost in USD (optional):", "0");
-      if (laborCost === null) return;
-      const partsCost = window.prompt("Parts and materials cost in USD (optional):", "0");
-      if (partsCost === null) return;
       button.disabled = true;
       try {
         await this._hass.callService("home_maintenance_manager", "complete_task", {
           task_id: button.dataset.completeTask,
           integration_instance: button.dataset.instance,
           notes: notes.trim(),
-          attachments: attachments.trim(),
-          labor_cost: Number(laborCost || 0),
-          parts_cost: Number(partsCost || 0),
         });
       } finally {
         button.disabled = false;
