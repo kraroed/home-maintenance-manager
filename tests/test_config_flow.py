@@ -230,3 +230,62 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
     }
 
+@pytest.mark.asyncio
+async def test_remove_equipment_options_flow_removes_only_selected_equipment(
+    hass, enable_custom_integrations
+):
+    """Removing equipment leaves other equipment and unrelated options intact."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: ["clean_gutters"]},
+        options={
+            "equipment_records": [
+                {
+                    "equipment_id": "equipment_main_hvac",
+                    "name": "Main HVAC",
+                    "category": "HVAC",
+                    "task_ids": ["clean_gutters"],
+                },
+                {
+                    "equipment_id": "equipment_water_heater",
+                    "name": "Water Heater",
+                    "category": "plumbing",
+                    "task_ids": [],
+                },
+            ],
+            "notification_target": "notify.mobile_app_phone",
+            "task_intervals": {"clean_gutters": 120},
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"equipment_id": "equipment_main_hvac"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "remove_equipment"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "remove_equipment"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"confirm": True}
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["equipment_records"] == [
+        {
+            "equipment_id": "equipment_water_heater",
+            "name": "Water Heater",
+            "category": "plumbing",
+            "task_ids": [],
+        }
+    ]
+    assert result["data"]["notification_target"] == "notify.mobile_app_phone"
+    assert result["data"]["task_intervals"] == {"clean_gutters": 120}
+
