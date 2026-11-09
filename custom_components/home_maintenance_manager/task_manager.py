@@ -220,6 +220,8 @@ class TaskManager:
             raise ValueError(f"Maintenance task is disabled: {task_id}")
         try:
             selected_day = date.fromisoformat(due_date)
+            if selected_day.isoformat() != due_date:
+                raise ValueError("Due date must use YYYY-MM-DD format.")
         except (TypeError, ValueError) as err:
             raise ValueError("Due date must use YYYY-MM-DD format.") from err
         local_now = dt_util.now()
