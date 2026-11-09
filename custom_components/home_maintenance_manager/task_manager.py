@@ -150,16 +150,6 @@ class TaskManager:
             else:
                 task = self.data["tasks"][task_id]
                 task["enabled"] = True
-                configured_interval = self.task_intervals.get(task_id)
-                if configured_interval is not None and task.get("schedule_type") == "interval":
-                    configured_interval = int(configured_interval)
-                    if configured_interval != int(task.get("configured_interval_days") or 0):
-                        task["configured_interval_days"] = configured_interval
-                        anchor = task.get("last_completed") or task.get("created_at")
-                        anchor_dt = dt_util.parse_datetime(anchor) if anchor else now
-                        if anchor_dt is None:
-                            anchor_dt = now
-                        task["next_due"] = (anchor_dt + timedelta(days=configured_interval)).isoformat()
                 previous_schedule = (
                     task.get("schedule_type"),
                     task.get("annual_month"),
