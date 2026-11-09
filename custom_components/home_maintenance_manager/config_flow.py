@@ -348,6 +348,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "name": name,
                 "category": user_input["category"].strip().casefold() or "custom",
                 "description": user_input.get("description", "").strip(),
+                "how_to_inspect": [line.strip() for line in user_input.get("how_to_inspect", "").splitlines() if line.strip()],
+                "what_to_look_for": [line.strip() for line in user_input.get("what_to_look_for", "").splitlines() if line.strip()],
+                "what_to_do_if_issue": user_input.get("what_to_do_if_issue", "").strip(),
+                "safety_notes": user_input.get("safety_notes", "").strip(),
                 "recommended_interval_days": interval,
             }
             custom_tasks = [
