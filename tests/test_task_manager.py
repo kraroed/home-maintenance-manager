@@ -1,5 +1,5 @@
 """Regression tests for maintenance task scheduling and history."""
-from datetime import timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -189,3 +189,68 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
     assert edited_task["next_due"] != original_next_due
     assert reloaded_manager.data["history"][-1]["task_id"] == "custom_filter_replacement"
     assert reloaded_manager.data["history"][-1]["task_name"] == "Replace HVAC filter"
+
+@pytest.mark.asyncio
+async def test_seasonal_completion_schedules_the_next_configured_window(
+    hass, monkeypatch
+):
+    """Completing a seasonal task schedules its next season, not a fixed interval."""
+    task_definition = {
+        "task_id": "test_spring_task",
+        "name": "Test spring task",
+        "category": "Testing",
+        "description": "A seasonal task used by automated tests.",
+        "schedule_type": "seasonal",
+        "season_keys": ["spring"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        "seasonal-completion-test",
+        ["test_spring_task"],
+        custom_tasks=[task_definition],
+    )
+    await manager.async_load()
+
+    fixed_now = datetime(2026, 6, 15, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+
+    await manager.async_complete_task("test_spring_task")
+
+    task = manager.data["tasks"]["test_spring_task"]
+    record = manager.data["history"][-1]
+    next_due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+
+    assert task["last_completed"] == fixed_now.isoformat()
+    assert next_due.date() == date(2027, 3, 15)
+    assert record["next_due"] == task["next_due"]
+
+
+@pytest.mark.asyncio
+async def test_completion_rejects_disabled_task_without_recording_history(hass):
+    """Disabled tasks cannot be completed through the task manager."""
+    manager = TaskManager(hass, "disabled-completion-test", ["clean_gutters"])
+    await manager.async_load()
+    task = manager.data["tasks"]["clean_gutters"]
+    previous_due = task["next_due"]
+    task["enabled"] = False
+
+    with pytest.raises(ValueError, match="disabled"):
+        await manager.async_complete_task("clean_gutters")
+
+    assert task["next_due"] == previous_due
+    assert task.get("last_completed") is None
+    assert manager.data["history"] == []
+
+
+@pytest.mark.asyncio
+async def test_completion_rejects_unknown_task_without_recording_history(hass):
+    """Unknown task IDs do not create completion records."""
+    manager = TaskManager(hass, "unknown-completion-test", [])
+    await manager.async_load()
+
+    with pytest.raises(ValueError, match="Unknown maintenance task"):
+        await manager.async_complete_task("does_not_exist")
+
+    assert manager.data["history"] == []
+
