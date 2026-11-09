@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.util import dt as dt_util
 
@@ -909,3 +910,56 @@ async def test_equipment_lifespan_sets_only_designated_replacement_task_due(hass
     assert replacement_due.startswith("2026-11-09")
     routine_due = manager.data["tasks"]["test_test_detector"]["next_due"]
     assert not routine_due.startswith("2026-11-09")
+
+@pytest.mark.asyncio
+async def test_replacement_completion_resets_equipment_lifespan_and_keeps_history(hass):
+    """Completing the designated replacement resets its installation date."""
+    task_definition = {
+        "task_id": "test_replace_detector",
+        "name": "Replace smoke detector",
+        "category": "Safety",
+        "description": "Replace the detector.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 3650,
+    }
+    record = {
+        "equipment_id": "smoke_detector_hall",
+        "name": "Hall smoke detector",
+        "category": "Safety",
+        "installed_date": "2016-11-09",
+        "lifespan_months": 120,
+        "replacement_task_id": "test_replace_detector",
+        "task_ids": ["test_replace_detector"],
+    }
+    entry = MockConfigEntry(
+        domain="home_maintenance_manager",
+        title="Primary Residence",
+        data={"property_name": "Primary Residence"},
+        options={"equipment_records": [record]},
+    )
+    entry.add_to_hass(hass)
+    manager = TaskManager(
+        hass,
+        entry.entry_id,
+        ["test_replace_detector"],
+        custom_tasks=[task_definition],
+        equipment_records=[record],
+    )
+    await manager.async_load()
+    old_due = manager.data["tasks"]["test_replace_detector"]["next_due"]
+
+    await manager.async_complete_task("test_replace_detector", notes="New detector installed")
+
+    today = dt_util.now().date().isoformat()
+    updated = entry.options["equipment_records"][0]
+    assert updated["installed_date"] == today
+    assert manager.data["equipment"]["smoke_detector_hall"]["replacement_due"] == (
+        _add_months(date.fromisoformat(today), 120).isoformat()
+    )
+    history = manager.data["history"][-1]
+    assert history["previous_due"] == old_due
+    assert history["notes"] == "New detector installed"
+    assert history["equipment_ids"] == ["smoke_detector_hall"]
+    assert manager.data["tasks"]["test_replace_detector"]["next_due"].startswith(
+        _add_months(date.fromisoformat(today), 120).isoformat()
+    )
