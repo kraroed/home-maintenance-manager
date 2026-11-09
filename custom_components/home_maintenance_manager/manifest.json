@@ -6,6 +6,7 @@
   ],
   "config_flow": true,
   "documentation": "https://github.com/kraroed/home-maintenance-manager",
+  "issue_tracker": "https://github.com/kraroed/home-maintenance-manager/issues",
   "iot_class": "local_push",
   "version": "0.1.0"
 }
