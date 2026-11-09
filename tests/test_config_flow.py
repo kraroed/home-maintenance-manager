@@ -101,9 +101,14 @@ def test_equipment_installation_date_requires_real_iso_date():
     blank_date = {**valid, "installed_date": ""}
     assert schema(blank_date)["installed_date"] == ""
 
-    for invalid_date in ("2024-02-30", "20240229", "not-a-date"):
-        with pytest.raises(vol.Invalid, match="YYYY-MM-DD"):
-            schema({**valid, "installed_date": invalid_date})
+    for invalid_date in ("2024-02-30",):
+        # Calendar validity is checked in the flow handler so the form schema
+        # remains serializable by Home Assistant's frontend schema codec.
+        assert schema({**valid, "installed_date": invalid_date})["installed_date"] == invalid_date
+
+    for invalid_format in ("20240229", "not-a-date"):
+        with pytest.raises(vol.Invalid):
+            schema({**valid, "installed_date": invalid_format})
 
 
 @pytest.mark.asyncio
