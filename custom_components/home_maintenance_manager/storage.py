@@ -1,6 +1,19 @@
+from datetime import date
+
 from homeassistant.helpers.storage import Store
 
 from .const import STORAGE_VERSION
+
+
+def _valid_month_day(value):
+    """Return whether a value is a valid canonical MM-DD date."""
+    if not isinstance(value, str) or len(value) != 5:
+        return False
+    try:
+        month, day = (int(part) for part in value.split("-"))
+        return date(2000, month, day).strftime("%m-%d") == value
+    except (TypeError, ValueError):
+        return False
 
 
 def default_data():
@@ -62,7 +75,7 @@ class MaintenanceStorage:
                 "individual_notifications_enabled",
             ):
                 value = stored_settings.get(key)
-                if isinstance(value, type(settings[key])):
+                if type(value) is type(settings[key]):
                     settings[key] = value
 
             season_windows = stored_settings.get("season_windows")
@@ -73,9 +86,9 @@ class MaintenanceStorage:
                         continue
                     start = window.get("start")
                     end = window.get("end")
-                    if isinstance(start, str):
+                    if _valid_month_day(start):
                         defaults["start"] = start
-                    if isinstance(end, str):
+                    if _valid_month_day(end):
                         defaults["end"] = end
 
         return data
