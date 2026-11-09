@@ -28,8 +28,8 @@ def _entry_data(instance_id="property-one", task_ids=None):
 
 
 @pytest.mark.asyncio
-async def test_complete_task_service_forwards_completion_details(hass):
-    """Completion service parses attachments and forwards optional cost fields."""
+async def test_complete_task_service_forwards_notes_only(hass):
+    """Completion service forwards notes without attachment or cost tracking."""
     entry_data = _entry_data()
     hass.data[DOMAIN] = {"property-one": entry_data}
     await async_setup_completion_service(hass)
@@ -40,38 +40,28 @@ async def test_complete_task_service_forwards_completion_details(hass):
         {
             "task_id": "clean_gutters",
             "notes": "Cleared leaves and checked downspouts",
-            "attachments": " /local/gutters-before.jpg\nhttps://example.com/after.jpg ",
-            "labor_cost": "35.50",
-            "parts_cost": "12.25",
         },
         blocking=True,
     )
 
     entry_data["manager"].async_complete_task.assert_awaited_once_with(
-        "clean_gutters",
-        "Cleared leaves and checked downspouts",
-        ["/local/gutters-before.jpg", "https://example.com/after.jpg"],
-        35.5,
-        12.25,
+        "clean_gutters", "Cleared leaves and checked downspouts"
     )
     entry_data["coordinator"].async_request_refresh.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_complete_task_service_rejects_invalid_attachment(hass):
-    """Only Home Assistant local paths and HTTP(S) attachment URLs are accepted."""
+async def test_complete_task_service_rejects_removed_tracking_fields(hass):
+    """The simplified completion service no longer accepts attachment or cost fields."""
     entry_data = _entry_data()
     hass.data[DOMAIN] = {"property-one": entry_data}
     await async_setup_completion_service(hass)
 
-    with pytest.raises(HomeAssistantError, match="Attachments must be HTTP"):
+    with pytest.raises(HomeAssistantError):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_COMPLETE_TASK,
-            {
-                "task_id": "clean_gutters",
-                "attachments": "file:///etc/passwd",
-            },
+            {"task_id": "clean_gutters", "attachments": "/local/receipt.jpg"},
             blocking=True,
         )
 
