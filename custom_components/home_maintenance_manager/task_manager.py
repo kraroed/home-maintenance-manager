@@ -88,6 +88,7 @@ def _next_monthly_due(task, reference, include_active=False):
         return dt_util.as_utc(local_due).isoformat()
     return None
 
+
 def _next_season_due(task, reference, include_active=False, settings=None):
     settings = settings or {}
     windows = settings.get("season_windows", {})
