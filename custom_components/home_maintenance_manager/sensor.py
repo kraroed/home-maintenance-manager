@@ -89,6 +89,9 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "next_due": task.get("next_due"),
             "equipment_id": task.get("equipment_id"),
             "equipment_ids": task.get("equipment_ids", []),
+            "completion_history": self.coordinator.data.get("history_by_task", {}).get(
+                self.task_id, []
+            ),
         }
 
 
