@@ -1,3 +1,4 @@
+from .backup import async_setup_backup_services, async_unload_backup_services
 from .completion_service import (
     async_setup_completion_service,
     async_unload_completion_service,
@@ -45,9 +46,11 @@ async def async_setup_entry(hass, entry):
         "coordinator": coordinator,
         "cancel_notifications": cancel_notifications,
         "property_name": entry.data.get("property_name", entry.title),
+        "config_entry": entry,
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_setup_completion_service(hass)
+    await async_setup_backup_services(hass)
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     entry.async_on_unload(cancel_notifications)
@@ -65,4 +68,5 @@ async def async_unload_entry(hass, entry):
         if not hass.data[DOMAIN]:
             await async_unload_history_export(hass)
             await async_unload_completion_service(hass)
+            await async_unload_backup_services(hass)
     return unload_ok
