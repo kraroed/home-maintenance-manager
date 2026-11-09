@@ -39,11 +39,14 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return {
+        attributes = {
             "summary_key": self.value_key,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
         }
+        if self.value_key == "maintenance_cost":
+            attributes["cost_breakdown"] = self.coordinator.data.get("cost_breakdown", {})
+        return attributes
 
     @property
     def native_value(self):
