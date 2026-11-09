@@ -77,3 +77,41 @@ async def test_unloading_final_config_entry_cleans_up_services(
     assert not hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK)
     assert not hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
     assert not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
+
+@pytest.mark.asyncio
+async def test_unloading_one_property_keeps_services_for_remaining_property(
+    hass, enable_custom_integrations
+):
+    """Shared services remain registered until every property is unloaded."""
+    entries = [
+        MockConfigEntry(
+            domain=DOMAIN,
+            title=title,
+            data={
+                "property_name": title,
+                CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+            },
+            options={},
+        )
+        for title in ("Primary Residence", "Vacation Home")
+    ]
+    for entry in entries:
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+
+    assert len(hass.data[DOMAIN]) == 2
+
+    assert await hass.config_entries.async_unload(entries[0].entry_id)
+    assert entries[0].entry_id not in hass.data[DOMAIN]
+    assert entries[1].entry_id in hass.data[DOMAIN]
+    assert hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK)
+    assert hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
+    assert hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
+    assert await hass.config_entries.async_unload(entries[1].entry_id)
+    assert not hass.data.get(DOMAIN)
+    assert not hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK)
+    assert not hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
+    assert not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
