@@ -378,6 +378,10 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "schedule_type": "interval",
         "recommended_interval_days": 90,
         "is_custom": True,
+        "how_to_inspect": [],
+        "what_to_look_for": [],
+        "what_to_do_if_issue": "",
+        "safety_notes": "",
     }
     entry = MockConfigEntry(
         domain=DOMAIN,
