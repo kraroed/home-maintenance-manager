@@ -20,16 +20,17 @@ def _write_history_files(directory, history, property_name, export_format):
         filename = "maintenance_history.csv"
         fields = [
             "history_id", "task_id", "task_name", "completed_at",
-            "previous_due", "next_due", "notes", "attachments",
-            "labor_cost", "parts_cost", "total_cost", "currency", "equipment_ids",
+            "previous_due", "next_due", "notes", "equipment_ids",
         ]
         with (directory / filename).open("w", encoding="utf-8-sig", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
             writer.writeheader()
             for record in history:
-                row = dict(record)
+                row = {
+                    key: value for key, value in record.items()
+                    if key not in {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"}
+                }
                 row["equipment_ids"] = json.dumps(row.get("equipment_ids", []))
-                row["attachments"] = json.dumps(row.get("attachments", []))
                 writer.writerow(row)
         filenames.append(filename)
     if export_format in ("json", "both"):
@@ -37,7 +38,13 @@ def _write_history_files(directory, history, property_name, export_format):
         payload = {
             "property_name": property_name,
             "history_count": len(history),
-            "history": history,
+            "history": [
+                {
+                    key: value for key, value in record.items()
+                    if key not in {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"}
+                }
+                for record in history
+            ],
         }
         with (directory / filename).open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, indent=2)
