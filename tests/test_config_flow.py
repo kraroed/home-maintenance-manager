@@ -13,7 +13,7 @@ from custom_components.home_maintenance_manager.const import (
 
 
 @pytest.mark.asyncio
-async def test_user_flow_creates_property_with_selected_tasks(hass):
+async def test_user_flow_creates_property_with_selected_tasks(hass, enable_custom_integrations):
     """The initial setup flow stores the property and selected task IDs."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
@@ -37,7 +37,7 @@ async def test_user_flow_creates_property_with_selected_tasks(hass):
 
 
 @pytest.mark.asyncio
-async def test_add_equipment_options_flow_saves_task_associations(hass):
+async def test_add_equipment_options_flow_saves_task_associations(hass, enable_custom_integrations):
     """Adding equipment through options stores the selected task associations."""
     entry = MockConfigEntry(
         domain=DOMAIN,
