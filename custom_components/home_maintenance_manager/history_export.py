@@ -75,14 +75,15 @@ async def async_setup_history_export(hass):
                 notification_id=f"{DOMAIN}_history_export",
             )
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_EXPORT_HISTORY,
-        handle_export,
-        schema=vol.Schema({
-            vol.Optional("format", default="both"): vol.In(["csv", "json", "both"]),
-        }),
-    )
+    if not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY):
+            hass.services.async_register(
+                DOMAIN,
+                SERVICE_EXPORT_HISTORY,
+            handle_export,
+            schema=vol.Schema({
+                vol.Optional("format", default="both"): vol.In(["csv", "json", "both"]),
+            }),
+        )
 
 async def async_unload_history_export(hass):
     """Remove the registered export service."""
