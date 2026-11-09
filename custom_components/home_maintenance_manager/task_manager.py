@@ -150,19 +150,15 @@ class TaskManager:
             else:
                 task = self.data["tasks"][task_id]
                 task["enabled"] = True
-                configured_interval = self.task_intervals.get(task_id)
-                if configured_interval is not None and task.get("schedule_type") == "interval":
-                    configured_interval = int(configured_interval)
-                    if configured_interval != int(task.get("configured_interval_days") or 0):
-                        task["configured_interval_days"] = configured_interval
-                        anchor = task.get("last_completed") or task.get("created_at")
-                        anchor_dt = dt_util.parse_datetime(anchor) if anchor else now
-                        if anchor_dt is None:
-                            anchor_dt = now
-                        task["next_due"] = (anchor_dt + timedelta(days=configured_interval)).isoformat()
+                previous_schedule = (
+                    task.get("schedule_type"),
+                    task.get("annual_month"),
+                    task.get("annual_day"),
+                )
                 for key, value in definition.items():
                     if task.get("is_custom") and key in {
                         "name", "category", "description",
+                        "schedule_type", "annual_month", "annual_day",
                         "recommended_interval_days", "recommendation_note",
                         "how_to_inspect", "what_to_look_for",
                         "what_to_do_if_issue", "safety_notes",
@@ -170,6 +166,35 @@ class TaskManager:
                         task[key] = deepcopy(value)
                     else:
                         task.setdefault(key, deepcopy(value))
+
+                if task.get("schedule_type") != "annual":
+                    task.pop("annual_month", None)
+                    task.pop("annual_day", None)
+                current_schedule = (
+                    task.get("schedule_type"),
+                    task.get("annual_month"),
+                    task.get("annual_day"),
+                )
+                schedule_changed = previous_schedule != current_schedule
+                configured_interval = self.task_intervals.get(task_id)
+                interval_changed = False
+                if configured_interval is not None and task.get("schedule_type") == "interval":
+                    configured_interval = int(configured_interval)
+                    if configured_interval != int(task.get("configured_interval_days") or 0):
+                        task["configured_interval_days"] = configured_interval
+                        interval_changed = True
+
+                if schedule_changed:
+                    task["next_due"] = self._initial_due(task, now)
+                elif interval_changed:
+                    anchor = task.get("last_completed") or task.get("created_at")
+                    anchor_dt = dt_util.parse_datetime(anchor) if anchor else now
+                    if anchor_dt is None:
+                        anchor_dt = now
+                    task["next_due"] = (
+                        anchor_dt + timedelta(days=configured_interval)
+                    ).isoformat()
+
                 if (
                     task.get("schedule_type") == "seasonal"
                     and not task.get("last_completed")

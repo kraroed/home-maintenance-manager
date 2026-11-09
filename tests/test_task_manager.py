@@ -714,3 +714,54 @@ async def test_annual_february_29_skips_non_leap_years(hass, monkeypatch):
         dt_util.parse_datetime(manager.data["tasks"]["test_annual_leap_day"]["next_due"])
     )
     assert due.date() == date(2028, 2, 29)
+
+
+@pytest.mark.asyncio
+async def test_custom_task_schedule_change_recalculates_due_date_and_preserves_history(
+    hass, monkeypatch
+):
+    """Changing a custom task to annual recalculates due date without losing history."""
+    fixed_now = datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_id = "custom_annual_transition"
+    interval_definition = {
+        "task_id": task_id,
+        "name": "Annual transition task",
+        "category": "Testing",
+        "description": "A custom task before its schedule changes.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+        "is_custom": True,
+    }
+    manager = TaskManager(
+        hass,
+        "custom-schedule-transition-test",
+        [task_id],
+        task_intervals={task_id: 90},
+        custom_tasks=[interval_definition],
+    )
+    await manager.async_load()
+    await manager.async_complete_task(task_id)
+    history_before = list(manager.data["history"])
+
+    annual_definition = {
+        **interval_definition,
+        "schedule_type": "annual",
+        "annual_month": 10,
+        "annual_day": 15,
+    }
+    updated_manager = TaskManager(
+        hass,
+        "custom-schedule-transition-test",
+        [task_id],
+        custom_tasks=[annual_definition],
+    )
+    await updated_manager.async_load()
+
+    task = updated_manager.data["tasks"][task_id]
+    due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert task["schedule_type"] == "annual"
+    assert task["annual_month"] == 10
+    assert task["annual_day"] == 15
+    assert due.date() == date(2026, 10, 15)
+    assert updated_manager.data["history"] == history_before
