@@ -261,7 +261,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "recommended_interval_days": interval,
                 "priority": "normal",
                 "requires_equipment": False,
-                "recommendation_note": "Custom task created by the user.",
+                "recommendation_note": "Custom task created by the user.",\n                "how_to_inspect": [line.strip() for line in user_input.get("how_to_inspect", "").splitlines() if line.strip()],\n                "what_to_look_for": [line.strip() for line in user_input.get("what_to_look_for", "").splitlines() if line.strip()],\n                "what_to_do_if_issue": user_input.get("what_to_do_if_issue", "").strip(),\n                "safety_notes": user_input.get("safety_notes", "").strip(),
                 "is_custom": True,
             }
             enabled = list(self.config_entry.options.get(
