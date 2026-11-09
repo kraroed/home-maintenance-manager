@@ -161,3 +161,72 @@ async def test_season_window_options_validate_and_save_all_windows(
     }
     assert result["data"]["notification_target"] == "notify.mobile_app_phone"
     assert result["data"]["task_intervals"] == {"clean_gutters": 120}
+
+@pytest.mark.asyncio
+async def test_edit_equipment_options_flow_updates_record_and_task_links(
+    hass, enable_custom_integrations
+):
+    """Editing equipment retains its ID while updating details and associations."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters", "replace_hvac_filter"],
+        },
+        options={
+            "equipment_records": [{
+                "equipment_id": "equipment_main_hvac",
+                "name": "Main HVAC",
+                "category": "HVAC",
+                "manufacturer": "Old Manufacturer",
+                "model": "OLD-100",
+                "installed_date": "2020-01-15",
+                "notes": "Original notes",
+                "task_ids": ["replace_hvac_filter"],
+            }],
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"equipment_id": "equipment_main_hvac"}
+    )
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "edit_equipment"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "edit_equipment"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Main and Upstairs HVAC",
+            "category": "HVAC",
+            "manufacturer": "New Manufacturer",
+            "model": "NEW-200",
+            "installed_date": "2024-02-29",
+            "notes": "Updated equipment details",
+            "task_ids": ["clean_gutters", "replace_hvac_filter"],
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    equipment = result["data"]["equipment_records"]
+    assert len(equipment) == 1
+    assert equipment[0] == {
+        "equipment_id": "equipment_main_hvac",
+        "name": "Main and Upstairs HVAC",
+        "category": "HVAC",
+        "manufacturer": "New Manufacturer",
+        "model": "NEW-200",
+        "installed_date": "2024-02-29",
+        "notes": "Updated equipment details",
+        "task_ids": ["clean_gutters", "replace_hvac_filter"],
+    }
+
