@@ -17,6 +17,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Completion-based scheduling: completing a task restarts its schedule.
 - Task rescheduling without marking work complete, with a retained record of the previous due date, new due date, and optional reason.
 - Permanent completion history, including optional notes and linked equipment details.
+- Complete JSON backup and guarded restore for property configuration, tasks, equipment, settings, reminder state, and completion history.
 - Seasonal schedules with configurable date windows.
 - Household equipment records with name, category, manufacturer, model, installation date, and notes.
 - Associate one or more enabled maintenance tasks with registered equipment.
@@ -50,6 +51,18 @@ Open **Configure → Configure maintenance notifications** to enable individual 
 ## Maintenance history export
 
 Call **`home_maintenance_manager.export_history`** from Developer Tools → Actions, or use it in an automation. Choose `csv`, `json`, or `both` (the default). The integration writes the files under `/config/www/home_maintenance_manager/<entry_id>/` and creates a persistent notification with links to open each export through Home Assistant. CSV includes one row per completion; JSON includes the full completion records and property name. Export files are overwritten by the next export in the same format.
+
+## JSON backup and restore
+
+Use **Developer Tools → Actions** to run the backup services:
+
+1. Run `home_maintenance_manager.create_backup`. With one configured property, no additional fields are needed. With multiple properties, leave `integration_instance` empty to back up all properties or specify one config entry ID/storage key.
+2. The integration creates a complete JSON file in the protected folder `/config/home_maintenance_manager_backups/<entry_id>/` and displays the saved path in a persistent notification. This folder is outside `www`, so backup contents are not exposed as public Home Assistant static files.
+3. To restore a backup, use File Editor to place the JSON file in that property's backup folder.
+4. Run `home_maintenance_manager.preview_restore` with the JSON **filename** (not its full path). The preview validates the file and reports task, equipment, and history counts. Preview does not change live data.
+5. After reviewing the preview, run `home_maintenance_manager.restore_backup` with the same filename and set `confirm: true`.
+
+A restore first writes an automatic pre-restore backup beside the uploaded file. Tasks, equipment, settings, reminder state, and property options are restored from the selected backup. Completion history is merged by `history_id`: records already on the current system are retained, and missing records from the backup are added without duplicates. A malformed, unsupported, oversized (over 10 MB), or unsafe filename is rejected before live data is changed. Restore is limited to one selected property at a time; when multiple properties are configured, provide `integration_instance` to both preview and restore.
 
 ## Lovelace dashboard card
 
