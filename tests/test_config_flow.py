@@ -426,7 +426,10 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
             "name": "Replace upstairs HVAC filter",
             "category": "Heating and Cooling",
             "description": "Updated description",
+            "schedule_type": "interval",
             "interval_days": 120,
+            "annual_month": 1,
+            "annual_day": 1,
         },
     )
 
@@ -453,3 +456,149 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "custom_replace_filter"
     ]
 
+
+
+@pytest.mark.asyncio
+async def test_add_custom_annual_task_saves_calendar_schedule(
+    hass, enable_custom_integrations
+):
+    """Adding an annual custom task stores its month/day without an interval."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Winterize Sprinklers",
+            "category": "Outdoor",
+            "description": "Prepare irrigation for winter.",
+            "schedule_type": "annual",
+            "interval_days": 90,
+            "annual_month": 10,
+            "annual_day": 15,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    task = result["data"]["custom_tasks"][0]
+    assert task["task_id"] == "custom_winterize_sprinklers"
+    assert task["schedule_type"] == "annual"
+    assert task["annual_month"] == 10
+    assert task["annual_day"] == 15
+    assert result["data"][CONF_ENABLED_TASK_IDS] == ["custom_winterize_sprinklers"]
+    assert "custom_winterize_sprinklers" not in result["data"]["task_intervals"]
+
+
+@pytest.mark.asyncio
+async def test_add_custom_annual_task_rejects_invalid_calendar_date(
+    hass, enable_custom_integrations
+):
+    """Annual schedules reject impossible dates but allow leap day."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+    )
+    invalid = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Annual Inspection",
+            "category": "General",
+            "schedule_type": "annual",
+            "interval_days": 90,
+            "annual_month": 2,
+            "annual_day": 30,
+        },
+    )
+    assert invalid["type"] == FlowResultType.FORM
+    assert invalid["errors"] == {"base": "invalid_annual_date"}
+
+    valid = await hass.config_entries.options.async_configure(
+        invalid["flow_id"],
+        user_input={
+            "name": "Annual Inspection",
+            "category": "General",
+            "schedule_type": "annual",
+            "interval_days": 90,
+            "annual_month": 2,
+            "annual_day": 29,
+        },
+    )
+    assert valid["type"] == FlowResultType.CREATE_ENTRY
+    assert valid["data"]["custom_tasks"][0]["annual_month"] == 2
+    assert valid["data"]["custom_tasks"][0]["annual_day"] == 29
+
+
+@pytest.mark.asyncio
+async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_history(
+    hass, enable_custom_integrations
+):
+    """Editing a custom task can switch its schedule while retaining its ID."""
+    custom_task = {
+        "task_id": "custom_sprinkler_check",
+        "name": "Sprinkler check",
+        "category": "Outdoor",
+        "description": "Check the sprinkler system.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+        "is_custom": True,
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["custom_sprinkler_check"],
+        },
+        options={
+            "custom_tasks": [custom_task],
+            "task_intervals": {"custom_sprinkler_check": 90},
+            "notification_target": "notify.mobile_app_phone",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_custom_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_id": "custom_sprinkler_check"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "edit_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Winterize Sprinklers",
+            "category": "Outdoor",
+            "description": "Prepare irrigation for winter.",
+            "schedule_type": "annual",
+            "interval_days": 90,
+            "annual_month": 10,
+            "annual_day": 15,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["custom_tasks"][0]["task_id"] == "custom_sprinkler_check"
+    assert result["data"]["custom_tasks"][0]["schedule_type"] == "annual"
+    assert result["data"]["custom_tasks"][0]["annual_month"] == 10
+    assert result["data"]["custom_tasks"][0]["annual_day"] == 15
+    assert "custom_sprinkler_check" not in result["data"]["task_intervals"]
+    assert result["data"]["notification_target"] == "notify.mobile_app_phone"
