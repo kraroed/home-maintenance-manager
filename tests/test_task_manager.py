@@ -361,3 +361,42 @@ async def test_new_winter_task_is_due_immediately_when_winter_is_active(
     task = manager.data["tasks"]["test_initial_winter_task"]
     assert task["next_due"] == fixed_now.isoformat()
 
+@pytest.mark.parametrize(
+    ("reference_day", "expected_due"),
+    [
+        ("2027-03-11", "2028-02-29"),
+        ("2028-02-29", "2028-02-29"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_leap_day_seasonal_window_schedules_valid_due_date(
+    hass, monkeypatch, reference_day, expected_due
+):
+    """Leap-day season starts are scheduled only on real calendar dates."""
+    fixed_now = datetime.fromisoformat(f"{reference_day}T12:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_leap_day_task",
+        "name": "Test leap-day task",
+        "category": "Testing",
+        "description": "A seasonal task with a leap-day start.",
+        "schedule_type": "seasonal",
+        "season_keys": ["spring"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        f"leap-day-season-{reference_day}",
+        ["test_leap_day_task"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "spring": {"start": "02-29", "end": "03-10"},
+        },
+    )
+
+    await manager.async_load()
+
+    task = manager.data["tasks"]["test_leap_day_task"]
+    due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert due.date() == date.fromisoformat(expected_due)
+
