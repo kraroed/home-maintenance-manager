@@ -93,17 +93,35 @@ def _validate_payload(payload):
         isinstance(item, dict) for item in data["history"]
     ):
         raise HomeAssistantError("Backup contains an invalid completion history.")
-    if not isinstance(data.get("settings"), dict):
+    settings = data.get("settings")
+    if not isinstance(settings, dict):
         raise HomeAssistantError("Backup is missing its settings.")
+    due_soon_days = settings.get("due_soon_days", 7)
+    if type(due_soon_days) is not int or not 0 <= due_soon_days <= 90:
+        raise HomeAssistantError("Backup contains an invalid due-soon setting.")
+    for setting in ("daily_summary_enabled", "individual_notifications_enabled"):
+        if setting in settings and type(settings[setting]) is not bool:
+            raise HomeAssistantError("Backup contains an invalid notification setting.")
+    if not isinstance(settings.get("season_windows", {}), dict):
+        raise HomeAssistantError("Backup contains invalid seasonal settings.")
     notification_state = data.get("notification_state", {})
     if not isinstance(notification_state, dict):
         raise HomeAssistantError("Backup contains invalid notification state.")
     if not isinstance(notification_state.get("individual", {}), dict):
         raise HomeAssistantError("Backup contains invalid reminder delivery state.")
-    if not isinstance(payload.get("options", {}), dict):
+    options = payload.get("options", {})
+    entry_data = payload.get("entry_data", {})
+    if not isinstance(options, dict):
         raise HomeAssistantError("Backup contains invalid integration options.")
-    if not isinstance(payload.get("entry_data", {}), dict):
+    if not isinstance(entry_data, dict):
         raise HomeAssistantError("Backup contains invalid property configuration.")
+    if not isinstance(entry_data.get("property_name"), str) or not isinstance(
+        entry_data.get("enabled_task_ids", []), list
+    ):
+        raise HomeAssistantError("Backup is missing required property configuration.")
+    for option in ("enabled_task_ids", "custom_tasks", "equipment_records"):
+        if option in options and not isinstance(options[option], list):
+            raise HomeAssistantError(f"Backup contains invalid {option.replace('_', ' ')}.")
     return payload
 
 
