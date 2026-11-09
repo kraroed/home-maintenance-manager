@@ -1,4 +1,6 @@
-"""Services for recording maintenance task completions with notes."""
+"""Services for recording maintenance task completions with notes and attachments."""
+from urllib.parse import urlparse
+
 import voluptuous as vol
 
 from homeassistant.core import ServiceCall
@@ -29,9 +31,24 @@ async def async_setup_completion_service(hass):
                 "More than one matching task exists; provide integration_instance."
             )
 
+        attachments = [
+            item.strip()
+            for item in call.data.get("attachments", "").splitlines()
+            if item.strip()
+        ]
+        for attachment in attachments:
+            parsed = urlparse(attachment)
+            if not (
+                (parsed.scheme in ("http", "https") and parsed.netloc)
+                or attachment.startswith("/local/")
+            ):
+                raise HomeAssistantError(
+                    "Attachments must be HTTP(S) URLs or Home Assistant /local/ paths."
+                )
+
         entry_data = matches[0]
         await entry_data["manager"].async_complete_task(
-            task_id, call.data.get("notes", "")
+            task_id, call.data.get("notes", ""), attachments
         )
         await entry_data["coordinator"].async_request_refresh()
 
@@ -43,6 +60,7 @@ async def async_setup_completion_service(hass):
             schema=vol.Schema({
                 vol.Required("task_id"): str,
                 vol.Optional("notes", default=""): str,
+                vol.Optional("attachments", default=""): str,
                 vol.Optional("integration_instance"): str,
             }),
         )
