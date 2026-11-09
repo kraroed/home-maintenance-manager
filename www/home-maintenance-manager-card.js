@@ -169,6 +169,36 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       return state.state === this._filter;
     });
     const categoryMarkup = '<div class="category-filters"><button data-category="all" class="' + (this._category === "all" ? "selected" : "") + '">All categories</button>' + categories.map((category) => '<button data-category="' + this._escape(category) + '" class="' + (this._category === category ? "selected" : "") + '">' + this._escape(category) + '</button>').join("") + '</div>';
+    const costGroups = { category: new Map(), year: new Map(), equipment: new Map() };
+    const equipmentNames = new Map(equipment.map((item) => [
+      item.attributes.equipment_id,
+      item.attributes.friendly_name || item.state,
+    ]));
+    tasks.forEach(({ state }) => {
+      const attrs = state.attributes || {};
+      (attrs.completion_history || []).forEach((record) => {
+        const amount = Number(record.total_cost || 0);
+        if (!Number.isFinite(amount) || amount <= 0) return;
+        const category = attrs.category || "General";
+        const year = record.completed_at ? new Date(record.completed_at).getFullYear().toString() : "Unknown";
+        costGroups.category.set(category, (costGroups.category.get(category) || 0) + amount);
+        costGroups.year.set(year, (costGroups.year.get(year) || 0) + amount);
+        (record.equipment_ids || attrs.equipment_ids || []).forEach((id) => {
+          const label = equipmentNames.get(id) || id;
+          costGroups.equipment.set(label, (costGroups.equipment.get(label) || 0) + amount);
+        });
+      });
+    });
+    const costList = (map) => [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, amount]) => `<div class="cost-row"><span>${this._escape(label)}</span><strong>${this._money(amount)}</strong></div>`)
+      .join("") || '<div class="muted">No recorded costs yet.</div>';
+    const costMarkup = `<section><h3>Cost breakdown</h3>
+      <div class="cost-columns">
+        <div><strong>By category</strong>${costList(costGroups.category)}</div>
+        <div><strong>By year</strong>${costList(costGroups.year)}</div>
+        <div><strong>By equipment</strong>${costList(costGroups.equipment)}</div>
+      </div></section>`;
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
@@ -199,6 +229,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         ${categoryMarkup}
         ${this._equipmentTask ? '<div class="active-filter">Showing selected equipment task <button data-clear-task>Clear</button></div>' : ""}
         <div class="tasks">${taskMarkup}</div>
+        ${costMarkup}
         ${this.config.show_equipment ? `<section><h3>Equipment <small>${this._escape(count("equipment_count"))} registered</small></h3>${equipmentMarkup}</section>` : ""}
         ${this.config.show_history ? `<footer>Completion history records: <strong>${this._escape(count("history_count"))}</strong></footer>` : ""}
       </ha-card>
@@ -217,7 +248,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
         .complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
         section{padding:8px 16px 14px;border-top:1px solid var(--divider-color)}h3{font-size:1rem;margin:8px 0}h3 small{font-weight:400;color:var(--secondary-text-color);margin-left:5px}
-        .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}
+        .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}.cost-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}.cost-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--divider-color);font-size:.82rem}
         footer{border-top:1px solid var(--divider-color);padding:12px 16px;color:var(--secondary-text-color);font-size:.85rem}.empty{padding:16px 0;color:var(--secondary-text-color)}
         @media(max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task{align-items:flex-start}.task-actions{align-items:flex-end}.equipment{flex-direction:column;gap:2px}.equipment span{text-align:left}}
       </style>`;
