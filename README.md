@@ -35,7 +35,7 @@ Each built-in task includes concise homeowner-oriented guidance. Instructions di
 
 ## Custom maintenance task management
 
-Open the integration's **Configure** options and choose **Manage custom maintenance tasks**. Select a custom task to edit its name, category, description, or recurring schedule. Choose an interval, an annual month/day, or a monthly weekday pattern (first through fourth, or last; Monday through Sunday). Editing keeps the task ID and completion history intact. You can also remove it from active tracking. Editing keeps the task ID stable so its existing schedule and completion history remain associated with it. Removing a task disables it, removes it from the custom task library and enabled-task list, and clears equipment associations; existing task and completion records are retained.
+Open the integration's **Configure** options and choose **Manage custom maintenance tasks**. Select a custom task to edit its name, category, description, or recurring schedule. Choose an interval, an annual month/day, or a monthly weekday pattern (first through fourth, or last; Monday through Sunday). Editing keeps the task ID and completion history intact. You can also remove it from active tracking. Removing a task disables it, removes it from the custom task library and enabled-task list, and clears equipment associations; existing task and completion records are retained.
 
 ## Equipment tracking
 
