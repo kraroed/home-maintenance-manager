@@ -21,6 +21,13 @@ complete_task:
       selector:
         text:
           multiline: true
+    attachments:
+      name: Photo and receipt links
+      description: Optional HTTP(S) URLs or /local/ paths, one per line. Upload local files to /config/www/ first.
+      required: false
+      selector:
+        text:
+          multiline: true
 
 export_history:
   name: Export maintenance history
