@@ -16,7 +16,7 @@ def _validate_month_day(value):
     if not isinstance(value, str) or len(value) != 5:
         raise vol.Invalid("Enter a valid date as MM-DD.")
     try:
-        parsed = date.strptime(value, "%m-%d") if hasattr(date, "strptime") else date(2000, int(value[:2]), int(value[3:]))
+        parsed = date(2000, int(value[:2]), int(value[3:]))
     except ValueError as err:
         raise vol.Invalid("Enter a valid date as MM-DD.") from err
     if parsed.strftime("%m-%d") != value:
