@@ -448,7 +448,7 @@ async def test_seasonal_window_end_date_is_inclusive(
     ("reference_day", "expected_due"),
     [
         ("2026-07-01", "2026-09-01"),
-        ("2026-10-01", "2027-03-15"),
+        ("2026-11-16", "2027-03-15"),
     ],
 )
 @pytest.mark.asyncio
