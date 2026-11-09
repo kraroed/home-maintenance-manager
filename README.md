@@ -59,7 +59,7 @@ show_equipment: true
 show_history: true
 ```
 
-The card shows active-task totals, overdue and due-today counts, upcoming work, equipment records, and completion-history count. Use the filters to narrow the task list. The **Mark complete** action calls the integration's existing task completion button, recording the completion and restarting that task's schedule.
+The card shows active-task totals, overdue and due-today counts, upcoming work, equipment records, and completion-history count. Use the filters to narrow the task list. The **Mark complete** action calls the integration's existing task completion button, recording the completion and restarting that task's schedule. Entity discovery is scoped to this integration and pairs each task with its completion button by configuration entry, so multiple Home Maintenance Manager entries can be shown together without cross-linking their tasks. Summary counts are aggregated across those entries.
 
 After updating the JavaScript file, refresh the browser or clear its frontend cache if the old card remains loaded. The card is a separate manual frontend resource; installing the HACS integration does not automatically copy the JavaScript file into `/config/www/`.
 
