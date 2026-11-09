@@ -289,3 +289,40 @@ async def test_configured_season_windows_override_storage_defaults(hass):
         "start": "06-01",
         "end": "08-31",
     }
+
+@pytest.mark.parametrize("completion_day", ["2027-01-15", "2027-03-14"])
+@pytest.mark.asyncio
+async def test_winter_completion_across_year_boundary_schedules_next_winter(
+    hass, monkeypatch, completion_day
+):
+    """Completing a cross-year winter task schedules the next November window."""
+    task_definition = {
+        "task_id": "test_winter_task",
+        "name": "Test winter task",
+        "category": "Testing",
+        "description": "A winter task used by automated tests.",
+        "schedule_type": "seasonal",
+        "season_keys": ["winter"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        f"winter-boundary-{completion_day}",
+        ["test_winter_task"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "winter": {"start": "11-16", "end": "03-14"},
+        },
+    )
+    await manager.async_load()
+
+    fixed_now = datetime.fromisoformat(f"{completion_day}T12:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+
+    await manager.async_complete_task("test_winter_task")
+
+    task = manager.data["tasks"]["test_winter_task"]
+    next_due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert next_due.date() == date(2027, 11, 16)
+    assert manager.data["history"][-1]["next_due"] == task["next_due"]
+
