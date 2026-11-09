@@ -82,3 +82,32 @@ async def test_storage_ignores_malformed_nested_settings(hass, monkeypatch):
         "summary_date": None,
     }
     assert data["history"] == []
+
+
+@pytest.mark.asyncio
+async def test_storage_filters_malformed_task_and_history_records(hass, monkeypatch):
+    """Invalid record shapes are ignored without discarding valid records."""
+    valid_task = {"task_id": "clean_gutters", "name": "Clean gutters"}
+    valid_history = {"history_id": "clean_gutters:one", "task_id": "clean_gutters"}
+    FakeStore.stored = {
+        "tasks": {
+            "clean_gutters": valid_task,
+            "broken_task": "not a task object",
+            42: {"task_id": "invalid-key"},
+        },
+        "equipment": {
+            "furnace": {"equipment_id": "furnace"},
+            "broken_equipment": None,
+        },
+        "history": [valid_history, "not a history record", None],
+    }
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.storage.Store", FakeStore
+    )
+
+    storage = MaintenanceStorage(hass, "malformed-records")
+    data = await storage.async_load()
+
+    assert data["tasks"] == {"clean_gutters": valid_task}
+    assert data["equipment"] == {"furnace": {"equipment_id": "furnace"}}
+    assert data["history"] == [valid_history]
