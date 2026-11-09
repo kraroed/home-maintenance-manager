@@ -18,6 +18,7 @@ class CompleteTaskButton(CoordinatorEntity, ButtonEntity):
     def __init__(self, coordinator, task_id, name):
         super().__init__(coordinator)
         self.task_id = task_id
+        self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = (
             f"{coordinator.manager.storage.store.key}_{task_id}_complete"
         )
@@ -31,7 +32,11 @@ class CompleteTaskButton(CoordinatorEntity, ButtonEntity):
 
     @property
     def extra_state_attributes(self):
-        return {"task_id": self.task_id}
+        return {
+            "task_id": self.task_id,
+            "integration_domain": DOMAIN,
+            "integration_instance": self.integration_instance,
+        }
 
     async def async_press(self):
         await self.coordinator.manager.async_complete_task(self.task_id)
