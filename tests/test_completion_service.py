@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
+import voluptuous as vol
 
 from homeassistant.exceptions import HomeAssistantError
 
@@ -57,7 +58,7 @@ async def test_complete_task_service_rejects_removed_tracking_fields(hass):
     hass.data[DOMAIN] = {"property-one": entry_data}
     await async_setup_completion_service(hass)
 
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(vol.Invalid, match="extra keys not allowed"):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_COMPLETE_TASK,
