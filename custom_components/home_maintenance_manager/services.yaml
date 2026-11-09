@@ -1,3 +1,27 @@
+complete_task:
+  name: Complete maintenance task
+  description: Record a task completion and optionally save notes in its permanent history.
+  fields:
+    task_id:
+      name: Task ID
+      description: The maintenance task ID to complete.
+      required: true
+      selector:
+        text:
+    integration_instance:
+      name: Integration instance
+      description: The integration storage key, required when multiple entries contain the same task ID.
+      required: false
+      selector:
+        text:
+    notes:
+      name: Completion notes
+      description: Optional work performed, findings, parts used, or service details.
+      required: false
+      selector:
+        text:
+          multiline: true
+
 export_history:
   name: Export maintenance history
   description: Export the completion history to CSV, JSON, or both formats.
