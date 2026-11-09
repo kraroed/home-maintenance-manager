@@ -122,6 +122,8 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "equipment_id": self.equipment_id,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
-            key: item.get(key)
-            for key in ("category", "manufacturer", "model", "installed_date", "notes", "task_ids")
+            **{
+                key: item.get(key)
+                for key in ("category", "manufacturer", "model", "installed_date", "notes", "task_ids")
+            },
         }
