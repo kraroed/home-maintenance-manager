@@ -20,7 +20,8 @@ def _write_history_files(directory, history, property_name, export_format):
         filename = "maintenance_history.csv"
         fields = [
             "history_id", "task_id", "task_name", "completed_at",
-            "previous_due", "next_due", "notes", "attachments", "equipment_ids",
+            "previous_due", "next_due", "notes", "attachments",
+            "labor_cost", "parts_cost", "total_cost", "currency", "equipment_ids",
         ]
         with (directory / filename).open("w", encoding="utf-8-sig", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
