@@ -82,7 +82,7 @@
       },
       "add_equipment": {
         "title": "Register household equipment",
-        "description": "Add an appliance or home system and optionally associate existing maintenance tasks with it. You can leave manufacturer, model, installation date, and notes blank.",
+        "description": "Add an appliance or home system and optionally associate existing maintenance tasks with it. You can leave manufacturer, model, installation date, and notes blank. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
         "data": {
           "name": "Equipment name",
           "category": "Category",
@@ -90,7 +90,9 @@
           "model": "Model",
           "installed_date": "Installation date (YYYY-MM-DD)",
           "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment"
+          "task_ids": "Maintenance tasks associated with this equipment",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed"
         }
       },
       "manage_equipment": {
@@ -110,7 +112,7 @@
       },
       "edit_equipment": {
         "title": "Edit household equipment",
-        "description": "Update the equipment details and associated maintenance tasks.",
+        "description": "Update the equipment details and associated maintenance tasks. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
         "data": {
           "name": "Equipment name",
           "category": "Category",
@@ -118,7 +120,9 @@
           "model": "Model",
           "installed_date": "Installation date (YYYY-MM-DD)",
           "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment"
+          "task_ids": "Maintenance tasks associated with this equipment",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed"
         }
       },
       "remove_equipment": {
@@ -174,7 +178,9 @@
       "duplicate_task": "A task with this name already exists. Choose a different name.",
       "invalid_annual_date": "Enter a valid calendar date. February 29 is allowed.",
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
-      "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank."
+      "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank.",
+      "incomplete_lifespan": "For automatic replacement scheduling, enter an installation date, lifespan, and replacement task together, or leave all three unset.",
+      "duplicate_replacement_task": "Each equipment record must have its own designated replacement task."
     },
     "abort": {
       "no_equipment": "No equipment records have been added yet.",
