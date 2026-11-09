@@ -179,7 +179,7 @@ class TaskManager:
             return "due_soon"
         return "scheduled"
 
-    async def async_complete_task(self, task_id, notes="", attachments=None, labor_cost=0, parts_cost=0):
+    async def async_complete_task(self, task_id, notes=""):
         task = self.data["tasks"].get(task_id)
         if task is None:
             raise ValueError(f"Unknown maintenance task: {task_id}")
@@ -202,11 +202,6 @@ class TaskManager:
             "previous_due": previous_due,
             "next_due": next_due_value,
             "notes": notes,
-            "attachments": list(attachments or []),
-            "labor_cost": round(float(labor_cost or 0), 2),
-            "parts_cost": round(float(parts_cost or 0), 2),
-            "total_cost": round(float(labor_cost or 0) + float(parts_cost or 0), 2),
-            "currency": "USD",
             "equipment_ids": task.get("equipment_ids", []),
         })
         task["last_completed"] = now.isoformat()
@@ -253,7 +248,11 @@ class TaskManager:
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
         history_by_task = {}
         for record in self.data.get("history", []):
-            history_by_task.setdefault(record.get("task_id"), []).append(deepcopy(record))
+            history_by_task.setdefault(record.get("task_id"), []).append({
+                key: deepcopy(value)
+                for key, value in record.items()
+                if key not in {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"}
+            })
         return {
             "tasks": tasks,
             "history_by_task": {
