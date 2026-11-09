@@ -51,7 +51,7 @@ async def test_config_entry_setup_registers_platforms_and_services(
         for state in hass.states.async_all()
         if state.attributes.get("integration_domain") == DOMAIN
     )
-    assert any("clean_gutters" in entity_id for entity_id in entity_ids)
+    assert any("clean_rain_gutters" in entity_id for entity_id in entity_ids)
 
 
 @pytest.mark.asyncio
