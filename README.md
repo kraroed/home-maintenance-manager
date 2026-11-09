@@ -7,7 +7,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 ## Current capabilities
 
 - A built-in library of suggested maintenance tasks, enabled individually.
-- An expanded starter library covering HVAC, plumbing, appliances, electrical safety, fire safety, interior, exterior, and seasonal upkeep.
+- A built-in catalog of 120 suggested tasks across HVAC, fire and home safety, plumbing, appliances, electrical, interior, exterior, landscaping, seasonal preparation, and optional home systems.
 - User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
 - Custom task editing, including changing the recurring interval while retaining the task's identity and completion history.
 - Custom task removal from active tracking, with completion history preserved.
@@ -22,6 +22,12 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Home Assistant entities for task status and household maintenance summaries.
 - Individual due-soon and overdue reminders, plus a configurable daily summary.
 - Configurable reminder lead time and notification destination, with persistent notifications as the fallback.
+
+## Built-in maintenance task library
+
+The built-in catalog contains 120 individually selectable tasks across ten categories: HVAC and ventilation (14), fire and home safety (14), plumbing and water systems (16), appliances and kitchen (14), electrical systems (8), interior maintenance (10), roof, gutters, and exterior (14), landscaping and irrigation (12), seasonal preparation (8), and optional home systems (10). Optional-system tasks cover items such as private wells, septic systems, generators, pools and spas, radon mitigation, crawlspaces, and solar systems.
+
+The recommended intervals are starting points, not universal service requirements. Review each task against the equipment manufacturer's instructions, local regulations, household conditions, and professional advice. Seasonal tasks use the configurable season windows. Long-term inspections and service reviews use longer editable intervals. All library tasks remain disabled until individually selected for a property.
 
 ## Custom maintenance task management
 
