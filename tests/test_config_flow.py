@@ -104,3 +104,29 @@ def test_equipment_installation_date_requires_real_iso_date():
     for invalid_date in ("2024-02-30", "20240229", "not-a-date"):
         with pytest.raises(vol.Invalid, match="YYYY-MM-DD"):
             schema({**valid, "installed_date": invalid_date})
+
+
+def test_season_window_options_validate_and_save_all_windows():
+    """Seasonal schedule settings can be customized with valid MM-DD dates."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    flow = HomeMaintenanceOptionsFlow(entry)
+    schema = flow.async_step_configure_season_windows()["data_schema"]
+    submitted = {
+        "spring_start": "03-10",
+        "spring_end": "05-25",
+        "summer_start": "06-01",
+        "summer_end": "08-31",
+        "fall_start": "09-01",
+        "fall_end": "11-15",
+        "winter_start": "11-16",
+        "winter_end": "03-14",
+    }
+    assert schema(submitted) == submitted
+    for field in ("spring_start", "winter_end"):
+        invalid = {**submitted, field: "02-30"}
+        with pytest.raises(vol.Invalid, match="MM-DD"):
+            schema(invalid)
