@@ -2,7 +2,7 @@
 
 import json
 from copy import deepcopy
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
@@ -12,6 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from custom_components.home_maintenance_manager.backup import (
     BACKUP_FORMAT,
     BACKUP_SCHEMA_VERSION,
+    _build_payload,
     _merge_history,
     _read_json_file,
     _safe_filename,
@@ -64,6 +65,30 @@ def _payload():
             },
         },
     }
+
+
+def test_build_payload_accepts_immutable_config_entry_mappings():
+    """ConfigEntry data and options may be mappingproxy objects."""
+    entry = SimpleNamespace(
+        data=MappingProxyType({
+            "property_name": "My Home",
+            "enabled_task_ids": ["clean_gutters"],
+        }),
+        options=MappingProxyType({
+            "enabled_task_ids": ["clean_gutters"],
+            "task_intervals": {},
+        }),
+        title="My Home",
+    )
+    manager = SimpleNamespace(data=deepcopy(_payload()["data"]))
+    payload = _build_payload({
+        "config_entry": entry,
+        "manager": manager,
+        "property_name": "My Home",
+    })
+
+    assert payload["entry_data"]["property_name"] == "My Home"
+    assert payload["options"]["enabled_task_ids"] == ["clean_gutters"]
 
 
 def test_backup_payload_accepts_complete_backup():
