@@ -1,6 +1,6 @@
 import json
 from copy import deepcopy
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from homeassistant.util import dt as dt_util
@@ -205,6 +205,33 @@ class TaskManager:
         task["next_due"] = next_due_value
         if notes:
             task["notes"] = notes
+        await self.async_save()
+
+    async def async_reschedule_task(self, task_id, due_date, reason=""):
+        """Move a task's next due date without recording a completion."""
+        task = self.data["tasks"].get(task_id)
+        if task is None:
+            raise ValueError(f"Unknown maintenance task: {task_id}")
+        if not task.get("enabled", True):
+            raise ValueError(f"Maintenance task is disabled: {task_id}")
+        try:
+            selected_day = date.fromisoformat(due_date)
+        except (TypeError, ValueError) as err:
+            raise ValueError("Due date must use YYYY-MM-DD format.") from err
+        local_now = dt_util.now()
+        if selected_day < local_now.date():
+            raise ValueError("The new due date cannot be in the past.")
+        previous_due = task.get("next_due")
+        local_due = datetime.combine(selected_day, time.min, tzinfo=local_now.tzinfo)
+        next_due = dt_util.as_utc(local_due).isoformat()
+        now = dt_util.utcnow()
+        task.setdefault("schedule_history", []).append({
+            "adjusted_at": now.isoformat(),
+            "previous_due": previous_due,
+            "next_due": next_due,
+            "reason": reason.strip(),
+        })
+        task["next_due"] = next_due
         await self.async_save()
 
     def snapshot(self):
