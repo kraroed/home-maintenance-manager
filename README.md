@@ -53,24 +53,13 @@ Call **`home_maintenance_manager.export_history`** from Developer Tools → Acti
 
 ## Lovelace dashboard card
 
-The repository includes a companion card at `www/home-maintenance-manager-card.js`. The card discovers this integration's task, summary, equipment, and completion-button entities by their attributes, so you do not need to enter individual entity IDs.
+The Lovelace dashboard card is maintained separately from this integration so that frontend updates can be released independently.
 
-### Install the card
+- **Standalone card repository:** https://github.com/kraroed/lovelace-home-maintenance-manager-card
+- Install and update the card through HACS as a Dashboard repository.
+- The card requires this Home Maintenance Manager integration to be installed and configured.
 
-1. Copy `www/home-maintenance-manager-card.js` from this repository into your Home Assistant `/config/www/` folder.
-2. In Settings → Dashboards → Resources, add `/local/home-maintenance-manager-card.js` as a JavaScript module. If Resources is not visible, enable Advanced Mode in your user profile.
-3. Add a Manual card to a dashboard and use:
-
-```yaml
-type: custom:home-maintenance-manager-card
-title: Home Maintenance
-show_equipment: true
-show_history: true
-```
-
-The card shows active-task totals, overdue and due-today counts, upcoming work, equipment records, and completion-history count. Switch between **List view**, **Calendar view**, and **History**. The History view searches recent completion records by task, equipment, or notes and filters by completion-date range; it includes records from disabled tasks too. The card exposes up to the latest 10 completion records per task sensor, while the Export history service remains the way to retrieve the complete permanent archive. The monthly calendar displays tasks on their scheduled due dates, supports previous/next month navigation and a Today shortcut, and lets you select a date to see the tasks due that day. Use the status filters and dynamically generated category filters in List view to narrow the task list. Expand **Details** on any task to see its inspection guide (how to inspect, what to look for, what to do if something is wrong, and safety precautions), last completion, next due date, repeat interval or seasonal schedule, linked equipment, up to five recent completion records with notes, and recent schedule changes. Equipment records show their associated enabled maintenance tasks; selecting one filters the task list to that task, with a clear control to return to the full list. The **Reschedule** action changes a task's next due date without marking it complete; it records the previous date, new date, and optional reason. Rescheduled dates are retained across Home Assistant restarts, including for seasonal tasks. You can also call `home_maintenance_manager.reschedule_task` from Developer Tools → Actions or an automation. Choose a date that is today or later. The **Mark complete** action asks for optional completion notes, then calls the integration's `complete_task` service. Completion history retains the task, completion date, due-date transition, notes, and associated equipment. You can also call `home_maintenance_manager.complete_task` from Developer Tools → Actions or an automation with `task_id`, optional `notes`, and (when multiple entries contain the same task ID) `integration_instance`. Entity discovery is scoped to this integration and pairs each task with its completion button by configuration entry, so multiple Home Maintenance Manager entries can be shown together without cross-linking their tasks. Summary counts are aggregated across those entries.
-
-After updating the JavaScript file, refresh the browser or clear its frontend cache if the old card remains loaded. The card is a separate manual frontend resource; installing the HACS integration does not automatically copy the JavaScript file into `/config/www/`.
+For card features, configuration, and installation instructions, see the standalone card repository's README.
 
 ## Installation
 
