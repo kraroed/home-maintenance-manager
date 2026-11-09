@@ -105,6 +105,7 @@ test("history search filters records and escapes user-provided notes", () => {
   assert.doesNotMatch(markup, /Clean gutters/);
   assert.match(markup, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt;/);
   assert.doesNotMatch(markup, /<img src=x/);
+  assert.doesNotMatch(markup, /Labor:|Parts:|View attachment/);
 });
 
 
@@ -154,11 +155,11 @@ test("reschedule action calls the service with the selected date and reason", as
   assert.equal(control.disabled, false);
 });
 
-test("complete action forwards notes, attachment references, and costs", async () => {
+test("complete action forwards notes without attachment or cost prompts", async () => {
   const { control, calls } = createInteractiveCard(
     "[data-complete-task]",
     { completeTask: "replace_filter", instance: "main" },
-    ["Replaced filter", "/local/filter.jpg\\nhttps://example.com/receipt", "25.50", "18.75"]
+    ["Replaced filter"]
   );
 
   await control.handlers.click();
@@ -170,9 +171,6 @@ test("complete action forwards notes, attachment references, and costs", async (
       task_id: "replace_filter",
       integration_instance: "main",
       notes: "Replaced filter",
-      attachments: "/local/filter.jpg\\nhttps://example.com/receipt",
-      labor_cost: 25.5,
-      parts_cost: 18.75,
     },
   }]);
   assert.equal(control.disabled, false);
@@ -223,7 +221,7 @@ test("action button is re-enabled when a Home Assistant service call fails", asy
   const { card, control } = createInteractiveCard(
     "[data-complete-task]",
     { completeTask: "replace_filter", instance: "main" },
-    ["Done", "", "0", "0"]
+    ["Done"]
   );
   card._hass.callService = async () => {
     throw new Error("Service unavailable");
