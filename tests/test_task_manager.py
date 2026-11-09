@@ -326,3 +326,38 @@ async def test_winter_completion_across_year_boundary_schedules_next_winter(
     assert next_due.date() == date(2027, 11, 16)
     assert manager.data["history"][-1]["next_due"] == task["next_due"]
 
+@pytest.mark.parametrize(
+    "active_day",
+    ["2026-11-16", "2027-01-15", "2027-03-14"],
+)
+@pytest.mark.asyncio
+async def test_new_winter_task_is_due_immediately_when_winter_is_active(
+    hass, monkeypatch, active_day
+):
+    """Initial seasonal scheduling includes both boundaries of a cross-year season."""
+    fixed_now = datetime.fromisoformat(f"{active_day}T18:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_initial_winter_task",
+        "name": "Test initial winter task",
+        "category": "Testing",
+        "description": "A winter task used by automated tests.",
+        "schedule_type": "seasonal",
+        "season_keys": ["winter"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        f"initial-winter-{active_day}",
+        ["test_initial_winter_task"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "winter": {"start": "11-16", "end": "03-14"},
+        },
+    )
+
+    await manager.async_load()
+
+    task = manager.data["tasks"]["test_initial_winter_task"]
+    assert task["next_due"] == fixed_now.isoformat()
+
