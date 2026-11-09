@@ -8,7 +8,19 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Follow equipment instructions and local guidance."
+    "recommendation_note": "Starting recommendation only. Follow equipment instructions and local guidance.",
+    "how_to_inspect": [
+      "Turn the HVAC system off using its normal control.",
+      "Remove the filter in the direction shown by its airflow arrow.",
+      "Hold it toward a light and inspect the media and frame."
+    ],
+    "what_to_look_for": [
+      "Filter visibly gray or clogged with dust",
+      "Tears, gaps, incorrect size, or a poor fit",
+      "Reduced airflow or a filter-change indicator"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow equipment instructions and local guidance.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "replace_disposable_hvac_filter",
@@ -19,7 +31,19 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Actual interval depends on filter type, system, household conditions, and manufacturer instructions."
+    "recommendation_note": "Actual interval depends on filter type, system, household conditions, and manufacturer instructions.",
+    "how_to_inspect": [
+      "Turn the system off and note the filter size and airflow direction.",
+      "Remove the old filter and confirm the replacement size and rating.",
+      "Install the new filter with its airflow arrow pointing toward the equipment."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Actual interval depends on filter type, system, household conditions, and manufacturer instructions.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "test_smoke_alarms",
@@ -30,7 +54,19 @@
     "recommended_interval_days": 30,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements."
+    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements.",
+    "how_to_inspect": [
+      "Press and hold the test button for the time specified in the manual.",
+      "Confirm the alarm sounds and repeat for every unit.",
+      "Check manufacture/replace-by dates and battery type."
+    ],
+    "what_to_look_for": [
+      "Alarm sounds clearly during the test",
+      "No trouble, low-battery, or end-of-life indicator",
+      "Unit is mounted securely and vents are unobstructed"
+    ],
+    "what_to_do_if_issue": "Follow the alarm manufacturer's testing instructions and local requirements.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "test_carbon_monoxide_alarms",
@@ -41,7 +77,19 @@
     "recommended_interval_days": 30,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements."
+    "recommendation_note": "Follow the alarm manufacturer's testing instructions and local requirements.",
+    "how_to_inspect": [
+      "Use the manufacturer's test button; this checks the alarm electronics, not sensor accuracy.",
+      "Check the unit's age and replacement date.",
+      "Confirm every required location has a working alarm."
+    ],
+    "what_to_look_for": [
+      "Alarm sounds during the built-in test",
+      "No fault or end-of-life indicator",
+      "Correct placement and current replacement date"
+    ],
+    "what_to_do_if_issue": "Follow the alarm manufacturer's testing instructions and local requirements.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_fire_extinguishers",
@@ -52,7 +100,19 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Follow the extinguisher manufacturer's instructions and applicable fire-safety guidance."
+    "recommendation_note": "Follow the extinguisher manufacturer's instructions and applicable fire-safety guidance.",
+    "how_to_inspect": [
+      "Confirm the extinguisher is visible, accessible, and mounted securely.",
+      "Read the pressure gauge and inspect the pin, seal, hose, and body.",
+      "Check the service tag and instructions."
+    ],
+    "what_to_look_for": [
+      "Pressure gauge in the operable range",
+      "Pin and tamper seal intact",
+      "No corrosion, dents, leakage, blocked nozzle, or missing label"
+    ],
+    "what_to_do_if_issue": "Follow the extinguisher manufacturer's instructions and applicable fire-safety guidance.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "clean_refrigerator_coils",
@@ -63,7 +123,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Follow the appliance manufacturer's cleaning and access instructions."
+    "recommendation_note": "Follow the appliance manufacturer's cleaning and access instructions.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Clean accessible coils as directed by the appliance manufacturer."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Follow the appliance manufacturer's cleaning and access instructions.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_dryer_vent",
@@ -74,7 +147,19 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Frequency depends on use and vent configuration; clean sooner if airflow is reduced."
+    "recommendation_note": "Frequency depends on use and vent configuration; clean sooner if airflow is reduced.",
+    "how_to_inspect": [
+      "Turn off and unplug the dryer or isolate power as directed.",
+      "Clean the lint screen, accessible duct, and exterior outlet using an appropriate vent brush.",
+      "Reassemble the duct without crushing or sharply bending it; verify airflow."
+    ],
+    "what_to_look_for": [
+      "Lint accumulation, crushed flexible duct, disconnected joints",
+      "Weak airflow or a vent flap that does not open",
+      "Burning smell or excessive dryer heat"
+    ],
+    "what_to_do_if_issue": "Frequency depends on use and vent configuration; clean sooner if airflow is reduced.",
+    "safety_notes": "Do not operate the dryer with the vent disconnected. If the vent route is inaccessible or damaged, arrange professional cleaning."
   },
   {
     "task_id": "clean_gutters",
@@ -89,7 +174,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Adjust for tree cover, roof design, and local weather."
+    "recommendation_note": "Adjust for tree cover, roof design, and local weather.",
+    "how_to_inspect": [
+      "Inspect gutters and downspouts from the ground where possible.",
+      "Check after rainfall for overflow or poor drainage.",
+      "Arrange safe cleaning and verify water exits away from the home."
+    ],
+    "what_to_look_for": [
+      "Leaves, sediment, nests, or standing water",
+      "Sagging, loose hangers, leaks, or separated joints",
+      "Downspouts blocked or discharging next to the foundation"
+    ],
+    "what_to_do_if_issue": "Adjust for tree cover, roof design, and local weather.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "winterize_sprinklers",
@@ -103,7 +200,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Schedule before freezing conditions; use a qualified service provider when needed."
+    "recommendation_note": "Schedule before freezing conditions; use a qualified service provider when needed.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Prepare the irrigation system for freezing weather."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Schedule before freezing conditions; use a qualified service provider when needed.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_sump_pump",
@@ -114,7 +224,19 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Adjust frequency based on local water conditions and manufacturer guidance."
+    "recommendation_note": "Adjust frequency based on local water conditions and manufacturer guidance.",
+    "how_to_inspect": [
+      "Check the pit and discharge outlet for visible obstruction or damage.",
+      "Test using the manufacturer's method, such as the float test if approved.",
+      "Confirm the pump starts, removes water, and shuts off normally."
+    ],
+    "what_to_look_for": [
+      "Debris or sediment around the float",
+      "Pump fails to start, runs continuously, or makes unusual noise",
+      "Discharge line is blocked, frozen, leaking, or disconnected"
+    ],
+    "what_to_do_if_issue": "Adjust frequency based on local water conditions and manufacturer guidance.",
+    "safety_notes": "Keep electrical connections dry. Do not reach into a pit with energized equipment; use a professional if access is unsafe."
   },
   {
     "task_id": "test_gfci_outlets",
@@ -125,7 +247,19 @@
     "recommended_interval_days": 30,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Follow device instructions. Contact a qualified electrician if a device fails to trip or reset."
+    "recommendation_note": "Follow device instructions. Contact a qualified electrician if a device fails to trip or reset.",
+    "how_to_inspect": [
+      "Plug in a suitable lamp or tester if the manufacturer's instructions recommend it.",
+      "Press TEST; confirm power is interrupted.",
+      "Press RESET and confirm power returns."
+    ],
+    "what_to_look_for": [
+      "Device trips and resets correctly",
+      "Cracks, discoloration, moisture, or loose faceplate",
+      "Downstream outlets lose power when expected"
+    ],
+    "what_to_do_if_issue": "Follow device instructions. Contact a qualified electrician if a device fails to trip or reset.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_plumbing_for_leaks",
@@ -136,7 +270,19 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "This is a visual check; have persistent moisture or suspected concealed leaks assessed."
+    "recommendation_note": "This is a visual check; have persistent moisture or suspected concealed leaks assessed.",
+    "how_to_inspect": [
+      "Check under every sink, around toilets, and near exposed supply lines.",
+      "Run faucets and flush toilets, then recheck connections.",
+      "Dry suspicious areas and recheck for new moisture."
+    ],
+    "what_to_look_for": [
+      "Fresh drips or beads of water at joints",
+      "Water stains, swollen cabinet bases, damp flooring, or musty odor",
+      "Mineral deposits or corrosion around connections"
+    ],
+    "what_to_do_if_issue": "This is a visual check; have persistent moisture or suspected concealed leaks assessed.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_washing_machine_hoses",
@@ -147,7 +293,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Replace damaged hoses promptly and follow washer and hose manufacturer recommendations."
+    "recommendation_note": "Replace damaged hoses promptly and follow washer and hose manufacturer recommendations.",
+    "how_to_inspect": [
+      "Turn off the washer and inspect the visible hose length and both connections.",
+      "Use a flashlight to check behind the appliance without pulling it unsafely.",
+      "Check the hose type and age against manufacturer recommendations."
+    ],
+    "what_to_look_for": [
+      "Bulges, blisters, cracks, kinks, or abrasion",
+      "Rust or mineral deposits at fittings",
+      "Drips or dampness at either connection"
+    ],
+    "what_to_do_if_issue": "Replace damaged hoses promptly and follow washer and hose manufacturer recommendations.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_washing_machine",
@@ -158,7 +316,20 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Use only products and procedures approved by the appliance manufacturer."
+    "recommendation_note": "Use only products and procedures approved by the appliance manufacturer.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Run the manufacturer's washer-cleaning cycle and clean the dispenser and door gasket as directed."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Use only products and procedures approved by the appliance manufacturer.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_dishwasher_filter",
@@ -169,7 +340,20 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Follow the dishwasher manual; ensure parts are reinstalled correctly."
+    "recommendation_note": "Follow the dishwasher manual; ensure parts are reinstalled correctly.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Remove and rinse the filter and check the sump area as directed by the manufacturer."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Follow the dishwasher manual; ensure parts are reinstalled correctly.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_range_hood_filter",
@@ -180,7 +364,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Frequency depends on cooking habits. Do not operate without the required filter."
+    "recommendation_note": "Frequency depends on cooking habits. Do not operate without the required filter.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Clean or replace the range hood grease filter as directed."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Frequency depends on cooking habits. Do not operate without the required filter.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "replace_refrigerator_water_filter",
@@ -191,7 +388,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Use the specified filter and follow the appliance indicator and manufacturer schedule."
+    "recommendation_note": "Use the specified filter and follow the appliance indicator and manufacturer schedule.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Replace the refrigerator water filter if the model uses one."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Use the specified filter and follow the appliance indicator and manufacturer schedule.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_bathroom_exhaust_fan",
@@ -202,7 +412,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Turn power off before cleaning; leave electrical work or inaccessible components to a qualified person."
+    "recommendation_note": "Turn power off before cleaning; leave electrical work or inaccessible components to a qualified person.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Remove dust from the accessible fan grille and verify the fan operates."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Turn power off before cleaning; leave electrical work or inaccessible components to a qualified person.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "check_water_softener_salt",
@@ -213,7 +435,20 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Only add the salt type recommended by the water softener manufacturer."
+    "recommendation_note": "Only add the salt type recommended by the water softener manufacturer.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Check the brine tank salt level and refill if needed."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Only add the salt type recommended by the water softener manufacturer.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_toilet_components",
@@ -224,7 +459,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Address leaks promptly to prevent water damage."
+    "recommendation_note": "Address leaks promptly to prevent water damage.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Check for continuous running, leaks at the base, and moisture around supply connections."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Address leaks promptly to prevent water damage.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_caulking_and_grout",
@@ -235,7 +483,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Repair with materials suitable for the surface and location; investigate recurring moisture."
+    "recommendation_note": "Repair with materials suitable for the surface and location; investigate recurring moisture.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Check wet-area caulk and grout for gaps, cracking, or deterioration."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Repair with materials suitable for the surface and location; investigate recurring moisture.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_weatherstripping",
@@ -246,7 +507,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Replace damaged seals with compatible materials."
+    "recommendation_note": "Replace damaged seals with compatible materials.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Check seals for gaps, compression, cracking, or detachment."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Replace damaged seals with compatible materials.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "clean_window_tracks",
@@ -257,7 +531,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Follow window and door manufacturer cleaning instructions."
+    "recommendation_note": "Follow window and door manufacturer cleaning instructions.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Remove debris from accessible window and sliding-door tracks and clear drainage paths."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Follow window and door manufacturer cleaning instructions.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "test_garage_door_safety",
@@ -268,7 +555,19 @@
     "recommended_interval_days": 30,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Keep people and objects clear. Stop using the opener and arrange professional service if safety features fail."
+    "recommendation_note": "Keep people and objects clear. Stop using the opener and arrange professional service if safety features fail.",
+    "how_to_inspect": [
+      "Check photo-eye lenses are clean, aligned, and unobstructed.",
+      "Test the photo-eye reversal using the opener manufacturer's procedure.",
+      "Test auto-reverse only with the approved test object and procedure."
+    ],
+    "what_to_look_for": [
+      "Door reverses when the beam is interrupted",
+      "Door reverses on contact with the approved test object",
+      "Sensors are secure and indicator lights show normal operation"
+    ],
+    "what_to_do_if_issue": "Stop using the opener if a safety test fails and arrange professional service. Never use hands or people to test reversal.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_deck_and_steps",
@@ -279,7 +578,19 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Avoid loading unsafe structures; have structural concerns assessed by a qualified professional."
+    "recommendation_note": "Avoid loading unsafe structures; have structural concerns assessed by a qualified professional.",
+    "how_to_inspect": [
+      "Inspect from ground level and walk only on areas that appear sound.",
+      "Gently check railings and stairs for looseness without loading questionable areas.",
+      "Look underneath only where safely accessible."
+    ],
+    "what_to_look_for": [
+      "Soft, split, or rotting boards and visible decay",
+      "Loose railings, wobbly posts, or unstable steps",
+      "Corroded connectors, protruding fasteners, or movement"
+    ],
+    "what_to_do_if_issue": "Avoid loading unsafe structures; have structural concerns assessed by a qualified professional.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_exterior_foundation",
@@ -290,7 +601,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "This is a visual check, not a structural assessment. Seek professional advice for significant changes."
+    "recommendation_note": "This is a visual check, not a structural assessment. Seek professional advice for significant changes.",
+    "how_to_inspect": [
+      "Walk the perimeter and inspect visible foundation walls from ground level.",
+      "Compare cracks with prior photos and note changes.",
+      "Check grading and drainage after rain."
+    ],
+    "what_to_look_for": [
+      "New or widening cracks, especially with displacement",
+      "Water pooling, soil erosion, or downspouts discharging near the wall",
+      "Doors/windows sticking alongside other signs of movement"
+    ],
+    "what_to_do_if_issue": "This is a visual check, not a structural assessment. Seek professional advice for significant changes.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "clean_air_conditioner_condenser",
@@ -304,7 +627,19 @@
     "recommendation_note": "Schedule for spring. Disconnect power before any permitted cleaning; do not open electrical compartments or bend fins.",
     "season_keys": [
       "spring"
-    ]
+    ],
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Remove loose leaves and debris around the outdoor unit and check that airflow is unobstructed."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Schedule for spring. Disconnect power before any permitted cleaning; do not open electrical compartments or bend fins.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "winterize_outdoor_faucets",
@@ -318,7 +653,20 @@
     "recommendation_note": "Schedule before freezing weather. Follow frost-free faucet instructions; use a plumber if shutoffs or drainage are unclear.",
     "season_keys": [
       "fall"
-    ]
+    ],
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Disconnect hoses and prepare hose bibs according to the home's plumbing and faucet design."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Schedule before freezing weather. Follow frost-free faucet instructions; use a plumber if shutoffs or drainage are unclear.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_chimney_fireplace",
@@ -329,7 +677,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Use a qualified chimney professional and follow appliance and local fire-safety guidance."
+    "recommendation_note": "Use a qualified chimney professional and follow appliance and local fire-safety guidance.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Arrange an inspection and cleaning when applicable for the home's fireplace, stove, and chimney."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Use a qualified chimney professional and follow appliance and local fire-safety guidance.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_roof_from_ground",
@@ -340,7 +701,19 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Do not climb onto the roof. Arrange a qualified roofer for closer inspection or repairs."
+    "recommendation_note": "Do not climb onto the roof. Arrange a qualified roofer for closer inspection or repairs.",
+    "how_to_inspect": [
+      "Choose a safe ground-level viewing position; use binoculars if helpful.",
+      "Scan roof planes, ridges, valleys, flashing, and penetrations.",
+      "Look for changes compared with earlier inspections."
+    ],
+    "what_to_look_for": [
+      "Missing, lifted, curled, or damaged shingles/tiles",
+      "Loose or bent flashing, debris, sagging, or visible openings",
+      "Dark patches or signs of water entry at eaves"
+    ],
+    "what_to_do_if_issue": "Photograph visible concerns from the ground and arrange a roofer's inspection. Do not climb onto the roof.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "check_dryer_exhaust_outlet",
@@ -351,7 +724,20 @@
     "recommended_interval_days": 90,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Do not insert tools into the vent while the dryer is operating; clean the vent path as needed."
+    "recommendation_note": "Do not insert tools into the vent while the dryer is operating; clean the vent path as needed.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Check that the exterior dryer exhaust flap is unobstructed and opens during operation."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Do not insert tools into the vent while the dryer is operating; clean the vent path as needed.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "inspect_attic_for_moisture",
@@ -362,7 +748,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Do not step off safe walkways or disturb insulation; use a professional if access is unsafe."
+    "recommendation_note": "Do not step off safe walkways or disturb insulation; use a professional if access is unsafe.",
+    "how_to_inspect": [
+      "Use the normal attic access and a safe walkway; do not step on ceiling drywall.",
+      "Use a flashlight to inspect roof sheathing, framing, and accessible insulation.",
+      "Look around vents, chimneys, and roof penetrations."
+    ],
+    "what_to_look_for": [
+      "Water stains, active drips, damp or compressed insulation",
+      "Condensation, rusted fasteners, musty odor, or visible growth",
+      "Daylight through unintended gaps or damaged flashing"
+    ],
+    "what_to_do_if_issue": "Arrange assessment for active leaks or extensive moisture. Do not disturb insulation or suspected hazardous materials.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "clean_showerheads_aerators",
@@ -373,7 +771,20 @@
     "recommended_interval_days": 180,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Use cleaning methods compatible with the fixture finish and manufacturer guidance."
+    "recommendation_note": "Use cleaning methods compatible with the fixture finish and manufacturer guidance.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Remove mineral buildup from accessible showerheads and faucet aerators as appropriate."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Use cleaning methods compatible with the fixture finish and manufacturer guidance.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_sump_pump_backup",
@@ -384,7 +795,20 @@
     "recommended_interval_days": 90,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Follow manufacturer instructions; replace batteries on their specified schedule."
+    "recommendation_note": "Follow manufacturer instructions; replace batteries on their specified schedule.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: If installed, check the backup pump or battery system using its manufacturer's test procedure."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Follow manufacturer instructions; replace batteries on their specified schedule.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "service_water_heater",
@@ -395,7 +819,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Actual maintenance varies by model and water conditions. Use a qualified technician for gas, electrical, pressure, or hot-water work."
+    "recommendation_note": "Actual maintenance varies by model and water conditions. Use a qualified technician for gas, electrical, pressure, or hot-water work.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Check the water heater manual for due maintenance such as flushing or anode-rod inspection."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Actual maintenance varies by model and water conditions. Use a qualified technician for gas, electrical, pressure, or hot-water work.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_furnace_heat_exchanger",
@@ -406,7 +843,19 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Professional inspection only; follow the furnace manufacturer's service schedule."
+    "recommendation_note": "Starting recommendation only. Professional inspection only; follow the furnace manufacturer's service schedule.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Have a qualified technician inspect the heat exchanger and combustion components where applicable."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Professional inspection only; follow the furnace manufacturer's service schedule.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "service_heat_pump",
@@ -417,7 +866,19 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use a qualified HVAC technician and follow manufacturer service intervals."
+    "recommendation_note": "Starting recommendation only. Use a qualified HVAC technician and follow manufacturer service intervals.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Have a qualified technician inspect system operation, refrigerant circuit, electrical connections, and controls."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use a qualified HVAC technician and follow manufacturer service intervals.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "clean_hvac_condensate_drain",
@@ -428,7 +889,19 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow equipment instructions; do not use chemicals or access components unless approved by the manufacturer."
+    "recommendation_note": "Starting recommendation only. Follow equipment instructions; do not use chemicals or access components unless approved by the manufacturer.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Check the accessible condensate drain outlet and pan for blockage, standing water, or overflow."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow equipment instructions; do not use chemicals or access components unless approved by the manufacturer.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "inspect_humidifier",
@@ -439,7 +912,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use the model-specific maintenance procedure and replace consumables as directed."
+    "recommendation_note": "Starting recommendation only. Use the model-specific maintenance procedure and replace consumables as directed.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: If installed, clean the water panel or reservoir and inspect the drain and water feed."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use the model-specific maintenance procedure and replace consumables as directed.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "clean_dehumidifier_filter",
@@ -450,7 +935,19 @@
     "recommended_interval_days": 30,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Unplug the appliance first and follow its cleaning instructions."
+    "recommendation_note": "Starting recommendation only. Unplug the appliance first and follow its cleaning instructions.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Clean the filter and reservoir and check the drain hose if the unit has one."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Unplug the appliance first and follow its cleaning instructions.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "inspect_hrv_erv_filters",
@@ -461,7 +958,19 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Filter intervals vary by model, outdoor air quality, and use."
+    "recommendation_note": "Starting recommendation only. Filter intervals vary by model, outdoor air quality, and use.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: If installed, inspect and clean or replace ventilation-unit filters as directed."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Filter intervals vary by model, outdoor air quality, and use.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "inspect_ductwork",
@@ -472,7 +981,19 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not enter confined spaces; use an HVAC professional for repairs or inaccessible ductwork."
+    "recommendation_note": "Starting recommendation only. Do not enter confined spaces; use an HVAC professional for repairs or inaccessible ductwork.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Look for disconnected, damaged, crushed, or visibly leaking accessible ducts."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not enter confined spaces; use an HVAC professional for repairs or inaccessible ductwork.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "check_thermostat_operation",
@@ -483,7 +1004,19 @@
     "recommended_interval_days": 180,
     "priority": "low",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow thermostat instructions and avoid changing installer-only settings."
+    "recommendation_note": "Starting recommendation only. Follow thermostat instructions and avoid changing installer-only settings.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: Verify heating and cooling modes, schedules, batteries, and displayed temperature."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow thermostat instructions and avoid changing installer-only settings.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "inspect_furnace_flue",
@@ -494,7 +1027,19 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not dismantle venting; arrange qualified service for any concern or suspected combustion issue."
+    "recommendation_note": "Starting recommendation only. Do not dismantle venting; arrange qualified service for any concern or suspected combustion issue.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: From a safe location, look for visible damage, disconnection, corrosion, or obstruction at accessible vent sections."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not dismantle venting; arrange qualified service for any concern or suspected combustion issue.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "replace_hvac_filter_reminder",
@@ -505,7 +1050,19 @@
     "recommended_interval_days": 60,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Only use washable-filter procedures for filters explicitly designed to be reused."
+    "recommendation_note": "Starting recommendation only. Only use washable-filter procedures for filters explicitly designed to be reused.",
+    "how_to_inspect": [
+      "Inspect only accessible, user-serviceable parts identified in the equipment manual.",
+      "Check operation and airflow without opening sealed or electrical compartments.",
+      "For this task: If the system uses a washable filter, clean it and reinstall it only when completely dry."
+    ],
+    "what_to_look_for": [
+      "Dust buildup or restricted airflow",
+      "Unusual noise, vibration, odor, or water",
+      "Corrosion, damaged insulation, loose visible parts, or signs of overheating"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Only use washable-filter procedures for filters explicitly designed to be reused.",
+    "safety_notes": "Turn equipment off before permitted cleaning. Do not open electrical panels, sealed refrigerant circuits, gas components, or combustion assemblies."
   },
   {
     "task_id": "inspect_fire_escape_routes",
@@ -516,7 +1073,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Adapt the plan to household needs and local fire-safety guidance."
+    "recommendation_note": "Starting recommendation only. Adapt the plan to household needs and local fire-safety guidance.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check that exits, windows, and escape paths are accessible and that household members know the plan."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Adapt the plan to household needs and local fire-safety guidance.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "review_fire_escape_plan",
@@ -527,7 +1097,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Include children, visitors, and anyone needing assistance."
+    "recommendation_note": "Starting recommendation only. Include children, visitors, and anyone needing assistance.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Practice the household escape plan and identify an outdoor meeting location."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Include children, visitors, and anyone needing assistance.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_fire_extinguisher_service",
@@ -538,7 +1121,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use a qualified fire-equipment service provider when inspection or servicing is required."
+    "recommendation_note": "Starting recommendation only. Use a qualified fire-equipment service provider when inspection or servicing is required.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check service tags and expiration or replacement guidance for each extinguisher."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use a qualified fire-equipment service provider when inspection or servicing is required.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_first_aid_kit",
@@ -549,7 +1145,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Choose supplies appropriate for household needs and training."
+    "recommendation_note": "Starting recommendation only. Choose supplies appropriate for household needs and training.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check supplies, packaging, and expiration dates; replenish missing essentials."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Choose supplies appropriate for household needs and training.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_emergency_lighting",
@@ -560,7 +1169,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow battery and device instructions; store emergency lights accessibly."
+    "recommendation_note": "Starting recommendation only. Follow battery and device instructions; store emergency lights accessibly.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Test flashlights, lanterns, and emergency lights and replace or recharge batteries as needed."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow battery and device instructions; store emergency lights accessibly.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_co_alarm_replacement_dates",
@@ -571,7 +1193,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Replace alarms at the interval specified by the manufacturer, not solely when a battery expires."
+    "recommendation_note": "Starting recommendation only. Replace alarms at the interval specified by the manufacturer, not solely when a battery expires.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check manufacture or replacement dates on all carbon monoxide alarms."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Replace alarms at the interval specified by the manufacturer, not solely when a battery expires.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_smoke_alarm_replacement_dates",
@@ -582,7 +1217,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Many alarms have a finite service life; follow the exact model label and manufacturer instructions."
+    "recommendation_note": "Starting recommendation only. Many alarms have a finite service life; follow the exact model label and manufacturer instructions.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check manufacture or replacement dates on all smoke alarms."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Many alarms have a finite service life; follow the exact model label and manufacturer instructions.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_fire_sprinkler_heads",
@@ -593,7 +1241,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not touch, paint, test, or modify sprinkler components; contact a qualified fire-sprinkler contractor."
+    "recommendation_note": "Starting recommendation only. Do not touch, paint, test, or modify sprinkler components; contact a qualified fire-sprinkler contractor.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: If installed, look for painted, damaged, corroded, obstructed, or leaking sprinkler heads."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not touch, paint, test, or modify sprinkler components; contact a qualified fire-sprinkler contractor.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "review_emergency_supplies",
@@ -604,7 +1265,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Adjust supplies for household size, local hazards, and public emergency guidance."
+    "recommendation_note": "Starting recommendation only. Adjust supplies for household size, local hazards, and public emergency guidance.",
+    "how_to_inspect": [
+      "Locate each device and check its placement and accessibility.",
+      "Use the built-in test or visual inspection method specified by its manufacturer.",
+      "Check the label for manufacture, service, and replacement dates.",
+      "For this task: Check stored water, shelf-stable food, batteries, radio, and other household emergency supplies."
+    ],
+    "what_to_look_for": [
+      "Missing, damaged, obstructed, expired, or inaccessible equipment",
+      "Warning indicators, low-pressure readings, damaged seals, or failed tests",
+      "Expired supplies or missing components"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Adjust supplies for household size, local hazards, and public emergency guidance.",
+    "safety_notes": "Never disable required alarms or protection. Follow manufacturer instructions and local fire and building requirements; use qualified technicians for servicing."
   },
   {
     "task_id": "inspect_main_water_shutoff",
@@ -615,7 +1289,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not force a seized valve; ask a plumber to service it."
+    "recommendation_note": "Starting recommendation only. Do not force a seized valve; ask a plumber to service it.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Confirm the main shutoff location is accessible and identify how to operate it safely."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not force a seized valve; ask a plumber to service it.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_water_pressure",
@@ -626,7 +1313,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Compare readings with local plumbing guidance and equipment requirements; consult a plumber if abnormal."
+    "recommendation_note": "Starting recommendation only. Compare readings with local plumbing guidance and equipment requirements; consult a plumber if abnormal.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Use a suitable pressure gauge at an approved hose connection and note unusual changes."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Compare readings with local plumbing guidance and equipment requirements; consult a plumber if abnormal.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_pressure_regulator",
@@ -637,7 +1337,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Adjustment and replacement should be handled by a qualified plumber."
+    "recommendation_note": "Starting recommendation only. Adjustment and replacement should be handled by a qualified plumber.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: If installed, look for visible leaks or corrosion around the pressure-reducing valve and note pressure changes."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Adjustment and replacement should be handled by a qualified plumber.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_water_heater_leaks",
@@ -648,7 +1361,20 @@
     "recommended_interval_days": 90,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not remove covers or operate gas, electrical, or pressure components."
+    "recommendation_note": "Starting recommendation only. Do not remove covers or operate gas, electrical, or pressure components.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Look around the tank or unit, fittings, drain pan, and nearby floor for moisture or corrosion."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not remove covers or operate gas, electrical, or pressure components.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "review_water_heater_anode",
@@ -659,7 +1385,20 @@
     "recommended_interval_days": 1095,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Anode work varies by model and water chemistry; use a qualified technician when appropriate."
+    "recommendation_note": "Starting recommendation only. Anode work varies by model and water chemistry; use a qualified technician when appropriate.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Check the manual and service history to determine whether anode inspection or replacement is due."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Anode work varies by model and water chemistry; use a qualified technician when appropriate.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_faucet_supply_lines",
@@ -670,7 +1409,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Replace deteriorated components promptly; do not overtighten fittings."
+    "recommendation_note": "Starting recommendation only. Replace deteriorated components promptly; do not overtighten fittings.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Check accessible shutoff valves, braided lines, and connections for corrosion, bulging, or moisture."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Replace deteriorated components promptly; do not overtighten fittings.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "clean_sink_drain_stoppers",
@@ -681,7 +1433,20 @@
     "recommended_interval_days": 90,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use methods compatible with the drain and fixture; avoid mixing drain chemicals."
+    "recommendation_note": "Starting recommendation only. Use methods compatible with the drain and fixture; avoid mixing drain chemicals.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: Remove accessible hair and debris from bathroom and utility sink stoppers."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use methods compatible with the drain and fixture; avoid mixing drain chemicals.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "inspect_backflow_preventer",
@@ -692,7 +1457,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Testing requirements vary by jurisdiction; use a certified tester where required."
+    "recommendation_note": "Starting recommendation only. Testing requirements vary by jurisdiction; use a certified tester where required.",
+    "how_to_inspect": [
+      "Inspect accessible fixtures, shutoffs, connections, drains, and exposed piping.",
+      "Run the fixture or test the system only where the task and manufacturer instructions call for it.",
+      "Check nearby cabinets, floors, and walls for moisture.",
+      "For this task: If installed, check the test tag and arrange required testing or service."
+    ],
+    "what_to_look_for": [
+      "Drips, mineral trails, corrosion, dampness, staining, or musty odor",
+      "Slow drainage, unusual pressure, running water, or pump cycling",
+      "Cracked, bulging, kinked, or loose hoses and fittings"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Testing requirements vary by jurisdiction; use a certified tester where required.",
+    "safety_notes": "Avoid electrical contact around water. Beware of hot water, pressurized lines, chemicals, and confined pits. Do not adjust pressure or backflow devices unless qualified."
   },
   {
     "task_id": "clean_oven_interior",
@@ -703,7 +1481,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not use self-cleaning cycles or cleaners contrary to the appliance manual."
+    "recommendation_note": "Starting recommendation only. Do not use self-cleaning cycles or cleaners contrary to the appliance manual.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Clean the oven using the manufacturer's approved method and inspect the door seal."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not use self-cleaning cycles or cleaners contrary to the appliance manual.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_microwave_interior",
@@ -714,7 +1505,20 @@
     "recommended_interval_days": 30,
     "priority": "low",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Unplug before cleaning; never remove the outer cabinet."
+    "recommendation_note": "Starting recommendation only. Unplug before cleaning; never remove the outer cabinet.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Clean the interior, door seal, turntable, and accessible ventilation openings."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Unplug before cleaning; never remove the outer cabinet.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "inspect_freezer_ice_buildup",
@@ -725,7 +1529,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow the appliance manual; frost-free models generally should not need manual defrosting."
+    "recommendation_note": "Starting recommendation only. Follow the appliance manual; frost-free models generally should not need manual defrosting.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Check door seals, vents, and frost accumulation; defrost only if the model requires it."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow the appliance manual; frost-free models generally should not need manual defrosting.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_ice_maker",
@@ -736,7 +1553,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow the refrigerator manual and use only approved cleaning methods."
+    "recommendation_note": "Starting recommendation only. Follow the refrigerator manual and use only approved cleaning methods.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: If installed, clean accessible ice bin and approved removable components."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow the refrigerator manual and use only approved cleaning methods.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "inspect_garbage_disposal",
@@ -747,7 +1577,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Disconnect power before cleaning; never put hands inside the disposal."
+    "recommendation_note": "Starting recommendation only. Disconnect power before cleaning; never put hands inside the disposal.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Check for unusual noise, leaks, odor, and proper operation using the manufacturer's procedure."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Disconnect power before cleaning; never put hands inside the disposal.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "clean_coffee_machine",
@@ -758,7 +1601,20 @@
     "recommended_interval_days": 90,
     "priority": "low",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use the manufacturer's recommended descaling product and interval."
+    "recommendation_note": "Starting recommendation only. Use the manufacturer's recommended descaling product and interval.",
+    "how_to_inspect": [
+      "Check the appliance manual for the correct access points and cleaning or test procedure.",
+      "Inspect accessible filters, hoses, seals, vents, connections, and operating indicators.",
+      "Run a normal operating cycle only when the task calls for it.",
+      "For this task: Descale the appliance if required by its indicator or maintenance schedule."
+    ],
+    "what_to_look_for": [
+      "Lint, grease, food debris, mineral buildup, or blocked airflow",
+      "Leaks, damaged seals, cracked hoses, corrosion, or frayed cords",
+      "Unusual heat, noise, odor, vibration, or poor performance"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use the manufacturer's recommended descaling product and interval.",
+    "safety_notes": "Disconnect power before permitted cleaning or access. Do not remove guards or open electrical, gas, or sealed refrigeration components."
   },
   {
     "task_id": "inspect_electrical_panel_exterior",
@@ -769,7 +1625,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not remove the panel cover; have concerns assessed by a licensed electrician."
+    "recommendation_note": "Starting recommendation only. Do not remove the panel cover; have concerns assessed by a licensed electrician.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Look for visible damage, corrosion, water intrusion, unusual heat, or blocked access."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not remove the panel cover; have concerns assessed by a licensed electrician.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "test_afci_breakers",
@@ -780,7 +1649,20 @@
     "recommended_interval_days": 30,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow device instructions; contact an electrician if a breaker fails its test or will not reset."
+    "recommendation_note": "Starting recommendation only. Follow device instructions; contact an electrician if a breaker fails its test or will not reset.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Use the breaker manufacturer's test procedure for accessible AFCI devices."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow device instructions; contact an electrician if a breaker fails its test or will not reset.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_outdoor_receptacles",
@@ -791,7 +1673,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not open electrical boxes; have damaged devices repaired by a qualified electrician."
+    "recommendation_note": "Starting recommendation only. Do not open electrical boxes; have damaged devices repaired by a qualified electrician.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Check accessible outdoor outlet covers for damage, missing seals, or moisture intrusion."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not open electrical boxes; have damaged devices repaired by a qualified electrician.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_extension_cords",
@@ -802,7 +1697,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Remove damaged cords from service; do not use extension cords as permanent wiring."
+    "recommendation_note": "Starting recommendation only. Remove damaged cords from service; do not use extension cords as permanent wiring.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Check cords and plugs for cuts, crushed insulation, loose connections, or heat damage."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Remove damaged cords from service; do not use extension cords as permanent wiring.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "test_standby_generator_transfer",
@@ -813,7 +1721,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Never open transfer equipment or attempt live electrical testing yourself."
+    "recommendation_note": "Starting recommendation only. Never open transfer equipment or attempt live electrical testing yourself.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: If installed, review the transfer switch and generator maintenance schedule with a qualified provider."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Never open transfer equipment or attempt live electrical testing yourself.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_surge_protectors",
@@ -824,7 +1745,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Replace devices when indicators or manufacturer instructions require it."
+    "recommendation_note": "Starting recommendation only. Replace devices when indicators or manufacturer instructions require it.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Check status indicators and replacement guidance for plug-in and whole-home surge protection."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Replace devices when indicators or manufacturer instructions require it.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_exterior_lighting",
@@ -835,7 +1769,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Turn off power before replacing lamps and use weather-rated components."
+    "recommendation_note": "Starting recommendation only. Turn off power before replacing lamps and use weather-rated components.",
+    "how_to_inspect": [
+      "Inspect only accessible device faces, covers, cords, and outdoor fittings.",
+      "Use built-in test/reset controls only as directed by the device manufacturer.",
+      "Observe operation from a safe position; do not remove covers.",
+      "For this task: Check outdoor fixtures, motion sensors, and photocell operation; replace failed lamps where appropriate."
+    ],
+    "what_to_look_for": [
+      "Cracks, discoloration, scorching, buzzing, warmth, moisture, or loose covers",
+      "Failed test/reset operation, damaged insulation, exposed conductors, or corrosion",
+      "Repeated breaker trips or flickering associated with the device"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Turn off power before replacing lamps and use weather-rated components.",
+    "safety_notes": "Do not remove electrical panel covers, touch exposed conductors, or work on energized equipment. Keep water away and follow manufacturer test instructions."
   },
   {
     "task_id": "inspect_interior_paint",
@@ -846,7 +1793,20 @@
     "recommended_interval_days": 365,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Investigate the cause of recurring stains or cracks before repainting."
+    "recommendation_note": "Starting recommendation only. Investigate the cause of recurring stains or cracks before repainting.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Look for peeling, staining, cracking, or damage that may indicate moisture or movement."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Investigate the cause of recurring stains or cracks before repainting.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_flooring_transitions",
@@ -857,7 +1817,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Repair loose or raised flooring promptly to reduce trip risk."
+    "recommendation_note": "Starting recommendation only. Repair loose or raised flooring promptly to reduce trip risk.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Check for loose transitions, lifted edges, damaged boards, or trip hazards."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Repair loose or raised flooring promptly to reduce trip risk.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "clean_carpet_and_rugs",
@@ -868,7 +1841,20 @@
     "recommended_interval_days": 365,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Follow flooring and rug care instructions; allow materials to dry fully."
+    "recommendation_note": "Starting recommendation only. Follow flooring and rug care instructions; allow materials to dry fully.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Clean carpets and rugs using a method appropriate for their material."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow flooring and rug care instructions; allow materials to dry fully.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_interior_doors",
@@ -879,7 +1865,20 @@
     "recommended_interval_days": 365,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use compatible fasteners and do not alter fire-rated door assemblies."
+    "recommendation_note": "Starting recommendation only. Use compatible fasteners and do not alter fire-rated door assemblies.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Check hinges, latches, handles, and door alignment; tighten loose hardware where appropriate."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use compatible fasteners and do not alter fire-rated door assemblies.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_window_glazing",
@@ -890,7 +1889,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use a qualified glazier for cracked glass or failed insulated glazing."
+    "recommendation_note": "Starting recommendation only. Use a qualified glazier for cracked glass or failed insulated glazing.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Look for cracked glass, failed visible seals, condensation between panes, or damaged glazing."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use a qualified glazier for cracked glass or failed insulated glazing.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_moisture_prone_areas",
@@ -901,7 +1913,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Address moisture sources promptly; seek qualified remediation for extensive growth."
+    "recommendation_note": "Starting recommendation only. Address moisture sources promptly; seek qualified remediation for extensive growth.",
+    "how_to_inspect": [
+      "Inspect the accessible surface, joint, seal, finish, or moving part in normal lighting.",
+      "Open and close doors or windows gently where relevant.",
+      "Compare suspicious areas with nearby unaffected surfaces.",
+      "For this task: Look around laundry, bathrooms, under sinks, and exterior-wall corners for dampness or mold-like growth."
+    ],
+    "what_to_look_for": [
+      "Cracks, gaps, peeling, swelling, soft spots, stains, mold-like growth, or persistent moisture",
+      "Loose hardware, sticking, uneven movement, or failed seals",
+      "Changes in floor level, trim separation, or recurring deterioration"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Address moisture sources promptly; seek qualified remediation for extensive growth.",
+    "safety_notes": "Do not disturb suspected asbestos, lead-based paint, or unknown mold. Use safe access and avoid forcing stuck or damaged components."
   },
   {
     "task_id": "inspect_siding",
@@ -912,7 +1937,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use safe ground-level viewing; arrange qualified repairs for elevated areas."
+    "recommendation_note": "Starting recommendation only. Use safe ground-level viewing; arrange qualified repairs for elevated areas.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Look for loose, cracked, warped, or missing siding and trim."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use safe ground-level viewing; arrange qualified repairs for elevated areas.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_exterior_paint",
@@ -923,7 +1961,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Follow coating manufacturer guidance and use lead-safe practices for older painted surfaces."
+    "recommendation_note": "Starting recommendation only. Follow coating manufacturer guidance and use lead-safe practices for older painted surfaces.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Look for peeling, exposed substrate, failed coatings, or areas needing maintenance."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow coating manufacturer guidance and use lead-safe practices for older painted surfaces.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_roof_flashing",
@@ -934,7 +1985,20 @@
     "recommended_interval_days": 730,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not climb onto the roof; use a qualified roofing contractor."
+    "recommendation_note": "Starting recommendation only. Do not climb onto the roof; use a qualified roofing contractor.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Review visible flashing condition and arrange closer inspection if staining or damage is observed."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not climb onto the roof; use a qualified roofing contractor.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_soffit_fascia",
@@ -945,7 +2009,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not access elevated areas without proper equipment and training."
+    "recommendation_note": "Starting recommendation only. Do not access elevated areas without proper equipment and training.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Look for loose panels, rot, pest openings, or water staining along roof edges."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not access elevated areas without proper equipment and training.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_downspout_discharge",
@@ -956,7 +2033,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Maintain positive drainage without directing water onto neighboring property."
+    "recommendation_note": "Starting recommendation only. Maintain positive drainage without directing water onto neighboring property.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Verify downspouts are connected and discharge water away from the foundation."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Maintain positive drainage without directing water onto neighboring property.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_driveway_walkways",
@@ -967,7 +2057,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Repair hazards promptly and use appropriate materials for the surface."
+    "recommendation_note": "Starting recommendation only. Repair hazards promptly and use appropriate materials for the surface.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Look for trip hazards, significant cracks, settlement, and drainage problems."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Repair hazards promptly and use appropriate materials for the surface.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_fence_gates",
@@ -978,7 +2081,20 @@
     "recommended_interval_days": 365,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Check property boundaries and local rules before repairs or replacement."
+    "recommendation_note": "Starting recommendation only. Check property boundaries and local rules before repairs or replacement.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Check posts, rails, latches, hinges, and visible rot or corrosion."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Check property boundaries and local rules before repairs or replacement.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_retaining_walls",
@@ -989,7 +2105,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Keep away from visibly unstable walls and seek a qualified structural professional."
+    "recommendation_note": "Starting recommendation only. Keep away from visibly unstable walls and seek a qualified structural professional.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Look for leaning, bulging, new cracks, displaced blocks, or blocked drainage outlets."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Keep away from visibly unstable walls and seek a qualified structural professional.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_window_wells",
@@ -1000,7 +2129,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use safe access methods; do not enter deep or confined window wells."
+    "recommendation_note": "Starting recommendation only. Use safe access methods; do not enter deep or confined window wells.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Remove debris from accessible window wells and check that drains are not visibly blocked."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use safe access methods; do not enter deep or confined window wells.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "inspect_exterior_caulk",
@@ -1011,7 +2153,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Use sealants compatible with the materials and intended exposure."
+    "recommendation_note": "Starting recommendation only. Use sealants compatible with the materials and intended exposure.",
+    "how_to_inspect": [
+      "Walk the accessible perimeter from stable ground and inspect the relevant exterior feature.",
+      "Look at joints, penetrations, fasteners, drainage paths, and adjacent surfaces.",
+      "Check after rain or wind when that helps reveal leaks or drainage problems.",
+      "For this task: Check around doors, windows, penetrations, and joints for failed or missing sealant."
+    ],
+    "what_to_look_for": [
+      "Missing, loose, cracked, warped, rusted, or deteriorated materials",
+      "Water stains, pooling, erosion, blocked drainage, or loose connections",
+      "Sagging, movement, gaps, or damage after weather"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use sealants compatible with the materials and intended exposure.",
+    "safety_notes": "Do not climb onto roofs or unstable ladders, lean over edges, or work near overhead power lines. Use a qualified professional for elevated or structural work."
   },
   {
     "task_id": "spring_startup_irrigation",
@@ -1022,7 +2177,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Start after freeze risk has passed; follow system instructions and local watering rules."
+    "recommendation_note": "Starting recommendation only. Start after freeze risk has passed; follow system instructions and local watering rules.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Open the system gradually and inspect zones, valves, heads, and visible leaks."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Start after freeze risk has passed; follow system instructions and local watering rules.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_sprinkler_heads",
@@ -1033,7 +2201,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Adjust watering to local restrictions and landscape needs."
+    "recommendation_note": "Starting recommendation only. Adjust watering to local restrictions and landscape needs.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Check for broken, tilted, clogged, or misdirected sprinkler heads."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Adjust watering to local restrictions and landscape needs.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_irrigation_valves",
@@ -1044,7 +2225,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use a qualified irrigation technician for electrical or buried-line repairs."
+    "recommendation_note": "Starting recommendation only. Use a qualified irrigation technician for electrical or buried-line repairs.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Look for leaks, damaged wiring, standing water, or debris in accessible valve boxes."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use a qualified irrigation technician for electrical or buried-line repairs.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_drip_irrigation",
@@ -1055,7 +2249,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Flush and service filters according to system instructions."
+    "recommendation_note": "Starting recommendation only. Flush and service filters according to system instructions.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Check accessible drip lines for leaks, clogged emitters, and damaged tubing."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Flush and service filters according to system instructions.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_backflow_irrigation",
@@ -1066,7 +2273,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow local cross-connection rules and use a certified tester where required."
+    "recommendation_note": "Starting recommendation only. Follow local cross-connection rules and use a certified tester where required.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: If installed, check certification or test dates and arrange required testing."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow local cross-connection rules and use a certified tester where required.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_trees_near_home",
@@ -1077,7 +2297,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not climb or cut large limbs; consult a qualified arborist."
+    "recommendation_note": "Starting recommendation only. Do not climb or cut large limbs; consult a qualified arborist.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Look for dead limbs, major cracks, leaning, or branches contacting the roof and service lines."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not climb or cut large limbs; consult a qualified arborist.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "clean_yard_drains",
@@ -1088,7 +2321,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not enter storm drains or confined drainage structures."
+    "recommendation_note": "Starting recommendation only. Do not enter storm drains or confined drainage structures.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Remove leaves and debris from accessible surface drains and grates."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not enter storm drains or confined drainage structures.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_landscape_grading",
@@ -1099,7 +2345,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Avoid changes that redirect water onto neighboring properties; seek advice for persistent drainage issues."
+    "recommendation_note": "Starting recommendation only. Avoid changes that redirect water onto neighboring properties; seek advice for persistent drainage issues.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Look for settled soil or areas that direct water toward the house."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Avoid changes that redirect water onto neighboring properties; seek advice for persistent drainage issues.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "service_lawn_mower",
@@ -1110,7 +2369,20 @@
     "recommended_interval_days": 365,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Disconnect the spark plug or power source before maintenance and follow safety instructions."
+    "recommendation_note": "Starting recommendation only. Disconnect the spark plug or power source before maintenance and follow safety instructions.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Review blade, deck, tires, and maintenance items according to the equipment manual."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Disconnect the spark plug or power source before maintenance and follow safety instructions.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "inspect_outdoor_hose_bibs",
@@ -1121,7 +2393,20 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Prepare hose bibs for freezing weather using the plumbing manufacturer's instructions."
+    "recommendation_note": "Starting recommendation only. Prepare hose bibs for freezing weather using the plumbing manufacturer's instructions.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Check for drips, loose fittings, damaged vacuum breakers, or leaks while in use."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Prepare hose bibs for freezing weather using the plumbing manufacturer's instructions.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "prune_vegetation_from_structure",
@@ -1132,7 +2417,20 @@
     "recommended_interval_days": 180,
     "priority": "low",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Avoid damaging utility lines, nesting wildlife, or protected vegetation."
+    "recommendation_note": "Starting recommendation only. Avoid damaging utility lines, nesting wildlife, or protected vegetation.",
+    "how_to_inspect": [
+      "Walk the area and inspect accessible irrigation, drainage, plants, and outdoor equipment.",
+      "Run the relevant zone or equipment briefly if the task calls for an operating check.",
+      "Compare coverage, flow, or condition across similar areas.",
+      "For this task: Check that shrubs and branches do not trap moisture against siding or obstruct vents and access."
+    ],
+    "what_to_look_for": [
+      "Leaks, broken heads, uneven coverage, clogged emitters, or pooling water",
+      "Erosion, blocked drains, dead or stressed plants, damaged wiring, or loose fittings",
+      "Unusual equipment noise, vibration, or failure to start"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Avoid damaging utility lines, nesting wildlife, or protected vegetation.",
+    "safety_notes": "Shut off water or power before servicing components. Never enter confined spaces or operate compressed-air winterization equipment without proper training."
   },
   {
     "task_id": "spring_exterior_walkthrough",
@@ -1146,7 +2444,20 @@
     "recommendation_note": "Starting recommendation only. Use this as a seasonal review; create separate tasks for repairs that need tracking.",
     "season_keys": [
       "spring"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Walk the property and identify winter damage, drainage issues, and deferred exterior maintenance."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use this as a seasonal review; create separate tasks for repairs that need tracking.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "summer_cooling_readiness",
@@ -1160,7 +2471,20 @@
     "recommendation_note": "Starting recommendation only. Follow HVAC and window manufacturer guidance; arrange professional service when needed.",
     "season_keys": [
       "summer"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Review cooling system readiness, shading, window screens, and accessible condensate drainage."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow HVAC and window manufacturer guidance; arrange professional service when needed.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "fall_heating_readiness",
@@ -1174,7 +2498,20 @@
     "recommendation_note": "Starting recommendation only. Have fuel-burning equipment serviced by a qualified technician as recommended.",
     "season_keys": [
       "fall"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Review heating readiness, thermostat operation, filters, and visible venting before cold weather."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Have fuel-burning equipment serviced by a qualified technician as recommended.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "fall_weatherproofing",
@@ -1188,7 +2525,20 @@
     "recommendation_note": "Starting recommendation only. Use compatible materials and maintain required ventilation and combustion-air openings.",
     "season_keys": [
       "fall"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Check weatherstripping, storm windows, door sweeps, and visible gaps before winter."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use compatible materials and maintain required ventilation and combustion-air openings.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "winter_pipe_freeze_review",
@@ -1202,7 +2552,20 @@
     "recommendation_note": "Starting recommendation only. Do not use open flames; follow plumbing and heating equipment instructions.",
     "season_keys": [
       "winter"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Identify exposed or vulnerable pipes and confirm approved freeze-protection measures are in place."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not use open flames; follow plumbing and heating equipment instructions.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "winter_roof_snow_plan",
@@ -1216,7 +2579,20 @@
     "recommendation_note": "Starting recommendation only. Do not climb onto icy roofs; follow local safety guidance and use qualified contractors.",
     "season_keys": [
       "winter"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Identify safe procedures and service contacts for heavy snow or ice conditions."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not climb onto icy roofs; follow local safety guidance and use qualified contractors.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "seasonal_weather_seal_check",
@@ -1231,7 +2607,20 @@
     "season_keys": [
       "spring",
       "fall"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Review screens, storm panels, door sweeps, and removable seasonal seals."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Store removed components dry and follow product instructions.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "seasonal_emergency_kit_review",
@@ -1246,7 +2635,20 @@
     "season_keys": [
       "fall",
       "winter"
-    ]
+    ],
+    "how_to_inspect": [
+      "Review the seasonal checklist and inspect the relevant areas before the weather change.",
+      "Check that equipment, supplies, and protective measures are present and ready.",
+      "Confirm the work is complete before the season's first likely extreme conditions.",
+      "For this task: Review supplies for expected seasonal hazards such as winter storms, heat, or wildfire smoke."
+    ],
+    "what_to_look_for": [
+      "Missing supplies, incomplete preparation, damaged seals, or exposed vulnerable components",
+      "Blocked drainage, leaks, wear, or equipment that fails a basic readiness check",
+      "Weather-related damage or conditions that could cause freezing, overheating, or water intrusion"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow local emergency-management recommendations.",
+    "safety_notes": "Follow manufacturer instructions and local weather guidance. Do not perform electrical, gas, roof, refrigerant, or pressurized-system work unless qualified."
   },
   {
     "task_id": "inspect_well_system",
@@ -1257,7 +2659,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use qualified well professionals and follow local health department water-testing guidance."
+    "recommendation_note": "Starting recommendation only. Use qualified well professionals and follow local health department water-testing guidance.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If the home uses a private well, review pump operation, pressure tank condition, and inspection or water-test schedule."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use qualified well professionals and follow local health department water-testing guidance.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "test_well_water",
@@ -1268,7 +2683,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Testing frequency and analytes should follow local public-health guidance and known well risks."
+    "recommendation_note": "Starting recommendation only. Testing frequency and analytes should follow local public-health guidance and known well risks.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If applicable, arrange laboratory testing for locally recommended contaminants."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Testing frequency and analytes should follow local public-health guidance and known well risks.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "inspect_septic_system",
@@ -1279,7 +2707,20 @@
     "recommended_interval_days": 1095,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Inspection and pumping intervals depend on system design, occupancy, and local requirements."
+    "recommendation_note": "Starting recommendation only. Inspection and pumping intervals depend on system design, occupancy, and local requirements.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If installed, arrange a qualified inspection of the tank, distribution components, and system condition."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Inspection and pumping intervals depend on system design, occupancy, and local requirements.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "review_septic_pumping",
@@ -1290,7 +2731,20 @@
     "recommended_interval_days": 1095,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not open or enter septic tanks; use a licensed septic service provider."
+    "recommendation_note": "Starting recommendation only. Do not open or enter septic tanks; use a licensed septic service provider.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: Check service records and determine whether pumping is due based on system guidance."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not open or enter septic tanks; use a licensed septic service provider.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "service_standby_generator",
@@ -1301,7 +2755,20 @@
     "recommended_interval_days": 365,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Use qualified service for fuel, exhaust, and electrical work; follow manufacturer run-test instructions."
+    "recommendation_note": "Starting recommendation only. Use qualified service for fuel, exhaust, and electrical work; follow manufacturer run-test instructions.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If installed, complete the generator manufacturer's scheduled maintenance."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Use qualified service for fuel, exhaust, and electrical work; follow manufacturer run-test instructions.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "inspect_pool_equipment",
@@ -1312,7 +2779,20 @@
     "recommended_interval_days": 90,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow pool equipment instructions and local pool-barrier and electrical-safety requirements."
+    "recommendation_note": "Starting recommendation only. Follow pool equipment instructions and local pool-barrier and electrical-safety requirements.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If applicable, review pump, filter, visible plumbing, barriers, and safety equipment."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow pool equipment instructions and local pool-barrier and electrical-safety requirements.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "service_spa_hot_tub",
@@ -1323,7 +2803,20 @@
     "recommended_interval_days": 90,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow manufacturer water-care and electrical-safety instructions."
+    "recommendation_note": "Starting recommendation only. Follow manufacturer water-care and electrical-safety instructions.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If installed, review pumps, filters, covers, and water-care equipment."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow manufacturer water-care and electrical-safety instructions.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "inspect_radon_mitigation",
@@ -1334,7 +2827,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Follow local public-health guidance and arrange testing or repairs with qualified providers."
+    "recommendation_note": "Starting recommendation only. Follow local public-health guidance and arrange testing or repairs with qualified providers.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If installed, verify the system indicator and review the date of the last radon test."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Follow local public-health guidance and arrange testing or repairs with qualified providers.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "inspect_crawlspace",
@@ -1345,7 +2851,20 @@
     "recommended_interval_days": 180,
     "priority": "high",
     "requires_equipment": false,
-    "recommendation_note": "Starting recommendation only. Do not enter unsafe or confined spaces; use qualified professionals for inspections and repairs."
+    "recommendation_note": "Starting recommendation only. Do not enter unsafe or confined spaces; use qualified professionals for inspections and repairs.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: From a safe access point, look for standing water, plumbing leaks, damaged vapor barrier, or pest entry."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not enter unsafe or confined spaces; use qualified professionals for inspections and repairs.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   },
   {
     "task_id": "inspect_solar_system",
@@ -1356,6 +2875,19 @@
     "recommended_interval_days": 180,
     "priority": "normal",
     "requires_equipment": true,
-    "recommendation_note": "Starting recommendation only. Do not climb onto the roof or open electrical equipment; use a qualified solar contractor."
+    "recommendation_note": "Starting recommendation only. Do not climb onto the roof or open electrical equipment; use a qualified solar contractor.",
+    "how_to_inspect": [
+      "Identify the installed system and review its service manual and maintenance records.",
+      "Inspect accessible indicators, enclosures, visible connections, and the surrounding area.",
+      "Use only the system's built-in user test or monitoring functions.",
+      "For this task: If installed, review monitoring alerts and look for visible damage from a safe ground-level location."
+    ],
+    "what_to_look_for": [
+      "Warning lights, alarms, abnormal readings, leaks, corrosion, or damaged enclosures",
+      "Unusual noise, odor, vibration, poor performance, or overdue service indicators",
+      "Blocked ventilation, water intrusion, or signs of pests or physical damage"
+    ],
+    "what_to_do_if_issue": "Starting recommendation only. Do not climb onto the roof or open electrical equipment; use a qualified solar contractor.",
+    "safety_notes": "Do not open sealed equipment, enter tanks or confined spaces, handle hazardous materials, or service gas, electrical, pressure, or chemical systems."
   }
 ]
