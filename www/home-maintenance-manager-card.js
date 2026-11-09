@@ -13,6 +13,9 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     if (this._category === undefined) this._category = "all";
     if (this._equipmentTask === undefined) this._equipmentTask = null;
     if (this._detailTaskKey === undefined) this._detailTaskKey = null;
+    if (this._view === undefined) this._view = "list";
+    if (this._calendarMonth === undefined) this._calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    if (this._selectedCalendarDate === undefined) this._selectedCalendarDate = this._calendarKey(new Date());
     this.render();
   }
 
@@ -41,6 +44,66 @@ class HomeMaintenanceManagerCard extends HTMLElement {
   _money(value) {
     return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" })
       .format(Number(value || 0));
+  }
+
+
+  _calendarKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  _renderCalendar(tasks) {
+    const month = new Date(this._calendarMonth.getFullYear(), this._calendarMonth.getMonth(), 1);
+    const monthLabel = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+    const mondayOffset = (firstDay.getDay() + 6) % 7;
+    const gridStart = new Date(month.getFullYear(), month.getMonth(), 1 - mondayOffset);
+    const dueByDate = new Map();
+    tasks.forEach((item) => {
+      const value = item.state.attributes?.next_due;
+      if (!value) return;
+      const due = new Date(value);
+      if (Number.isNaN(due.getTime())) return;
+      const key = this._calendarKey(due);
+      if (!dueByDate.has(key)) dueByDate.set(key, []);
+      dueByDate.get(key).push(item);
+    });
+    const selectedTasks = dueByDate.get(this._selectedCalendarDate) || [];
+    const cells = Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+      const key = this._calendarKey(date);
+      const items = dueByDate.get(key) || [];
+      const outside = date.getMonth() !== month.getMonth();
+      const selected = key === this._selectedCalendarDate;
+      const labels = items.slice(0, 2).map((item) => {
+        const name = (item.state.attributes.friendly_name || item.state.entity_id).replace(/ Status$/, "");
+        return `<span class="calendar-task">${this._escape(name)}</span>`;
+      }).join("");
+      const more = items.length > 2 ? `<span class="calendar-more">+${items.length - 2} more</span>` : "";
+      return `<button class="calendar-day ${outside ? "outside" : ""} ${selected ? "selected" : ""} ${items.length ? "has-tasks" : ""}" data-calendar-date="${key}">
+        <strong>${date.getDate()}</strong>${labels}${more}
+      </button>`;
+    }).join("");
+    const selectedDate = new Date(this._selectedCalendarDate + "T12:00:00");
+    const selectedLabel = selectedDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const selectedMarkup = selectedTasks.length
+      ? selectedTasks.map((item) => this._renderTask(item, this._discover().equipment)).join("")
+      : '<div class="empty">No maintenance tasks are due on this date.</div>';
+    return `<section class="calendar-section">
+      <div class="calendar-toolbar">
+        <button data-calendar-prev aria-label="Previous month">‹</button>
+        <strong>${this._escape(monthLabel)}</strong>
+        <button data-calendar-next aria-label="Next month">›</button>
+        <button data-calendar-today>Today</button>
+      </div>
+      <div class="calendar-grid">
+        ${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => `<div class="calendar-weekday">${day}</div>`).join("")}
+        ${cells}
+      </div>
+      <div class="calendar-selected"><h3>${this._escape(selectedLabel)}</h3>${selectedMarkup}</div>
+    </section>`;
   }
 
   _discover() {
@@ -172,6 +235,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
+    const calendarMarkup = this._renderCalendar(tasks);
     const equipmentMarkup = equipment.length
       ? equipment.map((item) => {
         const ids = item.attributes.task_ids || [];
@@ -189,15 +253,16 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           <div class="stat"><strong>${this._escape(count("due_today"))}</strong><span>Due today</span></div>
           <div class="stat"><strong>${this._escape(count("due_soon"))}</strong><span>Due soon</span></div>
         </div>
-        <div class="filters">
+        <div class="view-toggle"><button data-view="list" class="${this._view === "list" ? "selected" : ""}">List view</button><button data-view="calendar" class="${this._view === "calendar" ? "selected" : ""}">Calendar view</button></div>
+        <div class="filters" style="${this._view === "calendar" ? "display:none" : ""}">
           <button data-filter="all" class="${this._filter === "all" ? "selected" : ""}">All</button>
           <button data-filter="overdue" class="${this._filter === "overdue" ? "selected" : ""}">Overdue</button>
           <button data-filter="due_today" class="${this._filter === "due_today" ? "selected" : ""}">Due today</button>
           <button data-filter="upcoming" class="${this._filter === "upcoming" ? "selected" : ""}">Upcoming</button>
         </div>
-        ${categoryMarkup}
+        ${this._view === "calendar" ? calendarMarkup : categoryMarkup}
         ${this._equipmentTask ? '<div class="active-filter">Showing selected equipment task <button data-clear-task>Clear</button></div>' : ""}
-        <div class="tasks">${taskMarkup}</div>
+        ${this._view === "list" ? `<div class="tasks">${taskMarkup}</div>` : ""}
         ${this.config.show_equipment ? `<section><h3>Equipment <small>${this._escape(count("equipment_count"))} registered</small></h3>${equipmentMarkup}</section>` : ""}
         ${this.config.show_history ? `<footer>Completion history records: <strong>${this._escape(count("history_count"))}</strong></footer>` : ""}
       </ha-card>
@@ -206,6 +271,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px 16px 14px}
         .stat{background:var(--secondary-background-color);border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
         .stat strong{font-size:1.35rem}.stat span{font-size:.75rem;color:var(--secondary-text-color)}.warning strong{color:var(--error-color)}
+        .view-toggle{display:flex;gap:7px;padding:0 16px 12px}.view-toggle button,.calendar-toolbar button{border:0;border-radius:16px;padding:7px 12px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer}.view-toggle button.selected{background:var(--primary-color);color:var(--text-primary-color,#fff)}
+        .calendar-section{padding:8px 12px 14px}.calendar-toolbar{display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 0 12px}.calendar-toolbar strong{min-width:150px;text-align:center}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.calendar-weekday{text-align:center;font-size:.72rem;color:var(--secondary-text-color);padding:5px 0}.calendar-day{min-width:0;min-height:74px;padding:4px;border:1px solid var(--divider-color);border-radius:7px;background:var(--card-background-color);color:var(--primary-text-color);text-align:left;display:flex;flex-direction:column;gap:3px;cursor:pointer}.calendar-day>strong{font-size:.8rem}.calendar-day.outside{opacity:.42}.calendar-day.selected{outline:2px solid var(--primary-color);background:var(--secondary-background-color)}.calendar-day.has-tasks>strong{color:var(--primary-color)}.calendar-task,.calendar-more{font-size:.62rem;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:3px;background:var(--secondary-background-color);padding:2px}.calendar-more{color:var(--secondary-text-color)}.calendar-selected{padding-top:10px}.calendar-selected h3{margin-bottom:6px}
         .filters{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}.filters button,.complete{border:0;border-radius:18px;padding:7px 11px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer}
         .filters button.selected,.category-filters button.selected{background:var(--primary-color);color:var(--text-primary-color,#fff)}
         .category-filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}.category-filters button,.equipment-task,.active-filter button{border:0;border-radius:16px;padding:6px 10px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer;font:inherit;font-size:.8rem}.equipment-task,.active-filter button{background:none;color:var(--primary-color);text-decoration:underline;padding:3px 5px}.active-filter{padding:0 16px 10px;font-size:.82rem;color:var(--secondary-text-color)}
@@ -218,8 +285,31 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         section{padding:8px 16px 14px;border-top:1px solid var(--divider-color)}h3{font-size:1rem;margin:8px 0}h3 small{font-weight:400;color:var(--secondary-text-color);margin-left:5px}
         .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}
         footer{border-top:1px solid var(--divider-color);padding:12px 16px;color:var(--secondary-text-color);font-size:.85rem}.empty{padding:16px 0;color:var(--secondary-text-color)}
+        @media(max-width:600px){.calendar-day{min-height:58px;padding:3px}.calendar-task{font-size:.55rem}.calendar-more{font-size:.55rem}}
         @media(max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task{align-items:flex-start}.task-actions{align-items:flex-end}.equipment{flex-direction:column;gap:2px}.equipment span{text-align:left}}
       </style>`;
+    this.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
+      this._view = button.dataset.view;
+      this.render();
+    }));
+    this.querySelectorAll("[data-calendar-prev]").forEach((button) => button.addEventListener("click", () => {
+      this._calendarMonth = new Date(this._calendarMonth.getFullYear(), this._calendarMonth.getMonth() - 1, 1);
+      this.render();
+    }));
+    this.querySelectorAll("[data-calendar-next]").forEach((button) => button.addEventListener("click", () => {
+      this._calendarMonth = new Date(this._calendarMonth.getFullYear(), this._calendarMonth.getMonth() + 1, 1);
+      this.render();
+    }));
+    this.querySelectorAll("[data-calendar-today]").forEach((button) => button.addEventListener("click", () => {
+      const today = new Date();
+      this._calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      this._selectedCalendarDate = this._calendarKey(today);
+      this.render();
+    }));
+    this.querySelectorAll("[data-calendar-date]").forEach((button) => button.addEventListener("click", () => {
+      this._selectedCalendarDate = button.dataset.calendarDate;
+      this.render();
+    }));
     this.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
       this._filter = button.dataset.filter;
       this.render();
