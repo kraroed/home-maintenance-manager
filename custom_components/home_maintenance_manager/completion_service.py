@@ -48,7 +48,8 @@ async def async_setup_completion_service(hass):
 
         entry_data = matches[0]
         await entry_data["manager"].async_complete_task(
-            task_id, call.data.get("notes", ""), attachments
+            task_id, call.data.get("notes", ""), attachments,
+            call.data.get("labor_cost", 0), call.data.get("parts_cost", 0)
         )
         await entry_data["coordinator"].async_request_refresh()
 
@@ -61,6 +62,8 @@ async def async_setup_completion_service(hass):
                 vol.Required("task_id"): str,
                 vol.Optional("notes", default=""): str,
                 vol.Optional("attachments", default=""): str,
+                vol.Optional("labor_cost", default=0): vol.All(vol.Coerce(float), vol.Range(min=0)),
+                vol.Optional("parts_cost", default=0): vol.All(vol.Coerce(float), vol.Range(min=0)),
                 vol.Optional("integration_instance"): str,
             }),
         )
