@@ -133,7 +133,7 @@ class TaskManager:
                 for key, value in definition.items():
                     if task.get("is_custom") and key in {
                         "name", "category", "description",
-                        "recommended_interval_days", "recommendation_note",
+                        "recommended_interval_days", "recommendation_note",\n                        "how_to_inspect", "what_to_look_for",\n                        "what_to_do_if_issue", "safety_notes",
                     }:
                         task[key] = deepcopy(value)
                     else:
