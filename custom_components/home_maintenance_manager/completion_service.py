@@ -107,3 +107,10 @@ async def async_setup_completion_service(hass):
                 vol.Optional("integration_instance"): str,
             }),
         )
+
+
+async def async_unload_completion_service(hass):
+    """Remove task services after the final config entry is unloaded."""
+    for service in (SERVICE_COMPLETE_TASK, SERVICE_RESCHEDULE_TASK):
+        if hass.services.has_service(DOMAIN, service):
+            hass.services.async_remove(DOMAIN, service)
