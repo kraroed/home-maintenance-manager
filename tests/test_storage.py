@@ -111,3 +111,40 @@ async def test_storage_filters_malformed_task_and_history_records(hass, monkeypa
     assert data["tasks"] == {"clean_gutters": valid_task}
     assert data["equipment"] == {"furnace": {"equipment_id": "furnace"}}
     assert data["history"] == [valid_history]
+
+@pytest.mark.asyncio
+async def test_storage_validates_notification_state_and_numeric_settings(
+    hass, monkeypatch
+):
+    """Out-of-range settings and malformed notification markers use defaults."""
+    FakeStore.stored = {
+        "settings": {
+            "due_soon_days": 999,
+            "daily_summary_enabled": False,
+            "individual_notifications_enabled": True,
+        },
+        "notification_state": {
+            "individual": {
+                "clean_gutters:2026-11-09": "2026-11-09T08:00:00+00:00",
+                "bad_key": None,
+                7: "not-a-key",
+            },
+            "summary_date": "2026-02-30",
+        },
+    }
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.storage.Store", FakeStore
+    )
+
+    storage = MaintenanceStorage(hass, "notification-validation")
+    data = await storage.async_load()
+
+    assert data["settings"]["due_soon_days"] == 7
+    assert data["settings"]["daily_summary_enabled"] is False
+    assert data["settings"]["individual_notifications_enabled"] is True
+    assert data["notification_state"] == {
+        "individual": {
+            "clean_gutters:2026-11-09": "2026-11-09T08:00:00+00:00"
+        },
+        "summary_date": None,
+    }
