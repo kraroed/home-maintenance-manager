@@ -92,6 +92,7 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "completion_history": self.coordinator.data.get("history_by_task", {}).get(
                 self.task_id, []
             ),
+            "schedule_history": task.get("schedule_history", [])[-10:],
         }
 
 
