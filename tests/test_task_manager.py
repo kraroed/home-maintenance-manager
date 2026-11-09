@@ -135,8 +135,8 @@ async def test_equipment_associations_are_saved_in_completion_history(hass):
 
 
 @pytest.mark.asyncio
-async def test_custom_task_edit_preserves_existing_schedule_and_history(hass):
-    """Editing a custom task's details must retain its stable ID and history."""
+async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
+    """Editing a custom task updates its interval without losing its history."""
     original_definition = {
         "task_id": "custom_filter_replacement",
         "name": "Replace HVAC filter",
@@ -182,6 +182,10 @@ async def test_custom_task_edit_preserves_existing_schedule_and_history(hass):
     assert edited_task["category"] == "heating and cooling"
     assert edited_task["description"] == "Updated description."
     assert edited_task["last_completed"] == original_last_completed
-    assert edited_task["next_due"] == original_next_due
+    expected_next_due = (
+        dt_util.parse_datetime(original_last_completed) + timedelta(days=120)
+    ).isoformat()
+    assert edited_task["next_due"] == expected_next_due
+    assert edited_task["next_due"] != original_next_due
     assert reloaded_manager.data["history"][-1]["task_id"] == "custom_filter_replacement"
     assert reloaded_manager.data["history"][-1]["task_name"] == "Replace HVAC filter"
