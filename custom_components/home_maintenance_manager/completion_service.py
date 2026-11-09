@@ -87,7 +87,7 @@ async def async_setup_completion_service(hass):
             handle_reschedule,
             schema=vol.Schema({
                 vol.Required("task_id"): str,
-                vol.Required("due_date"): vol.Match(r"^\\d{4}-\\d{2}-\\d{2}$"),
+                vol.Required("due_date"): vol.Match(r"^\d{4}-\d{2}-\d{2}$"),
                 vol.Optional("reason", default=""): str,
                 vol.Optional("integration_instance"): str,
             }),
