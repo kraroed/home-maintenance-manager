@@ -232,3 +232,30 @@ test("action button is re-enabled when a Home Assistant service call fails", asy
   await assert.rejects(control.handlers.click(), /Service unavailable/);
   assert.equal(control.disabled, false);
 });
+
+
+test("validates real calendar dates and rejects impossible dates", () => {
+  const card = new Card();
+
+  assert.equal(card._isValidDateKey("2028-02-29"), true);
+  assert.equal(card._isValidDateKey("2026-02-28"), true);
+  assert.equal(card._isValidDateKey("2026-02-30"), false);
+  assert.equal(card._isValidDateKey("2026-13-01"), false);
+  assert.equal(card._isValidDateKey("2026-04-31"), false);
+  assert.equal(card._isValidDateKey("not-a-date"), false);
+});
+
+test("impossible reschedule date is rejected before prompting for a reason", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-reschedule-task]",
+    { rescheduleTask: "clean_gutters", instance: "main", currentDue: "2026-11-15" },
+    ["2026-02-30"]
+  );
+  let alertMessage = "";
+  context.window.alert = (message) => { alertMessage = message; };
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, []);
+  assert.equal(alertMessage, "Enter a real calendar date as YYYY-MM-DD.");
+});
