@@ -168,7 +168,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const status = state.state;
     const key = `${attrs.integration_instance || "default"}:${attrs.task_id}`;
     const action = item.button
-      ? `<button class="complete" data-complete-task="${this._escape(attrs.task_id)}" data-instance="${this._escape(attrs.integration_instance || "default")}">Mark complete</button>`
+      ? `<div class="task-action-buttons"><button class="reschedule" data-reschedule-task="${this._escape(attrs.task_id)}" data-instance="${this._escape(attrs.integration_instance || "default")}" data-current-due="${this._escape((attrs.next_due || "").slice(0, 10))}">Reschedule</button><button class="complete" data-complete-task="${this._escape(attrs.task_id)}" data-instance="${this._escape(attrs.integration_instance || "default")}">Mark complete</button></div>`
       : '<span class="muted">No completion button</span>';
     const details = this._detailTaskKey === key ? this._renderTaskDetails(item, equipment) : "";
     const detailLabel = this._detailTaskKey === key ? "Hide details" : "Details";
@@ -198,6 +198,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       ? linkedEquipment.map((entry) => this._escape(entry.attributes.friendly_name || entry.state)).join(", ")
       : "None linked";
     const history = [...(attrs.completion_history || [])].reverse();
+    const scheduleHistory = [...(attrs.schedule_history || [])].reverse();
+    const scheduleMarkup = scheduleHistory.length ? `<div class="schedule-history"><strong>Recent schedule changes</strong>${scheduleHistory.slice(0, 5).map((record) => `<div class="history-item"><span>${this._escape(this._date(record.adjusted_at))}: ${this._escape(this._date(record.previous_due))} → ${this._escape(this._date(record.next_due))}</span>${record.reason ? `<span>${this._escape(record.reason)}</span>` : ""}</div>`).join("")}</div>` : "";
     const historyMarkup = history.length ? history.slice(0, 5).map((record) => `
       <div class="history-item">
         <strong>${this._escape(this._date(record.completed_at))}</strong>
@@ -215,6 +217,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       <div><span>Repeat interval</span><strong>${interval}</strong></div>
       <div><span>Linked equipment</span><strong>${equipmentNames}</strong></div>
       <div class="history-list"><strong>Recent completions</strong>${historyMarkup}</div>
+      ${scheduleMarkup}
     </div>`;
   }
 
@@ -281,7 +284,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}.history-attachments{font-size:.8rem}.history-attachments a{color:var(--primary-color);margin-right:6px}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
-        .complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
+        .task-action-buttons{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.reschedule{border:1px solid var(--divider-color);border-radius:18px;padding:7px 10px;background:var(--card-background-color);color:var(--primary-color);font-size:.78rem;cursor:pointer}.complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
         section{padding:8px 16px 14px;border-top:1px solid var(--divider-color)}h3{font-size:1rem;margin:8px 0}h3 small{font-weight:400;color:var(--secondary-text-color);margin-left:5px}
         .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}
         footer{border-top:1px solid var(--divider-color);padding:12px 16px;color:var(--secondary-text-color);font-size:.85rem}.empty{padding:16px 0;color:var(--secondary-text-color)}
@@ -331,6 +334,27 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     this.querySelectorAll("[data-clear-task]").forEach((button) => button.addEventListener("click", () => {
       this._equipmentTask = null;
       this.render();
+    }));
+    this.querySelectorAll("[data-reschedule-task]").forEach((button) => button.addEventListener("click", async () => {
+      const currentDue = button.dataset.currentDue || this._calendarKey(new Date());
+      const dueDate = window.prompt("New due date (YYYY-MM-DD):", currentDue);
+      if (dueDate === null || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate.trim())) {
+        if (dueDate !== null) window.alert("Enter the date as YYYY-MM-DD.");
+        return;
+      }
+      const reason = window.prompt("Why is this task being rescheduled? (optional)", "");
+      if (reason === null) return;
+      button.disabled = true;
+      try {
+        await this._hass.callService("home_maintenance_manager", "reschedule_task", {
+          task_id: button.dataset.rescheduleTask,
+          integration_instance: button.dataset.instance,
+          due_date: dueDate.trim(),
+          reason: reason.trim(),
+        });
+      } finally {
+        button.disabled = false;
+      }
     }));
     this.querySelectorAll("[data-complete-task]").forEach((button) => button.addEventListener("click", async () => {
       const notes = window.prompt("Add completion notes (optional):", "");
