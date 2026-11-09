@@ -11,6 +11,19 @@ from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
 
 
+def _validate_month_day(value):
+    """Validate a canonical MM-DD date, including leap day."""
+    if not isinstance(value, str) or len(value) != 5:
+        raise vol.Invalid("Enter a valid date as MM-DD.")
+    try:
+        parsed = date.strptime(value, "%m-%d") if hasattr(date, "strptime") else date(2000, int(value[:2]), int(value[3:]))
+    except ValueError as err:
+        raise vol.Invalid("Enter a valid date as MM-DD.") from err
+    if parsed.strftime("%m-%d") != value:
+        raise vol.Invalid("Enter a valid date as MM-DD.")
+    return value
+
+
 def _validate_optional_iso_date(value):
     """Accept an empty equipment date or a real canonical YYYY-MM-DD date."""
     if not value:
@@ -69,7 +82,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "configure_notifications"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "configure_notifications", "configure_season_windows"],
         )
 
     async def async_step_configure_notifications(self, user_input=None):
@@ -112,6 +125,43 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="configure_notifications",
             data_schema=schema,
+        )
+
+    async def async_step_configure_season_windows(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data={
+                    **self.config_entry.options,
+                    "season_windows": {
+                        season: {
+                            "start": user_input[f"{season}_start"],
+                            "end": user_input[f"{season}_end"],
+                        }
+                        for season in ("spring", "summer", "fall", "winter")
+                    },
+                },
+            )
+
+        defaults = {
+            "spring": {"start": "03-15", "end": "05-31"},
+            "summer": {"start": "06-01", "end": "08-31"},
+            "fall": {"start": "09-01", "end": "11-15"},
+            "winter": {"start": "11-16", "end": "03-14"},
+        }
+        configured = self.config_entry.options.get("season_windows", {})
+        fields = {}
+        for season, window in defaults.items():
+            current = configured.get(season, window)
+            fields[vol.Required(
+                f"{season}_start", default=current.get("start", window["start"])
+            )] = vol.All(str, _validate_month_day)
+            fields[vol.Required(
+                f"{season}_end", default=current.get("end", window["end"])
+            )] = vol.All(str, _validate_month_day)
+        return self.async_show_form(
+            step_id="configure_season_windows",
+            data_schema=vol.Schema(fields),
         )
 
     async def async_step_manage_tasks(self, user_input=None):
