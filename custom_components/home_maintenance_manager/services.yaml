@@ -49,6 +49,36 @@ complete_task:
           step: 0.01
           mode: box
 
+reschedule_task:
+  name: Reschedule maintenance task
+  description: Change the next due date without marking the task complete. The change is retained in the task's schedule history.
+  fields:
+    task_id:
+      name: Task ID
+      description: The maintenance task ID to reschedule.
+      required: true
+      selector:
+        text:
+    integration_instance:
+      name: Integration instance
+      description: The integration storage key, required when multiple entries contain the same task ID.
+      required: false
+      selector:
+        text:
+    due_date:
+      name: New due date
+      description: The new scheduled date, today or later.
+      required: true
+      selector:
+        date:
+    reason:
+      name: Reason
+      description: Optional reason for changing the schedule.
+      required: false
+      selector:
+        text:
+          multiline: true
+
 export_history:
   name: Export maintenance history
   description: Export the completion history to CSV, JSON, or both formats.
