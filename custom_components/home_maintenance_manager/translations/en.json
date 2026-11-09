@@ -63,7 +63,7 @@
       },
       "add_custom_task": {
         "title": "Add a custom maintenance task",
-        "description": "Create or edit an interval-based, annual, or monthly weekday-pattern task. Annual tasks repeat on a month and day; monthly tasks repeat on the selected ordinal weekday. Existing completion history is retained when editing.",
+        "description": "Create a custom task using an interval, annual calendar date, or monthly weekday pattern. You can also add inspection steps, warning signs, actions, and safety notes.",
         "data": {
           "name": "Task name",
           "category": "Category",
@@ -145,7 +145,7 @@
       },
       "edit_custom_task": {
         "title": "Edit custom maintenance task",
-        "description": "Create or edit an interval-based, annual, or monthly weekday-pattern task. Annual tasks repeat on a month and day; monthly tasks repeat on the selected ordinal weekday. Existing completion history is retained when editing.",
+        "description": "Update task details and schedule. Annual tasks repeat on a selected month and day; monthly tasks repeat on a selected weekday pattern. Existing completion history is retained.",
         "data": {
           "name": "Task name",
           "category": "Category",
@@ -174,8 +174,7 @@
       "duplicate_task": "A task with this name already exists. Choose a different name.",
       "invalid_annual_date": "Enter a valid calendar date. February 29 is allowed.",
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
-      "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank.",
-      "invalid_monthly_pattern": "Choose a valid week and weekday for the monthly schedule."
+      "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank."
     },
     "abort": {
       "no_equipment": "No equipment records have been added yet.",
