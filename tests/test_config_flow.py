@@ -61,6 +61,19 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "add_equipment"
 
+    invalid_result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Main HVAC",
+            "category": "HVAC",
+            "installed_date": "2024-02-30",
+            "task_ids": ["clean_gutters"],
+        },
+    )
+    assert invalid_result["type"] == FlowResultType.FORM
+    assert invalid_result["errors"] == {"installed_date": "invalid_date"}
+    result = invalid_result
+
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
