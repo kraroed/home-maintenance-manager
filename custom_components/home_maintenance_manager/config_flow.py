@@ -247,7 +247,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             if not slug or task_id in all_ids:
                 return self.async_show_form(
                     step_id="add_custom_task",
-                    data_schema=self._custom_task_schema(),
+                    data_schema=self._custom_task_schema(user_input),
                     errors={"base": "duplicate_task"},
                 )
 
@@ -261,7 +261,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 except ValueError:
                     return self.async_show_form(
                         step_id="add_custom_task",
-                        data_schema=self._custom_task_schema(),
+                        data_schema=self._custom_task_schema(user_input),
                         errors={"base": "invalid_annual_date"},
                     )
             custom_task = {
@@ -359,7 +359,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             ):
                 return self.async_show_form(
                     step_id="edit_custom_task",
-                    data_schema=self._custom_task_schema(current),
+                    data_schema=self._custom_task_schema({**current, **user_input}),
                     errors={"base": "duplicate_task"},
                 )
             # Keep the ID stable so existing task state and completion history
@@ -374,7 +374,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 except ValueError:
                     return self.async_show_form(
                         step_id="edit_custom_task",
-                        data_schema=self._custom_task_schema(current),
+                        data_schema=self._custom_task_schema({**current, **user_input}),
                         errors={"base": "invalid_annual_date"},
                     )
             updated = {
@@ -630,6 +630,12 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     @staticmethod
     def _custom_task_schema(current=None):
         current = current or {}
+        how_to_inspect = current.get("how_to_inspect", [])
+        what_to_look_for = current.get("what_to_look_for", [])
+        if isinstance(how_to_inspect, list):
+            how_to_inspect = "\n".join(how_to_inspect)
+        if isinstance(what_to_look_for, list):
+            what_to_look_for = "\n".join(what_to_look_for)
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
@@ -640,8 +646,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("description", default=current.get("description", "")): vol.All(
                 str, vol.Length(max=300)
             ),
-            vol.Optional("how_to_inspect", default="\n".join(current.get("how_to_inspect", []))): vol.All(str, vol.Length(max=1200)),
-            vol.Optional("what_to_look_for", default="\n".join(current.get("what_to_look_for", []))): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("how_to_inspect", default=how_to_inspect): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("what_to_look_for", default=what_to_look_for): vol.All(str, vol.Length(max=1200)),
             vol.Optional("what_to_do_if_issue", default=current.get("what_to_do_if_issue", "")): vol.All(str, vol.Length(max=600)),
             vol.Optional("safety_notes", default=current.get("safety_notes", "")): vol.All(str, vol.Length(max=600)),
             vol.Required(
