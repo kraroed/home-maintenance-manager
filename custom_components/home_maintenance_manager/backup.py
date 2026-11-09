@@ -13,6 +13,7 @@ from homeassistant.core import ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
+from .task_manager import load_library
 
 SERVICE_CREATE_BACKUP = "create_backup"
 SERVICE_PREVIEW_RESTORE = "preview_restore"
@@ -24,7 +25,7 @@ _FILENAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\.json$")
 
 
 def _backup_directory(hass, entry_id):
-    return Path(hass.config.path("www", DOMAIN, entry_id))
+    return Path(hass.config.path("home_maintenance_manager_backups", entry_id))
 
 
 def _timestamp():
@@ -237,6 +238,7 @@ async def async_setup_backup_services(hass):
         manager.task_intervals = options.get("task_intervals", {})
         manager.equipment_records = options.get("equipment_records", [])
         manager.season_windows = options.get("season_windows", {})
+        manager.library = load_library()
         manager.library.update({
             item["task_id"]: deepcopy(item)
             for item in options.get("custom_tasks", [])
