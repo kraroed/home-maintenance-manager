@@ -24,6 +24,34 @@ def _season_contains(day, start, end):
     return month_day >= start_month_day or month_day <= end_month_day
 
 
+def _next_annual_due(task, reference, include_active=False):
+    """Return the next occurrence of an annual month/day schedule.
+
+    February 29 is observed only in leap years; invalid occurrences are skipped.
+    """
+    try:
+        month = int(task.get("annual_month"))
+        day = int(task.get("annual_day"))
+        date(2000, month, day)
+    except (TypeError, ValueError):
+        return None
+
+    local_now = dt_util.as_local(reference)
+    local_day = local_now.date()
+    for year in range(local_day.year, local_day.year + 9):
+        try:
+            candidate = date(year, month, day)
+        except ValueError:
+            continue
+        if candidate < local_day or (candidate == local_day and not include_active):
+            continue
+        if candidate == local_day and include_active:
+            return reference.isoformat()
+        local_due = datetime.combine(candidate, time.min, tzinfo=local_now.tzinfo)
+        return dt_util.as_utc(local_due).isoformat()
+    return None
+
+
 def _next_season_due(task, reference, include_active=False, settings=None):
     settings = settings or {}
     windows = settings.get("season_windows", {})
@@ -78,6 +106,8 @@ class TaskManager:
             return _next_season_due(
                 task, now, include_active=True, settings=self.data["settings"]
             )
+        if task.get("schedule_type") == "annual":
+            return _next_annual_due(task, now, include_active=True)
         interval = int(task.get("configured_interval_days") or 0)
         return (now + timedelta(days=interval)).isoformat() if interval else None
 
@@ -192,6 +222,8 @@ class TaskManager:
         previous_due = task.get("next_due")
         if task.get("schedule_type") == "seasonal":
             next_due_value = _next_season_due(task, now, settings=self.data["settings"])
+        elif task.get("schedule_type") == "annual":
+            next_due_value = _next_annual_due(task, now)
         else:
             interval = int(task.get("configured_interval_days") or 0)
             next_due_value = (now + timedelta(days=interval)).isoformat() if interval > 0 else None
