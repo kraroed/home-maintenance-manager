@@ -172,7 +172,7 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         title="Primary Residence",
         data={
             "property_name": "Primary Residence",
-            CONF_ENABLED_TASK_IDS: ["clean_gutters", "replace_hvac_filter"],
+            CONF_ENABLED_TASK_IDS: ["clean_gutters", "replace_disposable_hvac_filter"],
         },
         options={
             "equipment_records": [{
@@ -183,7 +183,7 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
                 "model": "OLD-100",
                 "installed_date": "2020-01-15",
                 "notes": "Original notes",
-                "task_ids": ["replace_hvac_filter"],
+                "task_ids": ["replace_disposable_hvac_filter"],
             }],
         },
     )
@@ -212,7 +212,7 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
             "model": "NEW-200",
             "installed_date": "2024-02-29",
             "notes": "Updated equipment details",
-            "task_ids": ["clean_gutters", "replace_hvac_filter"],
+            "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
         },
     )
 
@@ -227,6 +227,6 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         "model": "NEW-200",
         "installed_date": "2024-02-29",
         "notes": "Updated equipment details",
-        "task_ids": ["clean_gutters", "replace_hvac_filter"],
+        "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
     }
 
