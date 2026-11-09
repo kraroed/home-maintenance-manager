@@ -83,6 +83,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           (a.state.attributes.friendly_name || "").localeCompare(b.state.attributes.friendly_name || "");
       }),
       summaries: summaryTotals,
+      costBreakdown: integrationStates.find((state) => state.attributes?.summary_key === "maintenance_cost")?.attributes?.cost_breakdown || {},
       equipment,
     };
   }
@@ -157,7 +158,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
 
   render() {
     if (!this._hass || !this.config) return;
-    const { tasks, summaries, equipment } = this._discover();
+    const { tasks, summaries, costBreakdown, equipment } = this._discover();
     const count = (key) => summaries.get(key)?.state ?? "—";
     const categories = [...new Set(tasks.map(({ state }) => state.attributes.category || "General"))].sort();
     const filtered = tasks.filter(({ state }) => {
@@ -169,35 +170,15 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       return state.state === this._filter;
     });
     const categoryMarkup = '<div class="category-filters"><button data-category="all" class="' + (this._category === "all" ? "selected" : "") + '">All categories</button>' + categories.map((category) => '<button data-category="' + this._escape(category) + '" class="' + (this._category === category ? "selected" : "") + '">' + this._escape(category) + '</button>').join("") + '</div>';
-    const costGroups = { category: new Map(), year: new Map(), equipment: new Map() };
-    const equipmentNames = new Map(equipment.map((item) => [
-      item.attributes.equipment_id,
-      item.attributes.friendly_name || item.state,
-    ]));
-    tasks.forEach(({ state }) => {
-      const attrs = state.attributes || {};
-      (attrs.completion_history || []).forEach((record) => {
-        const amount = Number(record.total_cost || 0);
-        if (!Number.isFinite(amount) || amount <= 0) return;
-        const category = attrs.category || "General";
-        const year = record.completed_at ? new Date(record.completed_at).getFullYear().toString() : "Unknown";
-        costGroups.category.set(category, (costGroups.category.get(category) || 0) + amount);
-        costGroups.year.set(year, (costGroups.year.get(year) || 0) + amount);
-        (record.equipment_ids || attrs.equipment_ids || []).forEach((id) => {
-          const label = equipmentNames.get(id) || id;
-          costGroups.equipment.set(label, (costGroups.equipment.get(label) || 0) + amount);
-        });
-      });
-    });
-    const costList = (map) => [...map.entries()]
+    const costList = (values) => Object.entries(values || {})
       .sort((a, b) => b[1] - a[1])
       .map(([label, amount]) => `<div class="cost-row"><span>${this._escape(label)}</span><strong>${this._money(amount)}</strong></div>`)
       .join("") || '<div class="muted">No recorded costs yet.</div>';
     const costMarkup = `<section><h3>Cost breakdown</h3>
       <div class="cost-columns">
-        <div><strong>By category</strong>${costList(costGroups.category)}</div>
-        <div><strong>By year</strong>${costList(costGroups.year)}</div>
-        <div><strong>By equipment</strong>${costList(costGroups.equipment)}</div>
+        <div><strong>By category</strong>${costList(costBreakdown.category)}</div>
+        <div><strong>By year</strong>${costList(costBreakdown.year)}</div>
+        <div><strong>By equipment</strong>${costList(costBreakdown.equipment)}</div>
       </div></section>`;
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
