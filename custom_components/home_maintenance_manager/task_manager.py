@@ -16,6 +16,14 @@ def load_library():
     return {item["task_id"]: item for item in items}
 
 
+def _add_months(day, months):
+    """Add calendar months while clamping to the target month's last day."""
+    month_index = day.year * 12 + day.month - 1 + months
+    year, month_zero = divmod(month_index, 12)
+    month = month_zero + 1
+    return date(year, month, min(day.day, calendar.monthrange(year, month)[1]))
+
+
 def _season_contains(day, start, end):
     month_day = (day.month, day.day)
     start_month_day = tuple(int(part) for part in start.split("-"))
@@ -179,12 +187,14 @@ class TaskManager:
                     "enabled": True,
                     "last_completed": None,
                     "next_due": None,
+                    "schedule_next_due": None,
                     "equipment_id": None,
                     "equipment_ids": [],
                     "notes": "",
                     "created_at": now.isoformat(),
                 }
-                task["next_due"] = self._initial_due(task, now)
+                task["schedule_next_due"] = self._initial_due(task, now)
+                task["next_due"] = task["schedule_next_due"]
                 self.data["tasks"][task_id] = task
             else:
                 task = self.data["tasks"][task_id]
@@ -231,23 +241,28 @@ class TaskManager:
                         task["configured_interval_days"] = configured_interval
                         interval_changed = True
 
+                if "schedule_next_due" not in task:
+                    task["schedule_next_due"] = task.get("next_due")
                 if schedule_changed:
-                    task["next_due"] = self._initial_due(task, now)
+                    task["schedule_next_due"] = self._initial_due(task, now)
+                    task["next_due"] = task["schedule_next_due"]
                 elif interval_changed:
                     anchor = task.get("last_completed") or task.get("created_at")
                     anchor_dt = dt_util.parse_datetime(anchor) if anchor else now
                     if anchor_dt is None:
                         anchor_dt = now
-                    task["next_due"] = (
+                    task["schedule_next_due"] = (
                         anchor_dt + timedelta(days=configured_interval)
                     ).isoformat()
+                    task["next_due"] = task["schedule_next_due"]
 
                 if (
                     task.get("schedule_type") == "seasonal"
                     and not task.get("last_completed")
                     and not task.get("next_due")
                 ):
-                    task["next_due"] = self._initial_due(task, now)
+                    task["schedule_next_due"] = self._initial_due(task, now)
+                    task["next_due"] = task["schedule_next_due"]
 
         # Apply equipment links from the configuration options to task records.
         links = {}
@@ -258,7 +273,33 @@ class TaskManager:
             task["equipment_ids"] = links.get(task_id, [])
             task["equipment_id"] = task["equipment_ids"][0] if task["equipment_ids"] else None
 
+        self._refresh_equipment_lifespan_due()
         await self.async_save()
+
+    def _refresh_equipment_lifespan_due(self):
+        """Combine normal task schedules with designated equipment replacement dates."""
+        replacement_dates = {}
+        for equipment in self.data["equipment"].values():
+            task_id = equipment.get("replacement_task_id")
+            installed = equipment.get("installed_date")
+            months = int(equipment.get("lifespan_months") or 0)
+            if not task_id or not installed or months <= 0:
+                equipment.pop("replacement_due", None)
+                continue
+            try:
+                installed_day = date.fromisoformat(installed)
+                due_day = _add_months(installed_day, months)
+            except (TypeError, ValueError):
+                equipment.pop("replacement_due", None)
+                continue
+            due_value = due_day.isoformat()
+            equipment["replacement_due"] = due_value
+            replacement_dates.setdefault(task_id, []).append(due_value)
+
+        for task_id, task in self.data["tasks"].items():
+            candidates = [task.get("schedule_next_due")] if task.get("schedule_next_due") else []
+            candidates.extend(f"{value}T00:00:00" for value in replacement_dates.get(task_id, []))
+            task["next_due"] = min(candidates) if candidates else None
 
     async def async_save(self):
         await self.storage.async_save(self.data)
