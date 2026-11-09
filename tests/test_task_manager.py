@@ -141,6 +141,10 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
         "description": "Original description.",
         "schedule_type": "interval",
         "recommended_interval_days": 90,
+        "how_to_inspect": ["Check the filter and frame."],
+        "what_to_look_for": ["Dust buildup or damage."],
+        "what_to_do_if_issue": "Replace a damaged filter.",
+        "safety_notes": "Turn the system off first.",
         "is_custom": True,
     }
     equipment_records = [{
@@ -174,6 +178,10 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
         "category": "heating and cooling",
         "description": "Updated description.",
         "recommended_interval_days": 120,
+        "how_to_inspect": ["Check the filter and frame.", "Confirm airflow direction."],
+        "what_to_look_for": ["Dust buildup or damage."],
+        "what_to_do_if_issue": "Replace a damaged filter.",
+        "safety_notes": "Turn the system off first.",
     }
     reloaded_manager = TaskManager(
         hass,
@@ -189,6 +197,13 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
     assert edited_task["name"] == "Replace upstairs HVAC filter"
     assert edited_task["category"] == "heating and cooling"
     assert edited_task["description"] == "Updated description."
+    assert edited_task["how_to_inspect"] == [
+        "Check the filter and frame.",
+        "Confirm airflow direction.",
+    ]
+    assert edited_task["what_to_look_for"] == ["Dust buildup or damage."]
+    assert edited_task["what_to_do_if_issue"] == "Replace a damaged filter."
+    assert edited_task["safety_notes"] == "Turn the system off first."
     assert edited_task["last_completed"] == original_last_completed
     expected_next_due = (
         dt_util.parse_datetime(original_last_completed) + timedelta(days=120)
