@@ -115,3 +115,34 @@ async def test_unloading_one_property_keeps_services_for_remaining_property(
     assert not hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
     assert not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
 
+
+@pytest.mark.asyncio
+async def test_services_are_registered_again_after_last_entry_reload(
+    hass, enable_custom_integrations
+):
+    """Domain services return when an entry is set up after final unload."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+        options={},
+    )
+    entry.add_to_hass(hass)
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    assert hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    assert not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    assert entry.entry_id in hass.data[DOMAIN]
+    assert hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK)
+    assert hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
+    assert hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY)
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
