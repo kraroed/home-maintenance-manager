@@ -444,3 +444,46 @@ async def test_seasonal_window_end_date_is_inclusive(
     if reference_day == expected_due:
         assert manager.data["tasks"]["test_spring_boundary_task"]["next_due"] == fixed_now.isoformat()
 
+@pytest.mark.parametrize(
+    ("reference_day", "expected_due"),
+    [
+        ("2026-07-01", "2026-09-01"),
+        ("2026-10-01", "2027-03-15"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_multi_season_task_uses_nearest_upcoming_window(
+    hass, monkeypatch, reference_day, expected_due
+):
+    """Tasks assigned to multiple seasons use the nearest future season start."""
+    fixed_now = datetime.fromisoformat(f"{reference_day}T12:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_multi_season_task",
+        "name": "Test multi-season task",
+        "category": "Testing",
+        "description": "A task that can be performed in spring or fall.",
+        "schedule_type": "seasonal",
+        "season_keys": ["spring", "fall"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        f"multi-season-{reference_day}",
+        ["test_multi_season_task"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "spring": {"start": "03-15", "end": "05-31"},
+            "fall": {"start": "09-01", "end": "11-15"},
+        },
+    )
+
+    await manager.async_load()
+
+    due = dt_util.as_local(
+        dt_util.parse_datetime(
+            manager.data["tasks"]["test_multi_season_task"]["next_due"]
+        )
+    )
+    assert due.date() == date.fromisoformat(expected_due)
+
