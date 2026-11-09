@@ -1,3 +1,4 @@
+from .completion_service import async_setup_completion_service, async_unload_completion_service
 from .const import CONF_ENABLED_TASK_IDS, DOMAIN, PLATFORMS
 from .coordinator import MaintenanceCoordinator
 from .history_export import async_setup_history_export, async_unload_history_export
@@ -7,6 +8,7 @@ from .task_manager import TaskManager
 
 async def async_setup(hass, config):
     await async_setup_history_export(hass)
+    await async_setup_completion_service(hass)
     return True
 
 
@@ -56,4 +58,5 @@ async def async_unload_entry(hass, entry):
         hass.data[DOMAIN].pop(entry.entry_id, None)
         if not hass.data[DOMAIN]:
             await async_unload_history_export(hass)
+            await async_unload_completion_service(hass)
     return unload_ok
