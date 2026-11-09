@@ -238,12 +238,18 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     this.querySelectorAll("[data-complete-task]").forEach((button) => button.addEventListener("click", async () => {
       const notes = window.prompt("Add completion notes (optional):", "");
       if (notes === null) return;
+      const attachments = window.prompt(
+        "Add photo or receipt URLs, one per line. Upload files to /config/www/ first and use /local/ paths. Leave blank if none.",
+        ""
+      );
+      if (attachments === null) return;
       button.disabled = true;
       try {
         await this._hass.callService("home_maintenance_manager", "complete_task", {
           task_id: button.dataset.completeTask,
           integration_instance: button.dataset.instance,
           notes: notes.trim(),
+          attachments: attachments.trim(),
         });
       } finally {
         button.disabled = false;
