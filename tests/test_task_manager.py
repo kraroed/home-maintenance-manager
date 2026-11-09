@@ -1,4 +1,5 @@
 """Regression tests for maintenance task scheduling and history."""
+from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
