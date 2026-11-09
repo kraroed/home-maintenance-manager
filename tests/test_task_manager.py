@@ -6,7 +6,10 @@ import pytest
 
 from homeassistant.util import dt as dt_util
 
-from custom_components.home_maintenance_manager.task_manager import TaskManager
+from custom_components.home_maintenance_manager.task_manager import (
+    TaskManager,
+    _next_monthly_due,
+)
 
 
 @pytest.mark.asyncio
@@ -764,4 +767,115 @@ async def test_custom_task_schedule_change_recalculates_due_date_and_preserves_h
     assert task["annual_month"] == 10
     assert task["annual_day"] == 15
     assert due.date() == date(2026, 10, 15)
+    assert updated_manager.data["history"] == history_before
+
+
+
+@pytest.mark.parametrize(
+    ("week", "weekday", "expected"),
+    [
+        ("first", 5, date(2026, 12, 5)),
+        ("second", 1, date(2026, 11, 10)),
+        ("last", 6, date(2026, 11, 29)),
+    ],
+)
+def test_monthly_weekday_patterns_find_expected_calendar_date(
+    week, weekday, expected
+):
+    """Monthly patterns resolve first, second, and last weekday occurrences."""
+    reference = datetime(2026, 11, 9, 12, 0, tzinfo=timezone.utc)
+    task = {"monthly_week": week, "monthly_weekday": weekday}
+
+    due = dt_util.as_local(_next_monthly_due(task, reference))
+
+    assert due.date() == expected
+
+
+@pytest.mark.asyncio
+async def test_monthly_completion_advances_to_next_month_and_preserves_history(
+    hass, monkeypatch
+):
+    """Completing a monthly task schedules its next weekday occurrence."""
+    fixed_now = datetime(2026, 11, 10, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_id = "custom_monthly_alarm_test"
+    task_definition = {
+        "task_id": task_id,
+        "name": "Test monthly alarm check",
+        "category": "Testing",
+        "description": "A monthly weekday task used by automated tests.",
+        "schedule_type": "monthly",
+        "monthly_week": "second",
+        "monthly_weekday": 1,
+        "is_custom": True,
+    }
+    manager = TaskManager(
+        hass,
+        "monthly-completion-test",
+        [task_id],
+        custom_tasks=[task_definition],
+    )
+
+    await manager.async_load()
+    await manager.async_complete_task(task_id)
+
+    task = manager.data["tasks"][task_id]
+    history = manager.data["history"][-1]
+    due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert task["schedule_type"] == "monthly"
+    assert task["monthly_week"] == "second"
+    assert task["monthly_weekday"] == 1
+    assert due.date() == date(2026, 12, 8)
+    assert history["next_due"] == task["next_due"]
+    assert history["completed_at"] == fixed_now.isoformat()
+
+
+@pytest.mark.asyncio
+async def test_custom_monthly_schedule_change_recalculates_due_date_and_keeps_history(
+    hass, monkeypatch
+):
+    """Changing a custom task to monthly updates its due date without losing history."""
+    fixed_now = datetime(2026, 11, 9, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_id = "custom_monthly_transition"
+    interval_definition = {
+        "task_id": task_id,
+        "name": "Monthly transition task",
+        "category": "Testing",
+        "description": "A custom task before its schedule changes.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+        "is_custom": True,
+    }
+    manager = TaskManager(
+        hass,
+        "monthly-schedule-transition-test",
+        [task_id],
+        task_intervals={task_id: 90},
+        custom_tasks=[interval_definition],
+    )
+    await manager.async_load()
+    await manager.async_complete_task(task_id)
+    history_before = list(manager.data["history"])
+
+    monthly_definition = {
+        **interval_definition,
+        "schedule_type": "monthly",
+        "monthly_week": "first",
+        "monthly_weekday": 5,
+    }
+    updated_manager = TaskManager(
+        hass,
+        "monthly-schedule-transition-test",
+        [task_id],
+        custom_tasks=[monthly_definition],
+    )
+    await updated_manager.async_load()
+
+    task = updated_manager.data["tasks"][task_id]
+    due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert task["schedule_type"] == "monthly"
+    assert task["monthly_week"] == "first"
+    assert task["monthly_weekday"] == 5
+    assert due.date() == date(2026, 12, 5)
     assert updated_manager.data["history"] == history_before
