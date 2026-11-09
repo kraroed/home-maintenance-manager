@@ -602,3 +602,45 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
     assert result["data"]["custom_tasks"][0]["annual_day"] == 15
     assert "custom_sprinkler_check" not in result["data"]["task_intervals"]
     assert result["data"]["notification_target"] == "notify.mobile_app_phone"
+
+
+
+@pytest.mark.asyncio
+async def test_add_custom_monthly_task_saves_weekday_pattern(
+    hass, enable_custom_integrations
+):
+    """Adding a monthly custom task stores its ordinal weekday schedule."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Monthly Alarm Test",
+            "category": "Safety",
+            "description": "Test household alarms monthly.",
+            "schedule_type": "monthly",
+            "interval_days": 90,
+            "annual_month": 1,
+            "annual_day": 1,
+            "monthly_week": "second",
+            "monthly_weekday": 1,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    task = result["data"]["custom_tasks"][0]
+    assert task["task_id"] == "custom_monthly_alarm_test"
+    assert task["schedule_type"] == "monthly"
+    assert task["monthly_week"] == "second"
+    assert task["monthly_weekday"] == 1
+    assert "annual_month" not in task
+    assert "custom_monthly_alarm_test" not in result["data"]["task_intervals"]
