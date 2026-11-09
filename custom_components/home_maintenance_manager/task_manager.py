@@ -171,7 +171,7 @@ class TaskManager:
             return "due_soon"
         return "scheduled"
 
-    async def async_complete_task(self, task_id, notes=""):
+    async def async_complete_task(self, task_id, notes="", attachments=None):
         task = self.data["tasks"].get(task_id)
         if task is None:
             raise ValueError(f"Unknown maintenance task: {task_id}")
@@ -194,6 +194,7 @@ class TaskManager:
             "previous_due": previous_due,
             "next_due": next_due_value,
             "notes": notes,
+            "attachments": list(attachments or []),
             "equipment_ids": task.get("equipment_ids", []),
         })
         task["last_completed"] = now.isoformat()
