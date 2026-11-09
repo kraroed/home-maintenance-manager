@@ -299,9 +299,11 @@ class TaskManager:
             replacement_dates.setdefault(task_id, []).append(due_value)
 
         for task_id, task in self.data["tasks"].items():
-            candidates = [task.get("schedule_next_due")] if task.get("schedule_next_due") else []
-            candidates.extend(f"{value}T00:00:00" for value in replacement_dates.get(task_id, []))
-            task["next_due"] = min(candidates) if candidates else None
+            lifecycle_dates = replacement_dates.get(task_id, [])
+            if lifecycle_dates:
+                task["next_due"] = f"{min(lifecycle_dates)}T00:00:00"
+            else:
+                task["next_due"] = task.get("schedule_next_due")
 
     async def async_save(self):
         await self.storage.async_save(self.data)
