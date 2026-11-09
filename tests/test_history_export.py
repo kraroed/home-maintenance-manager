@@ -9,7 +9,7 @@ from custom_components.home_maintenance_manager.history_export import (
 
 
 def test_history_export_writes_csv_and_json_with_completion_details(tmp_path):
-    """Both export formats retain notes, attachments, costs, and equipment links."""
+    """Both export formats retain core completion details and omit removed fields."""
     history = [
         {
             "history_id": "replace_filter:2026-11-08T12:00:00+00:00",
@@ -42,16 +42,18 @@ def test_history_export_writes_csv_and_json_with_completion_details(tmp_path):
     assert len(rows) == 1
     assert rows[0]["task_name"] == "Replace HVAC filter"
     assert rows[0]["notes"] == "Installed a new filter"
-    assert json.loads(rows[0]["attachments"]) == history[0]["attachments"]
     assert json.loads(rows[0]["equipment_ids"]) == history[0]["equipment_ids"]
-    assert rows[0]["total_cost"] == "43.5"
+    assert not {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"} & rows[0].keys()
 
     payload = json.loads(
         (tmp_path / "maintenance_history.json").read_text(encoding="utf-8")
     )
     assert payload["property_name"] == "Primary Residence"
     assert payload["history_count"] == 1
-    assert payload["history"] == history
+    exported_record = payload["history"][0]
+    assert exported_record["notes"] == "Installed a new filter"
+    assert exported_record["equipment_ids"] == history[0]["equipment_ids"]
+    assert not {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"} & exported_record.keys()
 
 
 def test_history_export_can_write_only_json(tmp_path):
