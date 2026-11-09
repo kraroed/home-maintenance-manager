@@ -257,7 +257,21 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const interval = attrs.configured_interval_days
       ? `${this._escape(attrs.configured_interval_days)} days`
       : (attrs.schedule_type === "seasonal" ? `Seasonal (${this._escape((attrs.season_keys || []).join(", "))})` : "Not set");
+    const guideList = (value) => {
+      const items = Array.isArray(value) ? value : String(value || "").split(/\r?\n/);
+      const clean = items.map((entry) => String(entry).trim()).filter(Boolean);
+      return clean.length ? "<ul>" + clean.map((entry) => "<li>" + this._escape(entry) + "</li>").join("") + "</ul>" : "";
+    };
+    const guideMarkup = [
+      ["How to inspect", guideList(attrs.how_to_inspect)],
+      ["What to look for", guideList(attrs.what_to_look_for)],
+      ["What to do if something is wrong", attrs.what_to_do_if_issue ? "<p>" + this._escape(attrs.what_to_do_if_issue) + "</p>" : ""],
+      ["Safety precautions", attrs.safety_notes ? "<p>" + this._escape(attrs.safety_notes) + "</p>" : ""],
+    ].filter(([, body]) => body).map(([heading, body]) =>
+      "<section class=\"inspection-guide-section\"><strong>" + heading + "</strong>" + body + "</section>"
+    ).join("");
     return `<div class="task-details">
+      ${guideMarkup ? `<div class="inspection-guide"><strong class="inspection-guide-title">Inspection guide</strong>${guideMarkup}</div>` : ""}
       <div><span>Last completed</span><strong>${this._escape(this._date(attrs.last_completed))}</strong></div>
       <div><span>Next due</span><strong>${this._escape(this._date(attrs.next_due))}</strong></div>
       <div><span>Repeat interval</span><strong>${interval}</strong></div>
@@ -328,7 +342,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .category-filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}.category-filters button,.equipment-task,.active-filter button{border:0;border-radius:16px;padding:6px 10px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer;font:inherit;font-size:.8rem}.equipment-task,.active-filter button{background:none;color:var(--primary-color);text-decoration:underline;padding:3px 5px}.active-filter{padding:0 16px 10px;font-size:.82rem;color:var(--secondary-text-color)}
         .tasks{padding:0 16px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--divider-color)}
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
-        .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}
+        .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.inspection-guide{grid-column:1/-1;border-bottom:1px solid var(--divider-color);padding-bottom:10px}.inspection-guide-title{display:block;font-size:.9rem;margin-bottom:8px}.inspection-guide-section{display:block!important;margin-top:8px}.inspection-guide-section strong{display:block;color:var(--primary-text-color);margin-bottom:3px}.inspection-guide-section ul{margin:3px 0 0;padding-left:20px}.inspection-guide-section li{margin:3px 0}.inspection-guide-section p{margin:3px 0;color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}
         .history-view{padding:10px 16px 16px}.history-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}.history-controls>input,.history-controls label input{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--divider-color);border-radius:7px;padding:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.history-controls>input{grid-column:1/-1}.history-controls label{font-size:.78rem;color:var(--secondary-text-color)}.history-controls label input{display:block;margin-top:3px}.history-controls button{justify-self:start;border:0;background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:16px;padding:7px 12px;cursor:pointer}.history-result-count{font-size:.8rem;color:var(--secondary-text-color);padding:12px 0 4px}.history-record{border-top:1px solid var(--divider-color);padding:11px 0;font-size:.85rem}.history-record-heading{display:flex;justify-content:space-between;gap:8px}.history-record-heading span,.history-meta{color:var(--secondary-text-color);font-size:.8rem}.history-record p{margin:6px 0}.history-note{font-size:.75rem;color:var(--secondary-text-color);margin-top:12px}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
