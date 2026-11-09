@@ -1,5 +1,4 @@
-"""Services for recording maintenance task completions with notes and attachments."""
-from urllib.parse import urlparse
+"""Services for recording maintenance task completions with notes."""
 
 import voluptuous as vol
 
@@ -32,25 +31,9 @@ async def async_setup_completion_service(hass):
                 "More than one matching task exists; provide integration_instance."
             )
 
-        attachments = [
-            item.strip()
-            for item in call.data.get("attachments", "").splitlines()
-            if item.strip()
-        ]
-        for attachment in attachments:
-            parsed = urlparse(attachment)
-            if not (
-                (parsed.scheme in ("http", "https") and parsed.netloc)
-                or attachment.startswith("/local/")
-            ):
-                raise HomeAssistantError(
-                    "Attachments must be HTTP(S) URLs or Home Assistant /local/ paths."
-                )
-
         entry_data = matches[0]
         await entry_data["manager"].async_complete_task(
-            task_id, call.data.get("notes", ""), attachments,
-            call.data.get("labor_cost", 0), call.data.get("parts_cost", 0)
+            task_id, call.data.get("notes", "")
         )
         await entry_data["coordinator"].async_request_refresh()
 
@@ -101,9 +84,6 @@ async def async_setup_completion_service(hass):
             schema=vol.Schema({
                 vol.Required("task_id"): str,
                 vol.Optional("notes", default=""): str,
-                vol.Optional("attachments", default=""): str,
-                vol.Optional("labor_cost", default=0): vol.All(vol.Coerce(float), vol.Range(min=0)),
-                vol.Optional("parts_cost", default=0): vol.All(vol.Coerce(float), vol.Range(min=0)),
                 vol.Optional("integration_instance"): str,
             }),
         )
