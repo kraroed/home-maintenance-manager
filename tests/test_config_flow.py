@@ -416,9 +416,12 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "description": "Updated description",
         "recommended_interval_days": 120,
     }]
-    assert result["data"][CONF_ENABLED_TASK_IDS] == [
+    # Enabled task selections live in config-entry data; editing options
+    # must leave that original selection untouched.
+    assert entry.data[CONF_ENABLED_TASK_IDS] == [
         "custom_replace_filter", "clean_gutters"
     ]
+    assert CONF_ENABLED_TASK_IDS not in result["data"]
     assert result["data"]["task_intervals"] == {
         "custom_replace_filter": 120,
         "clean_gutters": 120,
