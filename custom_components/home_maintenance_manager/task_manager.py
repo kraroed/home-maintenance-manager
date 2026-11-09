@@ -209,8 +209,15 @@ class TaskManager:
             task["status"] = self.task_status(stored_task)
             tasks.append(task)
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
+        history_by_task = {}
+        for record in self.data.get("history", []):
+            history_by_task.setdefault(record.get("task_id"), []).append(deepcopy(record))
         return {
             "tasks": tasks,
+            "history_by_task": {
+                task_id: records[-10:]
+                for task_id, records in history_by_task.items()
+            },
             "equipment": list(self.data.get("equipment", {}).values()),
             "equipment_count": len(self.data.get("equipment", {})),
             "total": len(enabled_tasks),
