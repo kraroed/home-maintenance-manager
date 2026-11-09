@@ -625,3 +625,92 @@ async def test_removing_equipment_preserves_existing_completion_history(hass):
     assert reloaded_manager.data["history"][-1]["equipment_ids"] == ["hvac-removed"]
     assert reloaded_manager.data["history"][-1]["task_name"] == "Test removed equipment task"
 
+
+
+@pytest.mark.asyncio
+async def test_annual_task_is_due_on_configured_month_and_day(hass, monkeypatch):
+    """A new annual task is due immediately when its calendar date is today."""
+    fixed_now = datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_annual_task",
+        "name": "Test annual task",
+        "category": "Testing",
+        "description": "An annual task used by automated tests.",
+        "schedule_type": "annual",
+        "annual_month": 4,
+        "annual_day": 15,
+    }
+    manager = TaskManager(
+        hass,
+        "annual-initial-due-test",
+        ["test_annual_task"],
+        custom_tasks=[task_definition],
+    )
+
+    await manager.async_load()
+
+    assert manager.data["tasks"]["test_annual_task"]["next_due"] == fixed_now.isoformat()
+
+
+@pytest.mark.asyncio
+async def test_annual_completion_advances_to_next_year_and_preserves_history(
+    hass, monkeypatch
+):
+    """Completing an annual task schedules its next calendar-year occurrence."""
+    fixed_now = datetime(2026, 4, 15, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_annual_completion",
+        "name": "Test annual completion",
+        "category": "Testing",
+        "description": "An annual task used by automated tests.",
+        "schedule_type": "annual",
+        "annual_month": 4,
+        "annual_day": 15,
+    }
+    manager = TaskManager(
+        hass,
+        "annual-completion-test",
+        ["test_annual_completion"],
+        custom_tasks=[task_definition],
+    )
+    await manager.async_load()
+
+    await manager.async_complete_task("test_annual_completion")
+
+    task = manager.data["tasks"]["test_annual_completion"]
+    record = manager.data["history"][-1]
+    next_due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert next_due.date() == date(2027, 4, 15)
+    assert record["next_due"] == task["next_due"]
+    assert record["completed_at"] == fixed_now.isoformat()
+
+
+@pytest.mark.asyncio
+async def test_annual_february_29_skips_non_leap_years(hass, monkeypatch):
+    """A February 29 annual task moves to the next real leap-day occurrence."""
+    fixed_now = datetime(2027, 3, 1, 12, 0, tzinfo=timezone.utc)
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_annual_leap_day",
+        "name": "Test annual leap-day task",
+        "category": "Testing",
+        "description": "An annual leap-day task used by automated tests.",
+        "schedule_type": "annual",
+        "annual_month": 2,
+        "annual_day": 29,
+    }
+    manager = TaskManager(
+        hass,
+        "annual-leap-day-test",
+        ["test_annual_leap_day"],
+        custom_tasks=[task_definition],
+    )
+
+    await manager.async_load()
+
+    due = dt_util.as_local(
+        dt_util.parse_datetime(manager.data["tasks"]["test_annual_leap_day"]["next_due"])
+    )
+    assert due.date() == date(2028, 2, 29)
