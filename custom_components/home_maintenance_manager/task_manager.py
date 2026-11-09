@@ -62,7 +62,7 @@ def _next_season_due(task, reference, include_active=False, settings=None):
 class TaskManager:
     def __init__(
         self, hass, entry_id, enabled_ids, task_intervals=None,
-        custom_tasks=None, equipment_records=None
+        custom_tasks=None, equipment_records=None, season_windows=None
     ):
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
@@ -71,6 +71,7 @@ class TaskManager:
         self.data = None
         self.enabled_ids = set(enabled_ids)
         self.task_intervals = task_intervals or {}
+        self.season_windows = season_windows or {}
 
     def _initial_due(self, task, now):
         if task.get("schedule_type") == "seasonal":
@@ -82,6 +83,9 @@ class TaskManager:
 
     async def async_load(self):
         self.data = await self.storage.async_load()
+        for season, window in self.season_windows.items():
+            if season in self.data["settings"]["season_windows"]:
+                self.data["settings"]["season_windows"][season] = deepcopy(window)
         now = dt_util.utcnow()
 
         # The config entry options are the source of truth for equipment
