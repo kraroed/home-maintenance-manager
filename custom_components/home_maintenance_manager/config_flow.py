@@ -255,6 +255,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             interval = int(user_input["interval_days"])
             annual_month = int(user_input["annual_month"])
             annual_day = int(user_input["annual_day"])
+            monthly_week = user_input["monthly_week"]
+            monthly_weekday = int(user_input["monthly_weekday"])
             if schedule_type == "annual":
                 try:
                     date(2000, annual_month, annual_day)
@@ -274,6 +276,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 **(
                     {"annual_month": annual_month, "annual_day": annual_day}
                     if schedule_type == "annual" else {}
+                ),
+                **(
+                    {"monthly_week": monthly_week, "monthly_weekday": monthly_weekday}
+                    if schedule_type == "monthly" else {}
                 ),
                 "priority": "normal",
                 "requires_equipment": False,
@@ -395,6 +401,12 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             else:
                 updated.pop("annual_month", None)
                 updated.pop("annual_day", None)
+            if schedule_type == "monthly":
+                updated["monthly_week"] = monthly_week
+                updated["monthly_weekday"] = monthly_weekday
+            else:
+                updated.pop("monthly_week", None)
+                updated.pop("monthly_weekday", None)
             custom_tasks = [
                 updated if item["task_id"] == current["task_id"] else item
                 for item in custom_tasks
@@ -656,6 +668,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             ): vol.In({
                 "interval": "Repeat by interval",
                 "annual": "Repeat annually on a calendar date",
+                "monthly": "Repeat monthly on a weekday pattern",
             }),
             vol.Required(
                 "interval_days",
@@ -669,6 +682,28 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "annual_day",
                 default=current.get("annual_day", 1),
             ): vol.All(vol.Coerce(int), vol.Range(min=1, max=31)),
+            vol.Required(
+                "monthly_week",
+                default=current.get("monthly_week", "first"),
+            ): vol.In({
+                "first": "First",
+                "second": "Second",
+                "third": "Third",
+                "fourth": "Fourth",
+                "last": "Last",
+            }),
+            vol.Required(
+                "monthly_weekday",
+                default=current.get("monthly_weekday", 5),
+            ): vol.In({
+                0: "Monday",
+                1: "Tuesday",
+                2: "Wednesday",
+                3: "Thursday",
+                4: "Friday",
+                5: "Saturday",
+                6: "Sunday",
+            }),
         })
 
     @staticmethod
