@@ -158,9 +158,10 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const integrationStates = states.filter((state) =>
       state.attributes?.integration_domain === "home_maintenance_manager"
     );
-    const taskSensors = integrationStates.filter((state) =>
-      state.entity_id.startsWith("sensor.") &&
-      state.attributes?.task_id &&
+    const historySensors = integrationStates.filter((state) =>
+      state.entity_id.startsWith("sensor.") && state.attributes?.task_id
+    );
+    const taskSensors = historySensors.filter((state) =>
       state.attributes?.enabled !== false
     );
     const buttons = new Map(integrationStates
@@ -193,6 +194,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           (a.state.attributes.friendly_name || "").localeCompare(b.state.attributes.friendly_name || "");
       }),
       summaries: summaryTotals,
+      historyTasks: historySensors.map((state) => ({ state })),
       equipment,
     };
   }
@@ -270,7 +272,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
 
   render() {
     if (!this._hass || !this.config) return;
-    const { tasks, summaries, equipment } = this._discover();
+    const { tasks, summaries, historyTasks, equipment } = this._discover();
     const count = (key) => summaries.get(key) ?? "—";
     const categories = [...new Set(tasks.map(({ state }) => state.attributes.category || "General"))].sort();
     const filtered = tasks.filter(({ state }) => {
@@ -286,7 +288,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
     const calendarMarkup = this._renderCalendar(tasks, equipment);
-    const historyMarkup = this._renderHistory(tasks, equipment);
+    const historyMarkup = this._renderHistory(historyTasks, equipment);
     const equipmentMarkup = equipment.length
       ? equipment.map((item) => {
         const ids = item.attributes.task_ids || [];
