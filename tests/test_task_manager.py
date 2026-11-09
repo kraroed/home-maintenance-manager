@@ -529,3 +529,33 @@ async def test_multi_season_completion_moves_to_next_season_window(
     assert due.date() == date.fromisoformat(expected_due)
     assert manager.data["history"][-1]["next_due"] == task["next_due"]
 
+@pytest.mark.asyncio
+async def test_configured_season_window_controls_initial_due_date(hass, monkeypatch):
+    """A custom season start is used when initially scheduling a seasonal task."""
+    fixed_now = datetime.fromisoformat("2027-02-01T12:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_custom_spring_window",
+        "name": "Test custom spring window",
+        "category": "Testing",
+        "description": "A task using a customized spring window.",
+        "schedule_type": "seasonal",
+        "season_keys": ["spring"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        "custom-spring-initial-due-test",
+        ["test_custom_spring_window"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "spring": {"start": "04-10", "end": "06-15"},
+        },
+    )
+
+    await manager.async_load()
+
+    task = manager.data["tasks"]["test_custom_spring_window"]
+    due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
+    assert due.date() == date(2027, 4, 10)
+
