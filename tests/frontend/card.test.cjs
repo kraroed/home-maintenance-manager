@@ -106,3 +106,86 @@ test("history search filters records and escapes user-provided notes", () => {
   assert.match(markup, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt;/);
   assert.doesNotMatch(markup, /<img src=x/);
 });
+
+
+function createInteractiveCard(selector, dataset, prompts) {
+  const control = {
+    dataset,
+    disabled: false,
+    handlers: {},
+    addEventListener(name, callback) {
+      this.handlers[name] = callback;
+    },
+  };
+  const card = new Card();
+  card.querySelectorAll = (query) => query === selector ? [control] : [];
+  const calls = [];
+  card.setConfig({});
+  card.hass = {
+    states: {},
+    async callService(domain, service, data) {
+      calls.push({ domain, service, data });
+    },
+  };
+  context.window.prompt = () => prompts.shift() ?? null;
+  context.window.alert = () => {};
+  return { card, control, calls };
+}
+
+test("reschedule action calls the service with the selected date and reason", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-reschedule-task]",
+    { rescheduleTask: "clean_gutters", instance: "main", currentDue: "2026-11-15" },
+    ["2026-11-22", "Weather delay"]
+  );
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, [{
+    domain: "home_maintenance_manager",
+    service: "reschedule_task",
+    data: {
+      task_id: "clean_gutters",
+      integration_instance: "main",
+      due_date: "2026-11-22",
+      reason: "Weather delay",
+    },
+  }]);
+  assert.equal(control.disabled, false);
+});
+
+test("complete action forwards notes, attachment references, and costs", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-complete-task]",
+    { completeTask: "replace_filter", instance: "main" },
+    ["Replaced filter", "/local/filter.jpg\\nhttps://example.com/receipt", "25.50", "18.75"]
+  );
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, [{
+    domain: "home_maintenance_manager",
+    service: "complete_task",
+    data: {
+      task_id: "replace_filter",
+      integration_instance: "main",
+      notes: "Replaced filter",
+      attachments: "/local/filter.jpg\\nhttps://example.com/receipt",
+      labor_cost: 25.5,
+      parts_cost: 18.75,
+    },
+  }]);
+  assert.equal(control.disabled, false);
+});
+
+test("canceling a task action does not call a Home Assistant service", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-reschedule-task]",
+    { rescheduleTask: "clean_gutters", instance: "main", currentDue: "2026-11-15" },
+    [null]
+  );
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, []);
+});
