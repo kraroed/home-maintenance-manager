@@ -347,3 +347,84 @@ async def test_remove_custom_task_clears_active_links_and_preserves_other_option
     assert result["data"]["equipment_records"][0]["task_ids"] == ["clean_gutters"]
     assert result["data"]["notification_target"] == "notify.mobile_app_phone"
 
+@pytest.mark.asyncio
+async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
+    hass, enable_custom_integrations
+):
+    """Editing a custom task retains its ID and unrelated configuration."""
+    custom_task = {
+        "task_id": "custom_replace_filter",
+        "name": "Replace filter",
+        "category": "HVAC",
+        "description": "Original description",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+        "is_custom": True,
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["custom_replace_filter", "clean_gutters"],
+        },
+        options={
+            "custom_tasks": [custom_task],
+            "task_intervals": {
+                "custom_replace_filter": 90,
+                "clean_gutters": 120,
+            },
+            "notification_target": "notify.mobile_app_phone",
+            "equipment_records": [{
+                "equipment_id": "equipment_main_hvac",
+                "name": "Main HVAC",
+                "category": "HVAC",
+                "task_ids": ["custom_replace_filter"],
+            }],
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_custom_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_id": "custom_replace_filter"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "edit_custom_task"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "edit_custom_task"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Replace upstairs HVAC filter",
+            "category": "Heating and Cooling",
+            "description": "Updated description",
+            "interval_days": 120,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["custom_tasks"] == [{
+        **custom_task,
+        "name": "Replace upstairs HVAC filter",
+        "category": "heating and cooling",
+        "description": "Updated description",
+        "recommended_interval_days": 120,
+    }]
+    assert result["data"][CONF_ENABLED_TASK_IDS] == [
+        "custom_replace_filter", "clean_gutters"
+    ]
+    assert result["data"]["task_intervals"] == {
+        "custom_replace_filter": 120,
+        "clean_gutters": 120,
+    }
+    assert result["data"]["notification_target"] == "notify.mobile_app_phone"
+    assert result["data"]["equipment_records"][0]["task_ids"] == [
+        "custom_replace_filter"
+    ]
+
