@@ -189,3 +189,46 @@ test("canceling a task action does not call a Home Assistant service", async () 
 
   assert.deepEqual(calls, []);
 });
+
+
+test("invalid reschedule date format is rejected before calling the service", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-reschedule-task]",
+    { rescheduleTask: "clean_gutters", instance: "main", currentDue: "2026-11-15" },
+    ["11/22/2026"]
+  );
+  let alertMessage = "";
+  context.window.alert = (message) => { alertMessage = message; };
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, []);
+  assert.equal(alertMessage, "Enter the date as YYYY-MM-DD.");
+});
+
+test("canceling the reason prompt prevents rescheduling", async () => {
+  const { control, calls } = createInteractiveCard(
+    "[data-reschedule-task]",
+    { rescheduleTask: "clean_gutters", instance: "main", currentDue: "2026-11-15" },
+    ["2026-11-22", null]
+  );
+
+  await control.handlers.click();
+
+  assert.deepEqual(calls, []);
+  assert.equal(control.disabled, false);
+});
+
+test("action button is re-enabled when a Home Assistant service call fails", async () => {
+  const { card, control } = createInteractiveCard(
+    "[data-complete-task]",
+    { completeTask: "replace_filter", instance: "main" },
+    ["Done", "", "0", "0"]
+  );
+  card._hass.callService = async () => {
+    throw new Error("Service unavailable");
+  };
+
+  await assert.rejects(control.handlers.click(), /Service unavailable/);
+  assert.equal(control.disabled, false);
+});
