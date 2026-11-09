@@ -16,6 +16,16 @@ def _valid_month_day(value):
         return False
 
 
+def _valid_iso_date(value):
+    """Return whether a value is a canonical YYYY-MM-DD date."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def default_data():
     return {
         "tasks": {},
@@ -78,21 +88,28 @@ class MaintenanceStorage:
             notifications = data["notification_state"]
             individual = stored_notifications.get("individual")
             if isinstance(individual, dict):
-                notifications["individual"] = individual
+                notifications["individual"] = {
+                    key: value
+                    for key, value in individual.items()
+                    if isinstance(key, str) and isinstance(value, str)
+                }
             summary_date = stored_notifications.get("summary_date")
-            if summary_date is None or isinstance(summary_date, str):
+            if summary_date is None or _valid_iso_date(summary_date):
                 notifications["summary_date"] = summary_date
 
         stored_settings = stored.get("settings")
         if isinstance(stored_settings, dict):
             settings = data["settings"]
+            due_soon_days = stored_settings.get("due_soon_days")
+            if type(due_soon_days) is int and 0 <= due_soon_days <= 90:
+                settings["due_soon_days"] = due_soon_days
+
             for key in (
-                "due_soon_days",
                 "daily_summary_enabled",
                 "individual_notifications_enabled",
             ):
                 value = stored_settings.get(key)
-                if type(value) is type(settings[key]):
+                if type(value) is bool:
                     settings[key] = value
 
             season_windows = stored_settings.get("season_windows")
