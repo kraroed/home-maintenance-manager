@@ -29,6 +29,7 @@ async def async_setup_entry(hass, entry):
         task_intervals,
         custom_tasks,
         equipment_records,
+        entry.options.get("season_windows"),
     )
     await manager.async_load()
 
