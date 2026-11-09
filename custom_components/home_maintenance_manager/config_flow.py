@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 import voluptuous as vol
 
@@ -8,6 +9,19 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
+
+
+def _validate_optional_iso_date(value):
+    """Accept an empty equipment date or a real canonical YYYY-MM-DD date."""
+    if not value:
+        return value
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as err:
+        raise vol.Invalid("Enter a valid date as YYYY-MM-DD.") from err
+    if parsed.isoformat() != value:
+        raise vol.Invalid("Enter a valid date as YYYY-MM-DD.")
+    return value
 
 
 class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -531,7 +545,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 str, vol.Length(max=80)
             ),
             vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
-                str, vol.Length(max=10)
+                str, vol.Length(max=10), _validate_optional_iso_date
             ),
             vol.Optional("notes", default=current.get("notes", "")): vol.All(
                 str, vol.Length(max=500)
