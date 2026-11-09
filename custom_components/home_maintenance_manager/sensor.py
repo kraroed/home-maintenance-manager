@@ -34,10 +34,15 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{key}"
         self._attr_name = name
         self.value_key = value_key
+        self.integration_instance = coordinator.manager.storage.store.key
 
     @property
     def extra_state_attributes(self):
-        return {"summary_key": self.value_key}
+        return {
+            "summary_key": self.value_key,
+            "integration_domain": DOMAIN,
+            "integration_instance": self.integration_instance,
+        }
 
     @property
     def native_value(self):
@@ -48,6 +53,7 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, task_id, name):
         super().__init__(coordinator)
         self.task_id = task_id
+        self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{task_id}_status"
         self._attr_name = f"{name} Status"
         self._attr_icon = "mdi:home-wrench"
@@ -71,6 +77,8 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
         return {
             "task_id": task["task_id"],
             "enabled": task.get("enabled", True),
+            "integration_domain": DOMAIN,
+            "integration_instance": self.integration_instance,
             "category": task.get("category"),
             "description": task.get("description"),
             "schedule_type": task.get("schedule_type"),
@@ -88,6 +96,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, equipment_id, name):
         super().__init__(coordinator)
         self.equipment_id = equipment_id
+        self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{equipment_id}"
         self._attr_name = f"{name} Equipment"
         self._attr_icon = "mdi:tools"
@@ -111,6 +120,8 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             return {}
         return {
             "equipment_id": self.equipment_id,
+            "integration_domain": DOMAIN,
+            "integration_instance": self.integration_instance,
             key: item.get(key)
             for key in ("category", "manufacturer", "model", "installed_date", "notes", "task_ids")
         }
