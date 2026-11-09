@@ -164,7 +164,7 @@ async def test_custom_task_edit_preserves_existing_schedule_and_history(hass):
     edited_definition = {
         **original_definition,
         "name": "Replace upstairs HVAC filter",
-        "category": "Heating and cooling",
+        "category": "heating and cooling",
         "description": "Updated description.",
         "recommended_interval_days": 120,
     }
