@@ -29,6 +29,12 @@ def test_builtin_library_contains_120_unique_well_formed_tasks():
         assert task["name"].strip()
         assert task["description"].strip()
         assert task["recommendation_note"].strip()
+        assert task["how_to_inspect"]
+        assert task["what_to_look_for"]
+        assert task["what_to_do_if_issue"].strip()
+        assert task["safety_notes"].strip()
+        assert all(isinstance(item, str) and item.strip() for item in task["how_to_inspect"])
+        assert all(isinstance(item, str) and item.strip() for item in task["what_to_look_for"])
         assert task["schedule_type"] in {"interval", "seasonal"}
         assert isinstance(task["recommended_interval_days"], int)
         assert 1 <= task["recommended_interval_days"] <= 3650
