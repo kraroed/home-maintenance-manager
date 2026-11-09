@@ -54,7 +54,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     return `${year}-${month}-${day}`;
   }
 
-  _renderCalendar(tasks) {
+  _renderCalendar(tasks, equipment) {
     const month = new Date(this._calendarMonth.getFullYear(), this._calendarMonth.getMonth(), 1);
     const monthLabel = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
     const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -89,7 +89,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const selectedDate = new Date(this._selectedCalendarDate + "T12:00:00");
     const selectedLabel = selectedDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     const selectedMarkup = selectedTasks.length
-      ? selectedTasks.map((item) => this._renderTask(item, this._discover().equipment)).join("")
+      ? selectedTasks.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No maintenance tasks are due on this date.</div>';
     return `<section class="calendar-section">
       <div class="calendar-toolbar">
@@ -221,7 +221,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
   render() {
     if (!this._hass || !this.config) return;
     const { tasks, summaries, equipment } = this._discover();
-    const count = (key) => summaries.get(key)?.state ?? "—";
+    const count = (key) => summaries.get(key) ?? "—";
     const categories = [...new Set(tasks.map(({ state }) => state.attributes.category || "General"))].sort();
     const filtered = tasks.filter(({ state }) => {
       const category = state.attributes.category || "General";
@@ -235,7 +235,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
-    const calendarMarkup = this._renderCalendar(tasks);
+    const calendarMarkup = this._renderCalendar(tasks, equipment);
     const equipmentMarkup = equipment.length
       ? equipment.map((item) => {
         const ids = item.attributes.task_ids || [];
