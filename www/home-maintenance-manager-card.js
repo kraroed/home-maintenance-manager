@@ -16,6 +16,9 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     if (this._view === undefined) this._view = "list";
     if (this._calendarMonth === undefined) this._calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     if (this._selectedCalendarDate === undefined) this._selectedCalendarDate = this._calendarKey(new Date());
+    if (this._historySearch === undefined) this._historySearch = "";
+    if (this._historyFrom === undefined) this._historyFrom = "";
+    if (this._historyTo === undefined) this._historyTo = "";
     this.render();
   }
 
@@ -103,6 +106,50 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         ${cells}
       </div>
       <div class="calendar-selected"><h3>${this._escape(selectedLabel)}</h3>${selectedMarkup}</div>
+    </section>`;
+  }
+
+
+  _renderHistory(tasks, equipment) {
+    const records = [];
+    tasks.forEach(({ state }) => {
+      const attrs = state.attributes || {};
+      (attrs.completion_history || []).forEach((record) => {
+        const names = (record.equipment_ids || []).map((id) => equipment.find((entry) =>
+          entry.attributes.equipment_id === id &&
+          (entry.attributes.integration_instance || "default") === (attrs.integration_instance || "default")
+        )).filter(Boolean).map((entry) => entry.attributes.friendly_name || entry.state);
+        records.push({...record, task_id: attrs.task_id,
+          task_name: record.task_name || (attrs.friendly_name || state.entity_id).replace(/ Status$/, ""),
+          equipment_names: names});
+      });
+    });
+    const unique = [...new Map(records.map((record) => [record.history_id || `${record.task_id}:${record.completed_at}`, record])).values()]
+      .sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at));
+    const filtered = unique.filter((record) => {
+      const haystack = [record.task_name, record.task_id, record.notes, ...(record.equipment_names || [])].join(" ").toLowerCase();
+      if (this._historySearch && !haystack.includes(this._historySearch.toLowerCase())) return false;
+      const day = (record.completed_at || "").slice(0,10);
+      return (!this._historyFrom || day >= this._historyFrom) && (!this._historyTo || day <= this._historyTo);
+    });
+    const rows = filtered.length ? filtered.map((record) => `
+      <article class="history-record">
+        <div class="history-record-heading"><strong>${this._escape(record.task_name)}</strong><span>${this._escape(this._date(record.completed_at))}</span></div>
+        ${record.equipment_names?.length ? `<div class="history-meta">Equipment: ${this._escape(record.equipment_names.join(", "))}</div>` : ""}
+        ${record.notes ? `<p>${this._escape(record.notes)}</p>` : ""}
+        <div class="history-costs">Labor: ${this._money(record.labor_cost)} · Parts: ${this._money(record.parts_cost)} · Total: <strong>${this._money(record.total_cost)}</strong></div>
+        ${(record.attachments || []).length ? `<div class="history-attachments">${record.attachments.map((url) => `<a href="${this._escape(url)}" target="_blank" rel="noopener noreferrer">View attachment</a>`).join(" · ")}</div>` : ""}
+      </article>`).join("") : '<div class="empty">No completion records match these filters.</div>';
+    return `<section class="history-view">
+      <div class="history-controls">
+        <input type="search" data-history-search placeholder="Search task, equipment, or notes" value="${this._escape(this._historySearch)}">
+        <label>From <input type="date" data-history-from value="${this._escape(this._historyFrom)}"></label>
+        <label>To <input type="date" data-history-to value="${this._escape(this._historyTo)}"></label>
+        <button data-history-clear>Clear filters</button>
+      </div>
+      <div class="history-result-count">Showing ${filtered.length} of ${unique.length} recent completion records</div>
+      <div class="history-records">${rows}</div>
+      <p class="history-note">The card displays recent completion records available from task sensors. Use Export history for the complete permanent archive.</p>
     </section>`;
   }
 
@@ -239,6 +286,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
     const calendarMarkup = this._renderCalendar(tasks, equipment);
+    const historyMarkup = this._renderHistory(tasks, equipment);
     const equipmentMarkup = equipment.length
       ? equipment.map((item) => {
         const ids = item.attributes.task_ids || [];
@@ -256,14 +304,14 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           <div class="stat"><strong>${this._escape(count("due_today"))}</strong><span>Due today</span></div>
           <div class="stat"><strong>${this._escape(count("due_soon"))}</strong><span>Due soon</span></div>
         </div>
-        <div class="view-toggle"><button data-view="list" class="${this._view === "list" ? "selected" : ""}">List view</button><button data-view="calendar" class="${this._view === "calendar" ? "selected" : ""}">Calendar view</button></div>
-        <div class="filters" style="${this._view === "calendar" ? "display:none" : ""}">
+        <div class="view-toggle"><button data-view="list" class="${this._view === "list" ? "selected" : ""}">List view</button><button data-view="calendar" class="${this._view === "calendar" ? "selected" : ""}">Calendar view</button><button data-view="history" class="${this._view === "history" ? "selected" : ""}">History</button></div>
+        <div class="filters" style="${this._view !== "list" ? "display:none" : ""}">
           <button data-filter="all" class="${this._filter === "all" ? "selected" : ""}">All</button>
           <button data-filter="overdue" class="${this._filter === "overdue" ? "selected" : ""}">Overdue</button>
           <button data-filter="due_today" class="${this._filter === "due_today" ? "selected" : ""}">Due today</button>
           <button data-filter="upcoming" class="${this._filter === "upcoming" ? "selected" : ""}">Upcoming</button>
         </div>
-        ${this._view === "calendar" ? calendarMarkup : categoryMarkup}
+        ${this._view === "calendar" ? calendarMarkup : this._view === "history" ? historyMarkup : categoryMarkup}
         ${this._equipmentTask ? '<div class="active-filter">Showing selected equipment task <button data-clear-task>Clear</button></div>' : ""}
         ${this._view === "list" ? `<div class="tasks">${taskMarkup}</div>` : ""}
         ${this.config.show_equipment ? `<section><h3>Equipment <small>${this._escape(count("equipment_count"))} registered</small></h3>${equipmentMarkup}</section>` : ""}
@@ -282,6 +330,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .tasks{padding:0 16px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--divider-color)}
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
         .details-toggle{border:0;background:none;color:var(--primary-color);padding:6px 0 0;cursor:pointer;font:inherit;font-size:.8rem}.task-details{margin-top:10px;padding:10px;border-radius:8px;background:var(--secondary-background-color);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;font-size:.82rem}.task-details>div:not(.history-list){display:flex;flex-direction:column;gap:3px}.task-details span{color:var(--secondary-text-color)}.history-list{grid-column:1/-1;border-top:1px solid var(--divider-color);padding-top:8px}.history-item{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--divider-color)}.history-attachments{font-size:.8rem}.history-attachments a{color:var(--primary-color);margin-right:6px}
+        .history-view{padding:10px 16px 16px}.history-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}.history-controls>input,.history-controls label input{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--divider-color);border-radius:7px;padding:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.history-controls>input{grid-column:1/-1}.history-controls label{font-size:.78rem;color:var(--secondary-text-color)}.history-controls label input{display:block;margin-top:3px}.history-controls button{justify-self:start;border:0;background:var(--secondary-background-color);color:var(--primary-text-color);border-radius:16px;padding:7px 12px;cursor:pointer}.history-result-count{font-size:.8rem;color:var(--secondary-text-color);padding:12px 0 4px}.history-record{border-top:1px solid var(--divider-color);padding:11px 0;font-size:.85rem}.history-record-heading{display:flex;justify-content:space-between;gap:8px}.history-record-heading span,.history-meta{color:var(--secondary-text-color);font-size:.8rem}.history-record p{margin:6px 0}.history-costs{font-size:.8rem}.history-note{font-size:.75rem;color:var(--secondary-text-color);margin-top:12px}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
         .task-action-buttons{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.reschedule{border:1px solid var(--divider-color);border-radius:18px;padding:7px 10px;background:var(--card-background-color);color:var(--primary-color);font-size:.78rem;cursor:pointer}.complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
@@ -291,6 +340,22 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         @media(max-width:600px){.calendar-day{min-height:58px;padding:3px}.calendar-task{font-size:.55rem}.calendar-more{font-size:.55rem}}
         @media(max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task{align-items:flex-start}.task-actions{align-items:flex-end}.equipment{flex-direction:column;gap:2px}.equipment span{text-align:left}}
       </style>`;
+    this.querySelectorAll("[data-history-search]").forEach((input) => input.addEventListener("input", () => {
+      this._historySearch = input.value;
+      const position = input.selectionStart;
+      this.render();
+      const refreshed = this.querySelector("[data-history-search]");
+      if (refreshed) { refreshed.focus(); refreshed.setSelectionRange(position, position); }
+    }));
+    this.querySelectorAll("[data-history-from]").forEach((input) => input.addEventListener("change", () => {
+      this._historyFrom = input.value; this.render();
+    }));
+    this.querySelectorAll("[data-history-to]").forEach((input) => input.addEventListener("change", () => {
+      this._historyTo = input.value; this.render();
+    }));
+    this.querySelectorAll("[data-history-clear]").forEach((button) => button.addEventListener("click", () => {
+      this._historySearch = ""; this._historyFrom = ""; this._historyTo = ""; this.render();
+    }));
     this.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
       this._view = button.dataset.view;
       this.render();
