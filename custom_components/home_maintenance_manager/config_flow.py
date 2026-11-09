@@ -38,7 +38,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         options = [(task_id, item["name"]) for task_id, item in load_library().items()]
         return vol.Schema({
             vol.Required(CONF_PROPERTY_NAME, default="My Home"): str,
-            vol.Optional(CONF_ENABLED_TASK_IDS, default=[]): cv.multi_select(options),
+            vol.Optional(CONF_ENABLED_TASK_IDS, default=[]): cv.multi_select(dict(options)),
         })
 
     @staticmethod
@@ -49,7 +49,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry):
-        self.config_entry = config_entry
+        self._config_entry = config_entry
         self._selected_task_ids = []
 
     async def async_step_init(self, user_input=None):
@@ -537,6 +537,6 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 str, vol.Length(max=500)
             ),
             vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(
-                task_options
+                dict(task_options)
             ),
         })
