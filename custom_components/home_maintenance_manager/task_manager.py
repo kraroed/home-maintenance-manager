@@ -230,4 +230,5 @@ class TaskManager:
             "due_today": sum(t["status"] == "due_today" for t in enabled_tasks),
             "due_soon": sum(t["status"] == "due_soon" for t in enabled_tasks),
             "history_count": len(self.data.get("history", [])),
+            "maintenance_cost": round(sum(float(record.get("total_cost", 0) or 0) for record in self.data.get("history", [])), 2),
         }
