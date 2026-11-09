@@ -239,6 +239,8 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         "manufacturer": "New Manufacturer",
         "model": "NEW-200",
         "installed_date": "2024-02-29",
+        "lifespan_months": 0,
+        "replacement_task_id": None,
         "notes": "Updated equipment details",
         "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
     }
@@ -633,3 +635,71 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
     assert task["monthly_weekday"] == 1
     assert "annual_month" not in task
     assert "custom_monthly_alarm_test" not in result["data"]["task_intervals"]
+
+@pytest.mark.asyncio
+async def test_add_equipment_lifespan_designates_and_links_replacement_task(
+    hass, enable_custom_integrations
+):
+    """A lifespan configuration automatically associates its replacement task."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Smoke Detector Hall",
+            "category": "Safety",
+            "installed_date": "2020-01-15",
+            "lifespan_months": 120,
+            "replacement_task_id": "clean_gutters",
+            "task_ids": [],
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    record = result["data"]["equipment_records"][0]
+    assert record["lifespan_months"] == 120
+    assert record["replacement_task_id"] == "clean_gutters"
+    assert record["task_ids"] == ["clean_gutters"]
+
+
+@pytest.mark.asyncio
+async def test_add_equipment_rejects_incomplete_lifespan_configuration(
+    hass, enable_custom_integrations
+):
+    """Lifespan scheduling requires an installation date and replacement task."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Smoke Detector Hall",
+            "category": "Safety",
+            "installed_date": "",
+            "lifespan_months": 120,
+            "replacement_task_id": "",
+            "task_ids": [],
+        },
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "incomplete_lifespan"}

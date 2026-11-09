@@ -385,6 +385,30 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                         data_schema=self._custom_task_schema({**current, **user_input}),
                         errors={"base": "invalid_annual_date"},
                     )
+            replacement_task_id = user_input.get("replacement_task_id") or ""
+            lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "incomplete_lifespan"},
+                )
+            if replacement_task_id and any(
+                item.get("equipment_id") != current["equipment_id"]
+                and item.get("replacement_task_id") == replacement_task_id
+                for item in equipment
+            ):
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "duplicate_replacement_task"},
+                )
+            task_ids = list(user_input.get("task_ids", []))
+            if replacement_task_id and replacement_task_id not in task_ids:
+                task_ids.append(replacement_task_id)
             updated = {
                 **current,
                 "name": name,
@@ -515,6 +539,29 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_schema(task_options),
                     errors={"base": "duplicate_equipment"},
                 )
+            replacement_task_id = user_input.get("replacement_task_id") or ""
+            lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "incomplete_lifespan"},
+                )
+            if replacement_task_id and any(
+                item.get("replacement_task_id") == replacement_task_id
+                for item in equipment
+            ):
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "duplicate_replacement_task"},
+                )
+            task_ids = list(user_input.get("task_ids", []))
+            if replacement_task_id and replacement_task_id not in task_ids:
+                task_ids.append(replacement_task_id)
             equipment.append({
                 "equipment_id": equipment_id,
                 "name": name,
@@ -522,8 +569,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
                 "installed_date": user_input.get("installed_date", "").strip(),
+                "lifespan_months": lifespan_months,
+                "replacement_task_id": replacement_task_id or None,
                 "notes": user_input.get("notes", "").strip(),
-                "task_ids": user_input.get("task_ids", []),
+                "task_ids": task_ids,
             })
             return self.async_create_entry(
                 title="",
@@ -591,6 +640,30 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_schema(task_options, current),
                     errors={"installed_date": "invalid_date"},
                 )
+            replacement_task_id = user_input.get("replacement_task_id") or ""
+            lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "incomplete_lifespan"},
+                )
+            if replacement_task_id and any(
+                item.get("equipment_id") != current["equipment_id"]
+                and item.get("replacement_task_id") == replacement_task_id
+                for item in equipment
+            ):
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "duplicate_replacement_task"},
+                )
+            task_ids = list(user_input.get("task_ids", []))
+            if replacement_task_id and replacement_task_id not in task_ids:
+                task_ids.append(replacement_task_id)
             updated = {
                 **current,
                 "name": user_input["name"].strip(),
@@ -598,8 +671,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
                 "installed_date": user_input.get("installed_date", "").strip(),
+                "lifespan_months": lifespan_months,
+                "replacement_task_id": replacement_task_id or None,
                 "notes": user_input.get("notes", "").strip(),
-                "task_ids": user_input.get("task_ids", []),
+                "task_ids": task_ids,
             }
             equipment = [
                 updated if item["equipment_id"] == current["equipment_id"] else item
@@ -727,6 +802,13 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
                 str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
             ),
+            vol.Optional("lifespan_months", default=current.get("lifespan_months", 0)): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=1200)
+            ),
+            vol.Optional(
+                "replacement_task_id",
+                default=current.get("replacement_task_id") or "",
+            ): vol.In({"": "None", **dict(task_options)}),
             vol.Optional("notes", default=current.get("notes", "")): vol.All(
                 str, vol.Length(max=500)
             ),

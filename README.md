@@ -20,9 +20,11 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Complete JSON backup and guarded restore for property configuration, tasks, equipment, settings, reminder state, and completion history.
 - Seasonal schedules with configurable date windows.
 - Monthly calendar patterns such as the first Saturday, second Tuesday, or last Sunday of each month.
-- Household equipment records with name, category, manufacturer, model, installation date, and notes.
-- Associate one or more enabled maintenance tasks with registered equipment.
-- Equipment sensors expose equipment details and associated task IDs.
+- Household equipment records with name, category, manufacturer, model, installation date, expected lifespan, and notes.
+- Associate one or more enabled maintenance tasks with registered equipment, including one designated replacement task when lifespan scheduling is configured.
+- Equipment lifespan scheduling calculates a replacement due date from the installation date and expected lifespan. Only the designated replacement task is affected; routine maintenance schedules remain independent.
+- Completing a designated replacement task records the completion, resets that equipment item's installation date, and starts its next lifespan period.
+- Equipment sensors expose equipment details, associated task IDs, and calculated replacement due dates.
 - Home Assistant entities for task status and household maintenance summaries.
 - Individual due-soon and overdue reminders, plus a configurable daily summary.
 - Configurable reminder lead time and notification destination, with persistent notifications as the fallback. Mobile app reminders include actions to mark a task complete or snooze it until tomorrow or one week later.
@@ -39,7 +41,7 @@ Open the integration's **Configure** options and choose **Manage custom maintena
 
 ## Equipment tracking
 
-Open the integration's **Configure** options, then choose **Add household equipment**. Enter an equipment name and category; manufacturer, model, installation date, and notes are optional. Select any enabled maintenance tasks that apply to that equipment. One task can be associated with multiple equipment records.
+Open the integration's **Configure** options, then choose **Add household equipment**. Enter an equipment name and category; manufacturer, model, installation date, lifespan, and notes are optional. Select any enabled maintenance tasks that apply to that equipment. To enable automatic replacement scheduling, enter all three of: an installation date, expected lifespan in months, and a designated replacement task. The designated task is automatically added to the equipment's task associations, and each equipment record must have its own replacement task. The calculated replacement date makes that task due through the normal dashboard and notification system; other associated routine tasks keep their own schedules. When you complete the replacement task, the equipment's installation date is reset to the completion date and the next replacement date is recalculated. One routine task can still be associated with multiple equipment records.
 
 Each registered item creates an equipment sensor. Its attributes include the equipment metadata and associated task IDs. A summary sensor reports the number of registered equipment records.
 

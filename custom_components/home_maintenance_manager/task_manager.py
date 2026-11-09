@@ -16,6 +16,14 @@ def load_library():
     return {item["task_id"]: item for item in items}
 
 
+def _add_months(day, months):
+    """Add calendar months while clamping to the target month's last day."""
+    month_index = day.year * 12 + day.month - 1 + months
+    year, month_zero = divmod(month_index, 12)
+    month = month_zero + 1
+    return date(year, month, min(day.day, calendar.monthrange(year, month)[1]))
+
+
 def _season_contains(day, start, end):
     month_day = (day.month, day.day)
     start_month_day = tuple(int(part) for part in start.split("-"))
@@ -129,6 +137,8 @@ class TaskManager:
         self, hass, entry_id, enabled_ids, task_intervals=None,
         custom_tasks=None, equipment_records=None, season_windows=None
     ):
+        self.hass = hass
+        self.entry_id = entry_id
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
         self.library.update({item["task_id"]: deepcopy(item) for item in (custom_tasks or [])})
@@ -179,12 +189,14 @@ class TaskManager:
                     "enabled": True,
                     "last_completed": None,
                     "next_due": None,
+                    "schedule_next_due": None,
                     "equipment_id": None,
                     "equipment_ids": [],
                     "notes": "",
                     "created_at": now.isoformat(),
                 }
-                task["next_due"] = self._initial_due(task, now)
+                task["schedule_next_due"] = self._initial_due(task, now)
+                task["next_due"] = task["schedule_next_due"]
                 self.data["tasks"][task_id] = task
             else:
                 task = self.data["tasks"][task_id]
@@ -231,23 +243,28 @@ class TaskManager:
                         task["configured_interval_days"] = configured_interval
                         interval_changed = True
 
+                if "schedule_next_due" not in task:
+                    task["schedule_next_due"] = task.get("next_due")
                 if schedule_changed:
-                    task["next_due"] = self._initial_due(task, now)
+                    task["schedule_next_due"] = self._initial_due(task, now)
+                    task["next_due"] = task["schedule_next_due"]
                 elif interval_changed:
                     anchor = task.get("last_completed") or task.get("created_at")
                     anchor_dt = dt_util.parse_datetime(anchor) if anchor else now
                     if anchor_dt is None:
                         anchor_dt = now
-                    task["next_due"] = (
+                    task["schedule_next_due"] = (
                         anchor_dt + timedelta(days=configured_interval)
                     ).isoformat()
+                    task["next_due"] = task["schedule_next_due"]
 
                 if (
                     task.get("schedule_type") == "seasonal"
                     and not task.get("last_completed")
                     and not task.get("next_due")
                 ):
-                    task["next_due"] = self._initial_due(task, now)
+                    task["schedule_next_due"] = self._initial_due(task, now)
+                    task["next_due"] = task["schedule_next_due"]
 
         # Apply equipment links from the configuration options to task records.
         links = {}
@@ -258,7 +275,41 @@ class TaskManager:
             task["equipment_ids"] = links.get(task_id, [])
             task["equipment_id"] = task["equipment_ids"][0] if task["equipment_ids"] else None
 
+        self._refresh_equipment_lifespan_due()
         await self.async_save()
+
+    def _refresh_equipment_lifespan_due(self):
+        """Combine normal task schedules with designated equipment replacement dates."""
+        replacement_dates = {}
+        for equipment in self.data["equipment"].values():
+            task_id = equipment.get("replacement_task_id")
+            installed = equipment.get("installed_date")
+            months = int(equipment.get("lifespan_months") or 0)
+            if not task_id or not installed or months <= 0:
+                equipment.pop("replacement_due", None)
+                continue
+            try:
+                installed_day = date.fromisoformat(installed)
+                due_day = _add_months(installed_day, months)
+            except (TypeError, ValueError):
+                equipment.pop("replacement_due", None)
+                continue
+            due_value = due_day.isoformat()
+            equipment["replacement_due"] = due_value
+            replacement_dates.setdefault(task_id, []).append(due_value)
+
+        for task_id, task in self.data["tasks"].items():
+            lifecycle_dates = replacement_dates.get(task_id, [])
+            if lifecycle_dates:
+                local_today = dt_util.now()
+                local_due = datetime.combine(
+                    date.fromisoformat(min(lifecycle_dates)),
+                    time.min,
+                    tzinfo=local_today.tzinfo,
+                )
+                task["next_due"] = dt_util.as_utc(local_due).isoformat()
+            else:
+                task["next_due"] = task.get("schedule_next_due")
 
     async def async_save(self):
         await self.storage.async_save(self.data)
@@ -302,6 +353,28 @@ class TaskManager:
             interval = int(task.get("configured_interval_days") or 0)
             next_due_value = (now + timedelta(days=interval)).isoformat() if interval > 0 else None
 
+        task["schedule_next_due"] = next_due_value
+        replaced_equipment = [
+            equipment for equipment in self.data["equipment"].values()
+            if equipment.get("replacement_task_id") == task_id
+        ]
+        if replaced_equipment:
+            replacement_day = dt_util.as_local(now).date().isoformat()
+            for equipment in replaced_equipment:
+                equipment["installed_date"] = replacement_day
+            entry = self.hass.config_entries.async_get_entry(self.entry_id)
+            if entry is not None:
+                updated_records = [
+                    deepcopy(item) for item in self.data["equipment"].values()
+                ]
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    options={**entry.options, "equipment_records": updated_records},
+                )
+                self.equipment_records = updated_records
+
+        self._refresh_equipment_lifespan_due()
+        next_due_value = task.get("next_due")
         self.data["history"].append({
             "history_id": f"{task_id}:{now.isoformat()}",
             "task_id": task_id,
@@ -325,6 +398,13 @@ class TaskManager:
             raise ValueError(f"Unknown maintenance task: {task_id}")
         if not task.get("enabled", True):
             raise ValueError(f"Maintenance task is disabled: {task_id}")
+        if any(
+            item.get("replacement_task_id") == task_id
+            for item in self.data.get("equipment", {}).values()
+        ):
+            raise ValueError(
+                "This task's due date is managed by its equipment lifespan."
+            )
         try:
             selected_day = date.fromisoformat(due_date)
             if selected_day.isoformat() != due_date:
@@ -344,6 +424,7 @@ class TaskManager:
             "next_due": next_due,
             "reason": reason.strip(),
         })
+        task["schedule_next_due"] = next_due
         task["next_due"] = next_due
         await self.async_save()
 
