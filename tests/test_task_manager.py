@@ -254,3 +254,17 @@ async def test_completion_rejects_unknown_task_without_recording_history(hass):
 
     assert manager.data["history"] == []
 
+@pytest.mark.asyncio
+async def test_reschedule_rejects_noncanonical_iso_date_format(hass):
+    """Date-only values must use the documented YYYY-MM-DD representation."""
+    manager = TaskManager(hass, "noncanonical-date-test", ["clean_gutters"])
+    await manager.async_load()
+    task = manager.data["tasks"]["clean_gutters"]
+    previous_due = task["next_due"]
+
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        await manager.async_reschedule_task("clean_gutters", "20261109")
+
+    assert task["next_due"] == previous_due
+    assert task.get("schedule_history", []) == []
+
