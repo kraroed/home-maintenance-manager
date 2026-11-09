@@ -146,11 +146,18 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
         "recommended_interval_days": 90,
         "is_custom": True,
     }
+    equipment_records = [{
+        "equipment_id": "hvac-upstairs",
+        "name": "Upstairs HVAC",
+        "category": "HVAC",
+        "task_ids": ["custom_filter_replacement"],
+    }]
     manager = TaskManager(
         hass,
         "custom-task-edit-test",
         ["custom_filter_replacement"],
         custom_tasks=[original_definition],
+        equipment_records=equipment_records,
     )
     await manager.async_load()
     await manager.async_complete_task(
@@ -160,6 +167,9 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
     original_task = manager.data["tasks"]["custom_filter_replacement"]
     original_last_completed = original_task["last_completed"]
     original_next_due = original_task["next_due"]
+    original_history = deepcopy(manager.data["history"][-1])
+    assert original_history["task_name"] == "Replace HVAC filter"
+    assert original_history["equipment_ids"] == ["hvac-upstairs"]
 
     edited_definition = {
         **original_definition,
@@ -173,6 +183,7 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
         "custom-task-edit-test",
         ["custom_filter_replacement"],
         custom_tasks=[edited_definition],
+        equipment_records=equipment_records,
         task_intervals={"custom_filter_replacement": 120},
     )
     await reloaded_manager.async_load()
@@ -187,8 +198,8 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
     ).isoformat()
     assert edited_task["next_due"] == expected_next_due
     assert edited_task["next_due"] != original_next_due
-    assert reloaded_manager.data["history"][-1]["task_id"] == "custom_filter_replacement"
-    assert reloaded_manager.data["history"][-1]["task_name"] == "Replace HVAC filter"
+    assert reloaded_manager.data["history"][-1] == original_history
+    assert edited_task["equipment_ids"] == ["hvac-upstairs"]
 
 @pytest.mark.asyncio
 async def test_seasonal_completion_schedules_the_next_configured_window(
