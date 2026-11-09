@@ -35,19 +35,14 @@ async def async_setup_completion_service(hass):
         )
         await entry_data["coordinator"].async_request_refresh()
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_COMPLETE_TASK,
-        handle_complete,
-        schema=vol.Schema({
+    if not hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_COMPLETE_TASK,
+            handle_complete,
+            schema=vol.Schema({
             vol.Required("task_id"): str,
             vol.Optional("notes", default=""): str,
-            vol.Optional("integration_instance"): str,
-        }),
-    )
-
-
-async def async_unload_completion_service(hass):
-    """Remove the task completion service."""
-    if hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK):
-        hass.services.async_remove(DOMAIN, SERVICE_COMPLETE_TASK)
+                vol.Optional("integration_instance"): str,
+            }),
+        )
