@@ -36,7 +36,9 @@ async def async_setup_entry(hass, entry):
     coordinator = MaintenanceCoordinator(hass, manager)
     await coordinator.async_config_entry_first_refresh()
 
-    cancel_notifications = await async_setup_notifications(hass, entry, manager)
+    cancel_notifications = await async_setup_notifications(
+        hass, entry, manager, coordinator
+    )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "manager": manager,
