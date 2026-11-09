@@ -301,7 +301,13 @@ class TaskManager:
         for task_id, task in self.data["tasks"].items():
             lifecycle_dates = replacement_dates.get(task_id, [])
             if lifecycle_dates:
-                task["next_due"] = f"{min(lifecycle_dates)}T00:00:00"
+                local_today = dt_util.now()
+                local_due = datetime.combine(
+                    date.fromisoformat(min(lifecycle_dates)),
+                    time.min,
+                    tzinfo=local_today.tzinfo,
+                )
+                task["next_due"] = dt_util.as_utc(local_due).isoformat()
             else:
                 task["next_due"] = task.get("schedule_next_due")
 
