@@ -67,3 +67,52 @@ export_history:
             - csv
             - json
             - both
+
+create_backup:
+  name: Create JSON backup
+  description: Save a complete JSON backup of one property or every configured property.
+  fields:
+    integration_instance:
+      name: Integration instance
+      description: Optional config entry ID or storage key when backing up one property.
+      selector:
+        text:
+
+preview_restore:
+  name: Preview JSON restore
+  description: Validate a backup and show its contents without changing live data.
+  fields:
+    filename:
+      name: Backup filename
+      description: JSON filename placed in the property's protected backup folder.
+      required: true
+      selector:
+        text:
+    integration_instance:
+      name: Integration instance
+      description: Config entry ID or storage key for the property to restore.
+      selector:
+        text:
+
+restore_backup:
+  name: Restore JSON backup
+  description: Restore a validated backup after creating an automatic pre-restore backup. Existing completion history is retained.
+  fields:
+    filename:
+      name: Backup filename
+      description: JSON filename previously previewed.
+      required: true
+      selector:
+        text:
+    confirm:
+      name: Confirm restore
+      description: Must be enabled to apply the restore.
+      required: true
+      default: false
+      selector:
+        boolean:
+    integration_instance:
+      name: Integration instance
+      description: Config entry ID or storage key for the property to restore.
+      selector:
+        text:
