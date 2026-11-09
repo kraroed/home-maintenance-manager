@@ -83,7 +83,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           (a.state.attributes.friendly_name || "").localeCompare(b.state.attributes.friendly_name || "");
       }),
       summaries: summaryTotals,
-      costBreakdown: integrationStates.find((state) => state.attributes?.summary_key === "maintenance_cost")?.attributes?.cost_breakdown || {},
       equipment,
     };
   }
@@ -158,7 +157,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
 
   render() {
     if (!this._hass || !this.config) return;
-    const { tasks, summaries, costBreakdown, equipment } = this._discover();
+    const { tasks, summaries, equipment } = this._discover();
     const count = (key) => summaries.get(key)?.state ?? "—";
     const categories = [...new Set(tasks.map(({ state }) => state.attributes.category || "General"))].sort();
     const filtered = tasks.filter(({ state }) => {
@@ -170,16 +169,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       return state.state === this._filter;
     });
     const categoryMarkup = '<div class="category-filters"><button data-category="all" class="' + (this._category === "all" ? "selected" : "") + '">All categories</button>' + categories.map((category) => '<button data-category="' + this._escape(category) + '" class="' + (this._category === category ? "selected" : "") + '">' + this._escape(category) + '</button>').join("") + '</div>';
-    const costList = (values) => Object.entries(values || {})
-      .sort((a, b) => b[1] - a[1])
-      .map(([label, amount]) => `<div class="cost-row"><span>${this._escape(label)}</span><strong>${this._money(amount)}</strong></div>`)
-      .join("") || '<div class="muted">No recorded costs yet.</div>';
-    const costMarkup = `<section><h3>Cost breakdown</h3>
-      <div class="cost-columns">
-        <div><strong>By category</strong>${costList(costBreakdown.category)}</div>
-        <div><strong>By year</strong>${costList(costBreakdown.year)}</div>
-        <div><strong>By equipment</strong>${costList(costBreakdown.equipment)}</div>
-      </div></section>`;
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item, equipment)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
@@ -199,7 +188,6 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           <div class="stat warning"><strong>${this._escape(count("overdue"))}</strong><span>Overdue</span></div>
           <div class="stat"><strong>${this._escape(count("due_today"))}</strong><span>Due today</span></div>
           <div class="stat"><strong>${this._escape(count("due_soon"))}</strong><span>Due soon</span></div>
-          <div class="stat"><strong>${this._money(count("maintenance_cost") === "—" ? 0 : count("maintenance_cost"))}</strong><span>Lifetime cost</span></div>
         </div>
         <div class="filters">
           <button data-filter="all" class="${this._filter === "all" ? "selected" : ""}">All</button>
@@ -210,13 +198,12 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         ${categoryMarkup}
         ${this._equipmentTask ? '<div class="active-filter">Showing selected equipment task <button data-clear-task>Clear</button></div>' : ""}
         <div class="tasks">${taskMarkup}</div>
-        ${costMarkup}
         ${this.config.show_equipment ? `<section><h3>Equipment <small>${this._escape(count("equipment_count"))} registered</small></h3>${equipmentMarkup}</section>` : ""}
         ${this.config.show_history ? `<footer>Completion history records: <strong>${this._escape(count("history_count"))}</strong></footer>` : ""}
       </ha-card>
       <style>
         ha-card{overflow:hidden}.header{padding:18px 18px 10px}.title{font-size:1.35rem;font-weight:600}.subtitle,.meta,.muted{color:var(--secondary-text-color);font-size:.86rem}
-        .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:8px 16px 14px}
+        .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px 16px 14px}
         .stat{background:var(--secondary-background-color);border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
         .stat strong{font-size:1.35rem}.stat span{font-size:.75rem;color:var(--secondary-text-color)}.warning strong{color:var(--error-color)}
         .filters{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}.filters button,.complete{border:0;border-radius:18px;padding:7px 11px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer}
@@ -229,7 +216,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
         .complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
         section{padding:8px 16px 14px;border-top:1px solid var(--divider-color)}h3{font-size:1rem;margin:8px 0}h3 small{font-weight:400;color:var(--secondary-text-color);margin-left:5px}
-        .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}.cost-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}.cost-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--divider-color);font-size:.82rem}
+        .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}
         footer{border-top:1px solid var(--divider-color);padding:12px 16px;color:var(--secondary-text-color);font-size:.85rem}.empty{padding:16px 0;color:var(--secondary-text-color)}
         @media(max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task{align-items:flex-start}.task-actions{align-items:flex-end}.equipment{flex-direction:column;gap:2px}.equipment span{text-align:left}}
       </style>`;
