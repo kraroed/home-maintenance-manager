@@ -217,29 +217,8 @@ class TaskManager:
         history_by_task = {}
         for record in self.data.get("history", []):
             history_by_task.setdefault(record.get("task_id"), []).append(deepcopy(record))
-        cost_breakdown = {"category": {}, "year": {}, "equipment": {}}
-        task_lookup = self.data.get("tasks", {})
-        equipment_lookup = self.data.get("equipment", {})
-        for record in self.data.get("history", []):
-            amount = float(record.get("total_cost", 0) or 0)
-            if amount <= 0:
-                continue
-            task = task_lookup.get(record.get("task_id"), {})
-            category = task.get("category") or "General"
-            cost_breakdown["category"][category] = cost_breakdown["category"].get(category, 0) + amount
-            completed_at = dt_util.parse_datetime(record.get("completed_at", ""))
-            year = str(dt_util.as_local(completed_at).year) if completed_at else "Unknown"
-            cost_breakdown["year"][year] = cost_breakdown["year"].get(year, 0) + amount
-            linked_equipment = record.get("equipment_ids", [])
-            allocated_amount = amount / len(linked_equipment) if linked_equipment else 0
-            for equipment_id in linked_equipment:
-                item = equipment_lookup.get(equipment_id, {})
-                label = item.get("name") or equipment_id
-                cost_breakdown["equipment"][label] = cost_breakdown["equipment"].get(label, 0) + allocated_amount
-
         return {
             "tasks": tasks,
-            "cost_breakdown": cost_breakdown,
             "history_by_task": {
                 task_id: records[-10:]
                 for task_id, records in history_by_task.items()
@@ -251,5 +230,4 @@ class TaskManager:
             "due_today": sum(t["status"] == "due_today" for t in enabled_tasks),
             "due_soon": sum(t["status"] == "due_soon" for t in enabled_tasks),
             "history_count": len(self.data.get("history", [])),
-            "maintenance_cost": round(sum(float(record.get("total_cost", 0) or 0) for record in self.data.get("history", [])), 2),
         }
