@@ -106,7 +106,8 @@ def test_equipment_installation_date_requires_real_iso_date():
             schema({**valid, "installed_date": invalid_date})
 
 
-def test_season_window_options_validate_and_save_all_windows():
+@pytest.mark.asyncio
+async def test_season_window_options_validate_and_save_all_windows():
     """Seasonal schedule settings can be customized with valid MM-DD dates."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -114,7 +115,8 @@ def test_season_window_options_validate_and_save_all_windows():
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     flow = HomeMaintenanceOptionsFlow(entry)
-    schema = flow.async_step_configure_season_windows()["data_schema"]
+    result = await flow.async_step_configure_season_windows()
+    schema = result["data_schema"]
     submitted = {
         "spring_start": "03-10",
         "spring_end": "05-25",
@@ -130,3 +132,12 @@ def test_season_window_options_validate_and_save_all_windows():
         invalid = {**submitted, field: "02-30"}
         with pytest.raises(vol.Invalid, match="MM-DD"):
             schema(invalid)
+
+    result = await flow.async_step_configure_season_windows(submitted)
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["season_windows"] == {
+        "spring": {"start": "03-10", "end": "05-25"},
+        "summer": {"start": "06-01", "end": "08-31"},
+        "fall": {"start": "09-01", "end": "11-15"},
+        "winter": {"start": "11-16", "end": "03-14"},
+    }
