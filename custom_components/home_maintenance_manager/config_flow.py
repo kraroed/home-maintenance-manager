@@ -611,7 +611,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 str, vol.Length(max=80)
             ),
             vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
-                str, vol.Length(max=10), vol.Match(r"^$|^\\d{4}-\\d{2}-\\d{2}$")
+                str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
             ),
             vol.Optional("notes", default=current.get("notes", "")): vol.All(
                 str, vol.Length(max=500)
