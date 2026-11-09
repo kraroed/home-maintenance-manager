@@ -100,7 +100,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     const status = state.state;
     const key = `${attrs.integration_instance || "default"}:${attrs.task_id}`;
     const action = item.button
-      ? `<button class="complete" data-entity="${this._escape(item.button)}">Mark complete</button>`
+      ? `<button class="complete" data-complete-task="${this._escape(attrs.task_id)}" data-instance="${this._escape(attrs.integration_instance || "default")}">Mark complete</button>`
       : '<span class="muted">No completion button</span>';
     const details = this._detailTaskKey === key ? this._renderTaskDetails(item, equipment) : "";
     const detailLabel = this._detailTaskKey === key ? "Hide details" : "Details";
@@ -235,10 +235,16 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       this._equipmentTask = null;
       this.render();
     }));
-    this.querySelectorAll("[data-entity]").forEach((button) => button.addEventListener("click", async () => {
+    this.querySelectorAll("[data-complete-task]").forEach((button) => button.addEventListener("click", async () => {
+      const notes = window.prompt("Add completion notes (optional):", "");
+      if (notes === null) return;
       button.disabled = true;
       try {
-        await this._hass.callService("button", "press", { entity_id: button.dataset.entity });
+        await this._hass.callService("home_maintenance_manager", "complete_task", {
+          task_id: button.dataset.completeTask,
+          integration_instance: button.dataset.instance,
+          notes: notes.trim(),
+        });
       } finally {
         button.disabled = false;
       }
