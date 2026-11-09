@@ -251,14 +251,30 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     errors={"base": "duplicate_task"},
                 )
 
+            schedule_type = user_input["schedule_type"]
             interval = int(user_input["interval_days"])
+            annual_month = int(user_input["annual_month"])
+            annual_day = int(user_input["annual_day"])
+            if schedule_type == "annual":
+                try:
+                    date(2000, annual_month, annual_day)
+                except ValueError:
+                    return self.async_show_form(
+                        step_id="add_custom_task",
+                        data_schema=self._custom_task_schema(),
+                        errors={"base": "invalid_annual_date"},
+                    )
             custom_task = {
                 "task_id": task_id,
                 "name": name,
                 "category": user_input["category"].strip().casefold() or "custom",
                 "description": user_input.get("description", "").strip(),
-                "schedule_type": "interval",
+                "schedule_type": schedule_type,
                 "recommended_interval_days": interval,
+                **(
+                    {"annual_month": annual_month, "annual_day": annual_day}
+                    if schedule_type == "annual" else {}
+                ),
                 "priority": "normal",
                 "requires_equipment": False,
                 "recommendation_note": "Custom task created by the user.",
@@ -282,8 +298,14 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     CONF_ENABLED_TASK_IDS: enabled,
                     "custom_tasks": [*existing_tasks, custom_task],
                     "task_intervals": {
-                        **self.config_entry.options.get("task_intervals", {}),
-                        task_id: interval,
+                        **{
+                            key: value
+                            for key, value in self.config_entry.options.get(
+                                "task_intervals", {}
+                            ).items()
+                            if key != task_id
+                        },
+                        **({task_id: interval} if schedule_type == "interval" else {}),
                     },
                 },
             )
@@ -342,24 +364,46 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 )
             # Keep the ID stable so existing task state and completion history
             # remain attached to this custom task when its display name changes.
+            schedule_type = user_input["schedule_type"]
             interval = int(user_input["interval_days"])
+            annual_month = int(user_input["annual_month"])
+            annual_day = int(user_input["annual_day"])
+            if schedule_type == "annual":
+                try:
+                    date(2000, annual_month, annual_day)
+                except ValueError:
+                    return self.async_show_form(
+                        step_id="edit_custom_task",
+                        data_schema=self._custom_task_schema(current),
+                        errors={"base": "invalid_annual_date"},
+                    )
             updated = {
                 **current,
                 "name": name,
                 "category": user_input["category"].strip().casefold() or "custom",
                 "description": user_input.get("description", "").strip(),
+                "schedule_type": schedule_type,
                 "how_to_inspect": [line.strip() for line in user_input.get("how_to_inspect", "").splitlines() if line.strip()],
                 "what_to_look_for": [line.strip() for line in user_input.get("what_to_look_for", "").splitlines() if line.strip()],
                 "what_to_do_if_issue": user_input.get("what_to_do_if_issue", "").strip(),
                 "safety_notes": user_input.get("safety_notes", "").strip(),
                 "recommended_interval_days": interval,
             }
+            if schedule_type == "annual":
+                updated["annual_month"] = annual_month
+                updated["annual_day"] = annual_day
+            else:
+                updated.pop("annual_month", None)
+                updated.pop("annual_day", None)
             custom_tasks = [
                 updated if item["task_id"] == current["task_id"] else item
                 for item in custom_tasks
             ]
             intervals = dict(self.config_entry.options.get("task_intervals", {}))
-            intervals[current["task_id"]] = interval
+            if schedule_type == "interval":
+                intervals[current["task_id"]] = interval
+            else:
+                intervals.pop(current["task_id"], None)
             return self.async_create_entry(
                 title="",
                 data={
@@ -601,9 +645,24 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("what_to_do_if_issue", default=current.get("what_to_do_if_issue", "")): vol.All(str, vol.Length(max=600)),
             vol.Optional("safety_notes", default=current.get("safety_notes", "")): vol.All(str, vol.Length(max=600)),
             vol.Required(
+                "schedule_type",
+                default=current.get("schedule_type", "interval"),
+            ): vol.In({
+                "interval": "Repeat by interval",
+                "annual": "Repeat annually on a calendar date",
+            }),
+            vol.Required(
                 "interval_days",
                 default=current.get("recommended_interval_days", 90),
             ): vol.All(vol.Coerce(int), vol.Range(min=1, max=3650)),
+            vol.Required(
+                "annual_month",
+                default=current.get("annual_month", 1),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=12)),
+            vol.Required(
+                "annual_day",
+                default=current.get("annual_day", 1),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=31)),
         })
 
     @staticmethod
