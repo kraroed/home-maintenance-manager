@@ -387,7 +387,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     )
             replacement_task_id = user_input.get("replacement_task_id") or ""
             lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
-            if len({bool(lifespan_months), bool(replacement_task_id), bool(user_input.get("installed_date", "").strip())}) != 1:
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
                 return self.async_show_form(
                     step_id="edit_equipment",
                     data_schema=self._equipment_schema(task_options, current),
@@ -538,7 +541,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 )
             replacement_task_id = user_input.get("replacement_task_id") or ""
             lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
-            if len({bool(lifespan_months), bool(replacement_task_id), bool(user_input.get("installed_date", "").strip())}) != 1:
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
                 return self.async_show_form(
                     step_id="add_equipment",
                     data_schema=self._equipment_schema(task_options),
@@ -636,7 +642,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 )
             replacement_task_id = user_input.get("replacement_task_id") or ""
             lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
-            if len({bool(lifespan_months), bool(replacement_task_id), bool(user_input.get("installed_date", "").strip())}) != 1:
+            if (lifespan_months or replacement_task_id) and not (
+                lifespan_months and replacement_task_id
+                and user_input.get("installed_date", "").strip()
+            ):
                 return self.async_show_form(
                     step_id="edit_equipment",
                     data_schema=self._equipment_schema(task_options, current),
