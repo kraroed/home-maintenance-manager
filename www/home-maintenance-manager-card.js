@@ -38,6 +38,11 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
   }
 
+  _money(value) {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" })
+      .format(Number(value || 0));
+  }
+
   _discover() {
     const states = Object.values(this._hass?.states || {});
     const integrationStates = states.filter((state) =>
@@ -135,6 +140,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         <strong>${this._escape(this._date(record.completed_at))}</strong>
         <span>Previous due: ${this._escape(this._date(record.previous_due))}</span>
         ${record.notes ? `<div class="description">${this._escape(record.notes)}</div>` : ""}
+        <span>Labor: ${this._money(record.labor_cost)} · Parts: ${this._money(record.parts_cost)} · Total: <strong>${this._money(record.total_cost)}</strong></span>
         ${(record.attachments || []).length ? `<div class="history-attachments">${record.attachments.map((url) => `<a href="${this._escape(url)}" target="_blank" rel="noopener noreferrer">View attachment</a>`).join(" · ")}</div>` : ""}
       </div>`).join("") : '<div class="muted">No completion history yet.</div>';
     const interval = attrs.configured_interval_days
@@ -182,6 +188,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           <div class="stat warning"><strong>${this._escape(count("overdue"))}</strong><span>Overdue</span></div>
           <div class="stat"><strong>${this._escape(count("due_today"))}</strong><span>Due today</span></div>
           <div class="stat"><strong>${this._escape(count("due_soon"))}</strong><span>Due soon</span></div>
+          <div class="stat"><strong>${this._money(count("maintenance_cost") === "—" ? 0 : count("maintenance_cost"))}</strong><span>Lifetime cost</span></div>
         </div>
         <div class="filters">
           <button data-filter="all" class="${this._filter === "all" ? "selected" : ""}">All</button>
@@ -197,7 +204,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       </ha-card>
       <style>
         ha-card{overflow:hidden}.header{padding:18px 18px 10px}.title{font-size:1.35rem;font-weight:600}.subtitle,.meta,.muted{color:var(--secondary-text-color);font-size:.86rem}
-        .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px 16px 14px}
+        .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:8px 16px 14px}
         .stat{background:var(--secondary-background-color);border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
         .stat strong{font-size:1.35rem}.stat span{font-size:.75rem;color:var(--secondary-text-color)}.warning strong{color:var(--error-color)}
         .filters{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}.filters button,.complete{border:0;border-radius:18px;padding:7px 11px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer}
@@ -244,6 +251,10 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         ""
       );
       if (attachments === null) return;
+      const laborCost = window.prompt("Labor or service cost in USD (optional):", "0");
+      if (laborCost === null) return;
+      const partsCost = window.prompt("Parts and materials cost in USD (optional):", "0");
+      if (partsCost === null) return;
       button.disabled = true;
       try {
         await this._hass.callService("home_maintenance_manager", "complete_task", {
@@ -251,6 +262,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           integration_instance: button.dataset.instance,
           notes: notes.trim(),
           attachments: attachments.trim(),
+          labor_cost: Number(laborCost || 0),
+          parts_cost: Number(partsCost || 0),
         });
       } finally {
         button.disabled = false;
