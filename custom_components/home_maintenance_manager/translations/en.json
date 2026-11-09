@@ -63,19 +63,21 @@
       },
       "add_custom_task": {
         "title": "Add a custom maintenance task",
-        "description": "Create an interval-based or annual task. Annual tasks repeat on the selected month and day; February 29 is supported. You can also add inspection steps, warning signs, actions, and safety notes.",
+        "description": "Create a custom task using an interval, annual calendar date, or monthly weekday pattern. You can also add inspection steps, warning signs, actions, and safety notes.",
         "data": {
           "name": "Task name",
           "category": "Category",
           "description": "Description",
           "schedule_type": "Schedule type",
-          "interval_days": "Repeat every (days) — used for interval schedules",
+          "interval_days": "Repeat every (days) — interval schedules",
           "annual_month": "Annual month (1–12)",
           "annual_day": "Annual day (1–31)",
           "how_to_inspect": "How to inspect (one step per line)",
           "what_to_look_for": "What to look for (one item per line)",
           "what_to_do_if_issue": "What to do if something is wrong",
-          "safety_notes": "Safety precautions"
+          "safety_notes": "Safety precautions",
+          "monthly_week": "Week of the month",
+          "monthly_weekday": "Day of the week"
         }
       },
       "add_equipment": {
@@ -135,7 +137,7 @@
       },
       "custom_task_actions": {
         "title": "Custom task actions",
-        "description": "Edit the task details and interval, or remove this custom task.",
+        "description": "Edit task details and its recurring schedule, or remove this custom task.",
         "menu_options": {
           "edit_custom_task": "Edit custom task",
           "remove_custom_task": "Remove custom task"
@@ -143,19 +145,21 @@
       },
       "edit_custom_task": {
         "title": "Edit custom maintenance task",
-        "description": "Update task details and schedule. Annual tasks repeat on the selected month and day; February 29 is supported. Existing completion history is retained.",
+        "description": "Update task details and schedule. Annual tasks repeat on a selected month and day; monthly tasks repeat on a selected weekday pattern. Existing completion history is retained.",
         "data": {
           "name": "Task name",
           "category": "Category",
           "description": "Description",
           "schedule_type": "Schedule type",
-          "interval_days": "Repeat every (days) — used for interval schedules",
+          "interval_days": "Repeat every (days) — interval schedules",
           "annual_month": "Annual month (1–12)",
           "annual_day": "Annual day (1–31)",
           "how_to_inspect": "How to inspect (one step per line)",
           "what_to_look_for": "What to look for (one item per line)",
           "what_to_do_if_issue": "What to do if something is wrong",
-          "safety_notes": "Safety precautions"
+          "safety_notes": "Safety precautions",
+          "monthly_week": "Week of the month",
+          "monthly_weekday": "Day of the week"
         }
       },
       "remove_custom_task": {

@@ -11,7 +11,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Built-in inspection guides for all 120 tasks, with practical steps, warning signs, recommended next actions, and safety precautions.
 - Custom inspection guidance for user-created tasks, editable alongside task details.
 - User-created recurring maintenance tasks with configurable categories, descriptions, and intervals.
-- Custom task editing, including changing the recurring interval while retaining the task's identity and completion history.
+- Custom task editing, including interval, annual calendar-date, and monthly weekday-pattern schedules, while retaining task identity and completion history.
 - Custom task removal from active tracking, with completion history preserved.
 - Editable intervals for recurring built-in tasks.
 - Completion-based scheduling: completing a task restarts its schedule.
@@ -19,6 +19,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Permanent completion history, including optional notes and linked equipment details.
 - Complete JSON backup and guarded restore for property configuration, tasks, equipment, settings, reminder state, and completion history.
 - Seasonal schedules with configurable date windows.
+- Monthly calendar patterns such as the first Saturday, second Tuesday, or last Sunday of each month.
 - Household equipment records with name, category, manufacturer, model, installation date, and notes.
 - Associate one or more enabled maintenance tasks with registered equipment.
 - Equipment sensors expose equipment details and associated task IDs.
@@ -34,7 +35,7 @@ Each built-in task includes concise homeowner-oriented guidance. Instructions di
 
 ## Custom maintenance task management
 
-Open the integration's **Configure** options and choose **Manage custom maintenance tasks**. Select a custom task to edit its name, category, description, or repeat interval, or remove it from active tracking. Editing keeps the task ID stable so its existing schedule and completion history remain associated with it. Removing a task disables it, removes it from the custom task library and enabled-task list, and clears equipment associations; existing task and completion records are retained.
+Open the integration's **Configure** options and choose **Manage custom maintenance tasks**. Select a custom task to edit its name, category, description, or recurring schedule. Choose an interval, an annual month/day, or a monthly weekday pattern (first through fourth, or last; Monday through Sunday). Editing keeps the task ID and completion history intact. You can also remove it from active tracking. Removing a task disables it, removes it from the custom task library and enabled-task list, and clears equipment associations; existing task and completion records are retained.
 
 ## Equipment tracking
 

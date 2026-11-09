@@ -13,7 +13,6 @@ from custom_components.home_maintenance_manager.const import (
     DOMAIN,
 )
 
-
 @pytest.mark.asyncio
 async def test_user_flow_creates_property_with_selected_tasks(hass, enable_custom_integrations):
     """The initial setup flow stores the property and selected task IDs."""
@@ -36,7 +35,6 @@ async def test_user_flow_creates_property_with_selected_tasks(hass, enable_custo
     assert result["title"] == "Primary Residence"
     assert result["data"]["property_name"] == "Primary Residence"
     assert result["data"][CONF_ENABLED_TASK_IDS] == ["clean_gutters"]
-
 
 @pytest.mark.asyncio
 async def test_add_equipment_options_flow_saves_task_associations(hass, enable_custom_integrations):
@@ -96,8 +94,6 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert equipment[0]["model"] == "HVAC-100"
     assert equipment[0]["task_ids"] == ["clean_gutters"]
 
-
-
 def test_equipment_installation_date_requires_real_iso_date():
     """Equipment dates accept blanks and real dates but reject impossible dates."""
     schema = HomeMaintenanceOptionsFlow._equipment_schema(
@@ -122,7 +118,6 @@ def test_equipment_installation_date_requires_real_iso_date():
     for invalid_format in ("20240229", "not-a-date"):
         with pytest.raises(vol.Invalid):
             schema({**valid, "installed_date": invalid_format})
-
 
 @pytest.mark.asyncio
 async def test_season_window_options_validate_and_save_all_windows(
@@ -456,8 +451,6 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "custom_replace_filter"
     ]
 
-
-
 @pytest.mark.asyncio
 async def test_add_custom_annual_task_saves_calendar_schedule(
     hass, enable_custom_integrations
@@ -495,7 +488,6 @@ async def test_add_custom_annual_task_saves_calendar_schedule(
     assert task["annual_day"] == 15
     assert result["data"][CONF_ENABLED_TASK_IDS] == ["custom_winterize_sprinklers"]
     assert "custom_winterize_sprinklers" not in result["data"]["task_intervals"]
-
 
 @pytest.mark.asyncio
 async def test_add_custom_annual_task_rejects_invalid_calendar_date(
@@ -541,7 +533,6 @@ async def test_add_custom_annual_task_rejects_invalid_calendar_date(
     assert valid["type"] == FlowResultType.CREATE_ENTRY
     assert valid["data"]["custom_tasks"][0]["annual_month"] == 2
     assert valid["data"]["custom_tasks"][0]["annual_day"] == 29
-
 
 @pytest.mark.asyncio
 async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_history(
@@ -602,3 +593,43 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
     assert result["data"]["custom_tasks"][0]["annual_day"] == 15
     assert "custom_sprinkler_check" not in result["data"]["task_intervals"]
     assert result["data"]["notification_target"] == "notify.mobile_app_phone"
+
+@pytest.mark.asyncio
+async def test_add_custom_monthly_task_saves_weekday_pattern(
+    hass, enable_custom_integrations
+):
+    """Adding a monthly custom task stores its ordinal weekday schedule."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Monthly Alarm Test",
+            "category": "Safety",
+            "description": "Test household alarms monthly.",
+            "schedule_type": "monthly",
+            "interval_days": 90,
+            "annual_month": 1,
+            "annual_day": 1,
+            "monthly_week": "second",
+            "monthly_weekday": 1,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    task = result["data"]["custom_tasks"][0]
+    assert task["task_id"] == "custom_monthly_alarm_test"
+    assert task["schedule_type"] == "monthly"
+    assert task["monthly_week"] == "second"
+    assert task["monthly_weekday"] == 1
+    assert "annual_month" not in task
+    assert "custom_monthly_alarm_test" not in result["data"]["task_intervals"]

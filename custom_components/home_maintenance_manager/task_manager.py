@@ -1,3 +1,4 @@
+import calendar
 import json
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta
@@ -43,6 +44,42 @@ def _next_annual_due(task, reference, include_active=False):
             candidate = date(year, month, day)
         except ValueError:
             continue
+        if candidate < local_day or (candidate == local_day and not include_active):
+            continue
+        if candidate == local_day and include_active:
+            return reference.isoformat()
+        local_due = datetime.combine(candidate, time.min, tzinfo=local_now.tzinfo)
+        return dt_util.as_utc(local_due).isoformat()
+    return None
+
+
+def _next_monthly_due(task, reference, include_active=False):
+    """Return the next occurrence of an ordinal weekday in a month."""
+    week = task.get("monthly_week")
+    try:
+        weekday = int(task.get("monthly_weekday"))
+    except (TypeError, ValueError):
+        return None
+    ordinals = {"first": 1, "second": 2, "third": 3, "fourth": 4}
+    if week not in {*ordinals, "last"} or not 0 <= weekday <= 6:
+        return None
+
+    local_now = dt_util.as_local(reference)
+    local_day = local_now.date()
+    for offset in range(0, 25):
+        month_index = local_day.year * 12 + local_day.month - 1 + offset
+        year, month_zero = divmod(month_index, 12)
+        month = month_zero + 1
+        first_weekday, days_in_month = calendar.monthrange(year, month)
+        if week == "last":
+            day = days_in_month - (
+                calendar.weekday(year, month, days_in_month) - weekday
+            ) % 7
+        else:
+            day = 1 + (weekday - first_weekday) % 7 + 7 * (ordinals[week] - 1)
+        if day > days_in_month:
+            continue
+        candidate = date(year, month, day)
         if candidate < local_day or (candidate == local_day and not include_active):
             continue
         if candidate == local_day and include_active:
@@ -108,6 +145,8 @@ class TaskManager:
             )
         if task.get("schedule_type") == "annual":
             return _next_annual_due(task, now, include_active=True)
+        if task.get("schedule_type") == "monthly":
+            return _next_monthly_due(task, now, include_active=True)
         interval = int(task.get("configured_interval_days") or 0)
         return (now + timedelta(days=interval)).isoformat() if interval else None
 
@@ -154,11 +193,14 @@ class TaskManager:
                     task.get("schedule_type"),
                     task.get("annual_month"),
                     task.get("annual_day"),
+                    task.get("monthly_week"),
+                    task.get("monthly_weekday"),
                 )
                 for key, value in definition.items():
                     if task.get("is_custom") and key in {
                         "name", "category", "description",
                         "schedule_type", "annual_month", "annual_day",
+                        "monthly_week", "monthly_weekday",
                         "recommended_interval_days", "recommendation_note",
                         "how_to_inspect", "what_to_look_for",
                         "what_to_do_if_issue", "safety_notes",
@@ -170,10 +212,15 @@ class TaskManager:
                 if task.get("schedule_type") != "annual":
                     task.pop("annual_month", None)
                     task.pop("annual_day", None)
+                if task.get("schedule_type") != "monthly":
+                    task.pop("monthly_week", None)
+                    task.pop("monthly_weekday", None)
                 current_schedule = (
                     task.get("schedule_type"),
                     task.get("annual_month"),
                     task.get("annual_day"),
+                    task.get("monthly_week"),
+                    task.get("monthly_weekday"),
                 )
                 schedule_changed = previous_schedule != current_schedule
                 configured_interval = self.task_intervals.get(task_id)
@@ -249,6 +296,8 @@ class TaskManager:
             next_due_value = _next_season_due(task, now, settings=self.data["settings"])
         elif task.get("schedule_type") == "annual":
             next_due_value = _next_annual_due(task, now)
+        elif task.get("schedule_type") == "monthly":
+            next_due_value = _next_monthly_due(task, now)
         else:
             interval = int(task.get("configured_interval_days") or 0)
             next_due_value = (now + timedelta(days=interval)).isoformat() if interval > 0 else None
