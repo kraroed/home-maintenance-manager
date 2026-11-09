@@ -23,7 +23,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Equipment sensors expose equipment details and associated task IDs.
 - Home Assistant entities for task status and household maintenance summaries.
 - Individual due-soon and overdue reminders, plus a configurable daily summary.
-- Configurable reminder lead time and notification destination, with persistent notifications as the fallback.
+- Configurable reminder lead time and notification destination, with persistent notifications as the fallback. Mobile app reminders include actions to mark a task complete or snooze it until tomorrow or one week later.
 
 ## Built-in maintenance task library
 
@@ -45,7 +45,7 @@ Equipment can be added, edited, and removed through the integration options flow
 
 ## Maintenance notifications
 
-Open **Configure → Configure maintenance notifications** to enable individual task reminders and/or a daily summary. Set how many days ahead to remind, choose the summary time in 24-hour `HH:MM` format, and optionally enter a Home Assistant notify entity ID (for example, `notify.mobile_app_your_phone`). If no target is configured, the integration creates Home Assistant persistent notifications instead. Reminder delivery is tracked in integration storage so a task is not repeatedly announced for the same due date, and the daily summary is sent once per day.
+Open **Configure → Configure maintenance notifications** to enable individual task reminders and/or a daily summary. Set how many days ahead to remind, choose the summary time in 24-hour `HH:MM` format, and optionally enter a Home Assistant notify entity ID (for example, `notify.mobile_app_your_phone`). When the target is a Home Assistant mobile app notification service, each individual reminder includes actions to **Mark complete**, **Tomorrow**, or **In 1 week**. Completing a task records it in permanent history and refreshes the integration; snoozing delays that reminder without changing the task's due date. If no target is configured, the integration creates Home Assistant persistent notifications instead (these do not include mobile action buttons). Reminder delivery and snooze state are tracked in integration storage so a task is not repeatedly announced for the same due date, and the daily summary is sent once per day.
 
 ## Maintenance history export
 

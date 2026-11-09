@@ -228,3 +228,124 @@ async def test_notifications_suppress_repeats_until_task_due_date_changes(
     assert "due in 1 day(s)" in reminders[1][1]
     assert manager.async_save.await_count == 3
 
+
+
+@pytest.mark.asyncio
+async def test_mobile_reminder_includes_complete_and_snooze_actions(hass, monkeypatch):
+    """Mobile reminders expose complete, tomorrow, and one-week actions."""
+    from custom_components.home_maintenance_manager import notifications
+
+    monkeypatch.setattr(
+        notifications, "async_track_time_interval", lambda hass, action, interval: lambda: None
+    )
+    notify_mock = AsyncMock()
+    monkeypatch.setattr(type(hass.services), "async_call", notify_mock)
+    now = dt_util.now()
+    manager = SimpleNamespace(
+        data={"tasks": {"clean_gutters": {
+            "task_id": "clean_gutters", "name": "Clean gutters",
+            "enabled": True, "next_due": now.isoformat(),
+        }}},
+        async_save=AsyncMock(),
+    )
+    entry = SimpleNamespace(
+        entry_id="entry-123",
+        options={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": False,
+            "notification_target": "notify.mobile_app_phone",
+        },
+    )
+
+    await async_setup_notifications(hass, entry, manager)
+
+    payload = notify_mock.await_args.args[2]
+    actions = payload["data"]["actions"]
+    assert [item["title"] for item in actions] == [
+        "Mark complete", "Tomorrow", "In 1 week"
+    ]
+    assert actions[0]["action"] == "HMM|entry-123|clean_gutters|complete"
+    assert actions[1]["action"] == "HMM|entry-123|clean_gutters|snooze_1d"
+    assert actions[2]["action"] == "HMM|entry-123|clean_gutters|snooze_7d"
+
+
+@pytest.mark.asyncio
+async def test_mobile_notification_complete_action_records_task(hass, monkeypatch):
+    """Selecting Mark complete records completion and refreshes the coordinator."""
+    from custom_components.home_maintenance_manager import notifications
+
+    monkeypatch.setattr(
+        notifications, "async_track_time_interval", lambda hass, action, interval: lambda: None
+    )
+    monkeypatch.setattr(type(hass.services), "async_call", AsyncMock())
+    now = dt_util.now()
+    task = {
+        "task_id": "clean_gutters", "name": "Clean gutters",
+        "enabled": True, "next_due": now.isoformat(),
+    }
+    manager = SimpleNamespace(
+        data={"tasks": {"clean_gutters": task}},
+        async_save=AsyncMock(),
+        async_complete_task=AsyncMock(),
+    )
+    coordinator = SimpleNamespace(async_request_refresh=AsyncMock())
+    entry = SimpleNamespace(
+        entry_id="entry-123",
+        options={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": False,
+            "notification_target": "notify.mobile_app_phone",
+        },
+    )
+
+    await async_setup_notifications(hass, entry, manager, coordinator)
+    hass.bus.async_fire(
+        "mobile_app_notification_action",
+        {"action": "HMM|entry-123|clean_gutters|complete"},
+    )
+    await hass.async_block_till_done()
+
+    manager.async_complete_task.assert_awaited_once_with("clean_gutters")
+    coordinator.async_request_refresh.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_mobile_notification_snooze_persists_until_tomorrow(hass, monkeypatch):
+    """Snooze actions persist a timestamp and suppress the next reminder."""
+    from custom_components.home_maintenance_manager import notifications
+
+    monkeypatch.setattr(
+        notifications, "async_track_time_interval", lambda hass, action, interval: lambda: None
+    )
+    monkeypatch.setattr(type(hass.services), "async_call", AsyncMock())
+    now = dt_util.now()
+    task = {
+        "task_id": "clean_gutters", "name": "Clean gutters",
+        "enabled": True, "next_due": now.isoformat(),
+    }
+    manager = SimpleNamespace(
+        data={"tasks": {"clean_gutters": task}},
+        async_save=AsyncMock(),
+        async_complete_task=AsyncMock(),
+    )
+    entry = SimpleNamespace(
+        entry_id="entry-123",
+        options={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": False,
+            "notification_target": "notify.mobile_app_phone",
+        },
+    )
+
+    await async_setup_notifications(hass, entry, manager)
+    due_key = f"clean_gutters:{task['next_due']}"
+    hass.bus.async_fire(
+        "mobile_app_notification_action",
+        {"action": "HMM|entry-123|clean_gutters|snooze_1d"},
+    )
+    await hass.async_block_till_done()
+
+    marker = manager.data["notification_state"]["individual"][due_key]
+    assert marker.startswith("snoozed:")
+    assert dt_util.parse_datetime(marker.removeprefix("snoozed:")) > now
+    assert manager.async_save.await_count >= 2
