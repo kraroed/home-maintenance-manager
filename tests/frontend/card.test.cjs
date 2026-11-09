@@ -141,7 +141,7 @@ test("reschedule action calls the service with the selected date and reason", as
 
   await control.handlers.click();
 
-  assert.deepEqual(calls, [{
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [{
     domain: "home_maintenance_manager",
     service: "reschedule_task",
     data: {
@@ -163,7 +163,7 @@ test("complete action forwards notes, attachment references, and costs", async (
 
   await control.handlers.click();
 
-  assert.deepEqual(calls, [{
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [{
     domain: "home_maintenance_manager",
     service: "complete_task",
     data: {
