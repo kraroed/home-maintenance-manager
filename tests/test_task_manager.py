@@ -87,3 +87,47 @@ async def test_reschedule_rejects_impossible_calendar_date(hass):
 
     with pytest.raises(ValueError, match="YYYY-MM-DD"):
         await manager.async_reschedule_task("clean_gutters", "2026-02-30")
+
+
+
+@pytest.mark.asyncio
+async def test_equipment_associations_are_saved_in_completion_history(hass):
+    """A completion record should retain all equipment linked to its task."""
+    task_definition = {
+        "task_id": "test_equipment_task",
+        "name": "Test equipment task",
+        "category": "Testing",
+        "description": "A task used by automated tests.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+    }
+    equipment_records = [
+        {
+            "equipment_id": "hvac-main",
+            "name": "Main HVAC",
+            "category": "HVAC",
+            "task_ids": ["test_equipment_task"],
+        },
+        {
+            "equipment_id": "hvac-upstairs",
+            "name": "Upstairs HVAC",
+            "category": "HVAC",
+            "task_ids": ["test_equipment_task"],
+        },
+    ]
+    manager = TaskManager(
+        hass,
+        "equipment-history-test",
+        ["test_equipment_task"],
+        custom_tasks=[task_definition],
+        equipment_records=equipment_records,
+    )
+    await manager.async_load()
+
+    task = manager.data["tasks"]["test_equipment_task"]
+    assert task["equipment_ids"] == ["hvac-main", "hvac-upstairs"]
+    assert task["equipment_id"] == "hvac-main"
+
+    await manager.async_complete_task("test_equipment_task")
+    record = manager.data["history"][-1]
+    assert record["equipment_ids"] == ["hvac-main", "hvac-upstairs"]
