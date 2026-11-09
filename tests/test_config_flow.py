@@ -1,11 +1,13 @@
 """Regression tests for Home Maintenance Manager configuration flows."""
 
 import pytest
+import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.home_maintenance_manager.config_flow import HomeMaintenanceOptionsFlow
 from custom_components.home_maintenance_manager.const import (
     CONF_ENABLED_TASK_IDS,
     DOMAIN,
@@ -80,3 +82,25 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert equipment[0]["manufacturer"] == "Example Manufacturer"
     assert equipment[0]["model"] == "HVAC-100"
     assert equipment[0]["task_ids"] == ["clean_gutters"]
+
+
+
+def test_equipment_installation_date_requires_real_iso_date():
+    """Equipment dates accept blanks and real dates but reject impossible dates."""
+    schema = HomeMaintenanceOptionsFlow._equipment_schema(
+        [("clean_gutters", "Clean gutters")]
+    )
+    valid = {
+        "name": "Main HVAC",
+        "category": "HVAC",
+        "installed_date": "2024-02-29",
+        "task_ids": ["clean_gutters"],
+    }
+    assert schema(valid)["installed_date"] == "2024-02-29"
+
+    blank_date = {**valid, "installed_date": ""}
+    assert schema(blank_date)["installed_date"] == ""
+
+    for invalid_date in ("2024-02-30", "20240229", "not-a-date"):
+        with pytest.raises(vol.Invalid, match="YYYY-MM-DD"):
+            schema({**valid, "installed_date": invalid_date})
