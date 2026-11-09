@@ -153,7 +153,8 @@
     },
     "error": {
       "duplicate_task": "A task with this name already exists. Choose a different name.",
-      "duplicate_equipment": "Equipment with this name already exists. Choose a different name."
+      "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
+      "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank."
     },
     "abort": {
       "no_equipment": "No equipment records have been added yet.",
