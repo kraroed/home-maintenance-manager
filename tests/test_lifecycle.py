@@ -46,7 +46,11 @@ async def test_config_entry_setup_registers_platforms_and_services(
         for state in hass.states.async_all()
         if state.attributes.get("integration_domain") == DOMAIN
     ]
-    assert any(entity_id.endswith("_total") for entity_id in entity_ids)
+    assert any(
+        state.attributes.get("summary_key") == "total"
+        for state in hass.states.async_all()
+        if state.attributes.get("integration_domain") == DOMAIN
+    )
     assert any("clean_gutters" in entity_id for entity_id in entity_ids)
 
 
