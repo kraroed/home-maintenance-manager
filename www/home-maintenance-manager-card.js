@@ -50,6 +50,15 @@ class HomeMaintenanceManagerCard extends HTMLElement {
   }
 
 
+  _isValidDateKey(value) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
+  }
+
   _calendarKey(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -405,8 +414,9 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     this.querySelectorAll("[data-reschedule-task]").forEach((button) => button.addEventListener("click", async () => {
       const currentDue = button.dataset.currentDue || this._calendarKey(new Date());
       const dueDate = window.prompt("New due date (YYYY-MM-DD):", currentDue);
-      if (dueDate === null || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate.trim())) {
-        if (dueDate !== null) window.alert("Enter the date as YYYY-MM-DD.");
+      if (dueDate === null) return;
+      if (!this._isValidDateKey(dueDate.trim())) {
+        window.alert("Enter a real calendar date as YYYY-MM-DD.");
         return;
       }
       const reason = window.prompt("Why is this task being rescheduled? (optional)", "");
