@@ -107,15 +107,25 @@ def test_equipment_installation_date_requires_real_iso_date():
 
 
 @pytest.mark.asyncio
-async def test_season_window_options_validate_and_save_all_windows():
+async def test_season_window_options_validate_and_save_all_windows(
+    hass, enable_custom_integrations
+):
     """Seasonal schedule settings can be customized with valid MM-DD dates."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
-    flow = HomeMaintenanceOptionsFlow(entry)
-    result = await flow.async_step_configure_season_windows()
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] == FlowResultType.MENU
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"next_step_id": "configure_season_windows"},
+    )
+    assert result["type"] == FlowResultType.FORM
     schema = result["data_schema"]
     submitted = {
         "spring_start": "03-10",
@@ -133,7 +143,9 @@ async def test_season_window_options_validate_and_save_all_windows():
         with pytest.raises(vol.Invalid, match="MM-DD"):
             schema(invalid)
 
-    result = await flow.async_step_configure_season_windows(submitted)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input=submitted
+    )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["season_windows"] == {
         "spring": {"start": "03-10", "end": "05-25"},
