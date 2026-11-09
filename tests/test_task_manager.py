@@ -131,3 +131,57 @@ async def test_equipment_associations_are_saved_in_completion_history(hass):
     await manager.async_complete_task("test_equipment_task")
     record = manager.data["history"][-1]
     assert record["equipment_ids"] == ["hvac-main", "hvac-upstairs"]
+
+
+
+@pytest.mark.asyncio
+async def test_custom_task_edit_preserves_existing_schedule_and_history(hass):
+    """Editing a custom task's details must retain its stable ID and history."""
+    original_definition = {
+        "task_id": "custom_filter_replacement",
+        "name": "Replace HVAC filter",
+        "category": "HVAC",
+        "description": "Original description.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+        "is_custom": True,
+    }
+    manager = TaskManager(
+        hass,
+        "custom-task-edit-test",
+        ["custom_filter_replacement"],
+        custom_tasks=[original_definition],
+    )
+    await manager.async_load()
+    await manager.async_complete_task(
+        "custom_filter_replacement",
+        notes="Replaced the filter",
+    )
+    original_task = manager.data["tasks"]["custom_filter_replacement"]
+    original_last_completed = original_task["last_completed"]
+    original_next_due = original_task["next_due"]
+
+    edited_definition = {
+        **original_definition,
+        "name": "Replace upstairs HVAC filter",
+        "category": "Heating and cooling",
+        "description": "Updated description.",
+        "recommended_interval_days": 120,
+    }
+    reloaded_manager = TaskManager(
+        hass,
+        "custom-task-edit-test",
+        ["custom_filter_replacement"],
+        custom_tasks=[edited_definition],
+        task_intervals={"custom_filter_replacement": 120},
+    )
+    await reloaded_manager.async_load()
+
+    edited_task = reloaded_manager.data["tasks"]["custom_filter_replacement"]
+    assert edited_task["name"] == "Replace upstairs HVAC filter"
+    assert edited_task["category"] == "heating and cooling"
+    assert edited_task["description"] == "Updated description."
+    assert edited_task["last_completed"] == original_last_completed
+    assert edited_task["next_due"] == original_next_due
+    assert reloaded_manager.data["history"][-1]["task_id"] == "custom_filter_replacement"
+    assert reloaded_manager.data["history"][-1]["task_name"] == "Replace HVAC filter"
