@@ -37,30 +37,44 @@ class HomeMaintenanceManagerCard extends HTMLElement {
 
   _discover() {
     const states = Object.values(this._hass?.states || {});
-    const taskSensors = states.filter((state) =>
+    const integrationStates = states.filter((state) =>
+      state.attributes?.integration_domain === "home_maintenance_manager"
+    );
+    const taskSensors = integrationStates.filter((state) =>
       state.entity_id.startsWith("sensor.") &&
       state.attributes?.task_id &&
       state.attributes?.enabled !== false
     );
-    const buttons = new Map(states
+    const buttons = new Map(integrationStates
       .filter((state) => state.entity_id.startsWith("button.") && state.attributes?.task_id)
-      .map((state) => [state.attributes.task_id, state.entity_id]));
-    const summaries = new Map(states
+      .map((state) => [
+        `${state.attributes.integration_instance || "default"}:${state.attributes.task_id}`,
+        state.entity_id,
+      ]));
+    const summaryTotals = new Map();
+    integrationStates
       .filter((state) => state.entity_id.startsWith("sensor.") && state.attributes?.summary_key)
-      .map((state) => [state.attributes.summary_key, state]));
-    const equipment = states.filter((state) =>
+      .forEach((state) => {
+        const key = state.attributes.summary_key;
+        const value = Number(state.state);
+        if (!Number.isFinite(value)) return;
+        summaryTotals.set(key, (summaryTotals.get(key) || 0) + value);
+      });
+    const equipment = integrationStates.filter((state) =>
       state.entity_id.startsWith("sensor.") && state.attributes?.equipment_id
     );
     return {
       tasks: taskSensors.map((state) => ({
         state,
-        button: buttons.get(state.attributes.task_id),
+        button: buttons.get(
+          `${state.attributes.integration_instance || "default"}:${state.attributes.task_id}`
+        ),
       })).sort((a, b) => {
         const order = { overdue: 0, due_today: 1, due_soon: 2, scheduled: 3, not_scheduled: 4 };
         return (order[a.state.state] ?? 5) - (order[b.state.state] ?? 5) ||
           (a.state.attributes.friendly_name || "").localeCompare(b.state.attributes.friendly_name || "");
       }),
-      summaries,
+      summaries: summaryTotals,
       equipment,
     };
   }
@@ -143,7 +157,7 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
         .status.overdue{color:var(--error-color)}.status.due_today{color:var(--warning-color)}.status.due_soon{color:var(--primary-color)}
-        .complete{background:var(--success-color);color:var(--text-primary-color,#fff);font-size:.78rem}
+        .complete{background:var(--success-color,var(--primary-color));color:var(--text-primary-color,#fff);font-size:.78rem}
         section{padding:8px 16px 14px;border-top:1px solid var(--divider-color)}h3{font-size:1rem;margin:8px 0}h3 small{font-weight:400;color:var(--secondary-text-color);margin-left:5px}
         .equipment{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.88rem}.equipment span{color:var(--secondary-text-color);text-align:right}
         footer{border-top:1px solid var(--divider-color);padding:12px 16px;color:var(--secondary-text-color);font-size:.85rem}.empty{padding:16px 0;color:var(--secondary-text-color)}
