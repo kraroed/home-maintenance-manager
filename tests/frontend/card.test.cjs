@@ -203,7 +203,7 @@ test("invalid reschedule date format is rejected before calling the service", as
   await control.handlers.click();
 
   assert.deepEqual(calls, []);
-  assert.equal(alertMessage, "Enter the date as YYYY-MM-DD.");
+  assert.equal(alertMessage, "Enter a real calendar date as YYYY-MM-DD.");
 });
 
 test("canceling the reason prompt prevents rescheduling", async () => {
