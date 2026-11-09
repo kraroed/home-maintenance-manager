@@ -10,6 +10,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       ...config,
     };
     if (this._filter === undefined) this._filter = "all";
+    if (this._category === undefined) this._category = "all";
+    this._equipmentTask = null;
     this.render();
   }
 
@@ -116,16 +118,26 @@ class HomeMaintenanceManagerCard extends HTMLElement {
     if (!this._hass || !this.config) return;
     const { tasks, summaries, equipment } = this._discover();
     const count = (key) => summaries.get(key)?.state ?? "—";
+    const categories = [...new Set(tasks.map(({ state }) => state.attributes.category || "General"))].sort();
     const filtered = tasks.filter(({ state }) => {
+      const category = state.attributes.category || "General";
+      if (this._category !== "all" && category !== this._category) return false;
+      if (this._equipmentTask && state.attributes.task_id !== this._equipmentTask) return false;
       if (this._filter === "all") return true;
       if (this._filter === "upcoming") return ["due_today", "due_soon"].includes(state.state);
       return state.state === this._filter;
     });
+    const categoryMarkup = '<div class="category-filters"><button data-category="all" class="' + (this._category === "all" ? "selected" : "") + '">All categories</button>' + categories.map((category) => '<button data-category="' + this._escape(category) + '" class="' + (this._category === category ? "selected" : "") + '">' + this._escape(category) + '</button>').join("") + '</div>';
     const taskMarkup = filtered.length
       ? filtered.map((item) => this._renderTask(item)).join("")
       : '<div class="empty">No tasks match this filter.</div>';
     const equipmentMarkup = equipment.length
-      ? equipment.map((item) => `<div class="equipment"><strong>${this._escape(item.attributes.friendly_name || item.state)}</strong><span>${this._escape(item.attributes.manufacturer || "")} ${this._escape(item.attributes.model || "")}</span></div>`).join("")
+      ? equipment.map((item) => {
+        const ids = item.attributes.task_ids || [];
+        const linked = tasks.filter(({ state }) => ids.includes(state.attributes.task_id));
+        const links = linked.length ? linked.map(({ state }) => '<button class="equipment-task" data-task-id="' + this._escape(state.attributes.task_id) + '">' + this._escape((state.attributes.friendly_name || state.entity_id).replace(/ Status$/, "")) + '</button>').join("") : '<span class="muted">No linked tasks</span>';
+        return '<div class="equipment"><div><strong>' + this._escape(item.attributes.friendly_name || item.state) + '</strong><div class="equipment-links">' + links + '</div></div><span>' + this._escape(item.attributes.manufacturer || "") + " " + this._escape(item.attributes.model || "") + '</span></div>';
+      }).join("")
       : '<div class="muted">No equipment records found.</div>';
     this.innerHTML = `
       <ha-card>
@@ -142,6 +154,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
           <button data-filter="due_today" class="${this._filter === "due_today" ? "selected" : ""}">Due today</button>
           <button data-filter="upcoming" class="${this._filter === "upcoming" ? "selected" : ""}">Upcoming</button>
         </div>
+        ${categoryMarkup}
+        ${this._equipmentTask ? '<div class="active-filter">Showing selected equipment task <button data-clear-task>Clear</button></div>' : ""}
         <div class="tasks">${taskMarkup}</div>
         ${this.config.show_equipment ? `<section><h3>Equipment <small>${this._escape(count("equipment_count"))} registered</small></h3>${equipmentMarkup}</section>` : ""}
         ${this.config.show_history ? `<footer>Completion history records: <strong>${this._escape(count("history_count"))}</strong></footer>` : ""}
@@ -152,7 +166,8 @@ class HomeMaintenanceManagerCard extends HTMLElement {
         .stat{background:var(--secondary-background-color);border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
         .stat strong{font-size:1.35rem}.stat span{font-size:.75rem;color:var(--secondary-text-color)}.warning strong{color:var(--error-color)}
         .filters{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}.filters button,.complete{border:0;border-radius:18px;padding:7px 11px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer}
-        .filters button.selected{background:var(--primary-color);color:var(--text-primary-color,#fff)}
+        .filters button.selected,.category-filters button.selected{background:var(--primary-color);color:var(--text-primary-color,#fff)}
+        .category-filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}.category-filters button,.equipment-task,.active-filter button{border:0;border-radius:16px;padding:6px 10px;background:var(--secondary-background-color);color:var(--primary-text-color);cursor:pointer;font:inherit;font-size:.8rem}.equipment-task,.active-filter button{background:none;color:var(--primary-color);text-decoration:underline;padding:3px 5px}.active-filter{padding:0 16px 10px;font-size:.82rem;color:var(--secondary-text-color)}
         .tasks{padding:0 16px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--divider-color)}
         .task-main{min-width:0}.task-name{font-weight:600}.meta{margin-top:3px}.description{font-size:.82rem;margin-top:5px;color:var(--secondary-text-color)}
         .task-actions{display:flex;align-items:flex-end;gap:7px;flex-direction:column;flex-shrink:0}.status{font-size:.75rem;font-weight:600;border-radius:12px;padding:3px 8px;background:var(--secondary-background-color)}
@@ -165,6 +180,20 @@ class HomeMaintenanceManagerCard extends HTMLElement {
       </style>`;
     this.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
       this._filter = button.dataset.filter;
+      this.render();
+    }));
+    this.querySelectorAll("[data-category]").forEach((button) => button.addEventListener("click", () => {
+      this._category = button.dataset.category;
+      this.render();
+    }));
+    this.querySelectorAll("[data-task-id]").forEach((button) => button.addEventListener("click", () => {
+      this._equipmentTask = button.dataset.taskId;
+      this._category = "all";
+      this._filter = "all";
+      this.render();
+    }));
+    this.querySelectorAll("[data-clear-task]").forEach((button) => button.addEventListener("click", () => {
+      this._equipmentTask = null;
       this.render();
     }));
     this.querySelectorAll("[data-entity]").forEach((button) => button.addEventListener("click", async () => {
