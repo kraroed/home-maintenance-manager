@@ -7,15 +7,16 @@ from custom_components.home_maintenance_manager.storage import MaintenanceStorag
 
 class FakeStore:
     stored = None
+    saved = {}
 
     def __init__(self, hass, version, key):
         self.key = key
 
     async def async_load(self):
-        return self.stored
+        return self.saved.get(self.key, type(self).stored)
 
     async def async_save(self, data):
-        self.stored = data
+        self.saved[self.key] = data
 
 
 @pytest.mark.asyncio
