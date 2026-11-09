@@ -268,3 +268,24 @@ async def test_reschedule_rejects_noncanonical_iso_date_format(hass):
     assert task["next_due"] == previous_due
     assert task.get("schedule_history", []) == []
 
+
+
+@pytest.mark.asyncio
+async def test_configured_season_windows_override_storage_defaults(hass):
+    """Configured season windows are applied before seasonal scheduling."""
+    windows = {
+        "spring": {"start": "03-10", "end": "05-25"},
+    }
+    manager = TaskManager(
+        hass,
+        "custom-season-window-test",
+        ["clean_gutters"],
+        season_windows=windows,
+    )
+    await manager.async_load()
+
+    assert manager.data["settings"]["season_windows"]["spring"] == windows["spring"]
+    assert manager.data["settings"]["season_windows"]["summer"] == {
+        "start": "06-01",
+        "end": "08-31",
+    }
