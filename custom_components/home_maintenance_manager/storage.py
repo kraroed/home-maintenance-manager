@@ -35,10 +35,49 @@ class MaintenanceStorage:
     async def async_load(self):
         stored = await self.store.async_load()
         data = default_data()
-        if isinstance(stored, dict):
-            for key, value in stored.items():
-                if key in data and isinstance(value, type(data[key])):
-                    data[key] = value
+        if not isinstance(stored, dict):
+            return data
+
+        for key in ("tasks", "equipment", "history"):
+            value = stored.get(key)
+            if isinstance(value, type(data[key])):
+                data[key] = value
+
+        stored_notifications = stored.get("notification_state")
+        if isinstance(stored_notifications, dict):
+            notifications = data["notification_state"]
+            individual = stored_notifications.get("individual")
+            if isinstance(individual, dict):
+                notifications["individual"] = individual
+            summary_date = stored_notifications.get("summary_date")
+            if summary_date is None or isinstance(summary_date, str):
+                notifications["summary_date"] = summary_date
+
+        stored_settings = stored.get("settings")
+        if isinstance(stored_settings, dict):
+            settings = data["settings"]
+            for key in (
+                "due_soon_days",
+                "daily_summary_enabled",
+                "individual_notifications_enabled",
+            ):
+                value = stored_settings.get(key)
+                if isinstance(value, type(settings[key])):
+                    settings[key] = value
+
+            season_windows = stored_settings.get("season_windows")
+            if isinstance(season_windows, dict):
+                for season, defaults in settings["season_windows"].items():
+                    window = season_windows.get(season)
+                    if not isinstance(window, dict):
+                        continue
+                    start = window.get("start")
+                    end = window.get("end")
+                    if isinstance(start, str):
+                        defaults["start"] = start
+                    if isinstance(end, str):
+                        defaults["end"] = end
+
         return data
 
     async def async_save(self, data):
