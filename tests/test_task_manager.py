@@ -559,3 +559,46 @@ async def test_configured_season_window_controls_initial_due_date(hass, monkeypa
     due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
     assert due.date() == date(2027, 4, 10)
 
+@pytest.mark.asyncio
+async def test_removing_equipment_preserves_existing_completion_history(hass):
+    """Removing equipment does not rewrite historical equipment references."""
+    task_definition = {
+        "task_id": "test_removed_equipment_task",
+        "name": "Test removed equipment task",
+        "category": "Testing",
+        "description": "A task used to verify permanent equipment history.",
+        "schedule_type": "interval",
+        "recommended_interval_days": 90,
+    }
+    equipment_records = [{
+        "equipment_id": "hvac-removed",
+        "name": "Removed HVAC",
+        "category": "HVAC",
+        "task_ids": ["test_removed_equipment_task"],
+    }]
+    entry_id = "removed-equipment-history-test"
+    manager = TaskManager(
+        hass,
+        entry_id,
+        ["test_removed_equipment_task"],
+        custom_tasks=[task_definition],
+        equipment_records=equipment_records,
+    )
+    await manager.async_load()
+    await manager.async_complete_task("test_removed_equipment_task")
+
+    # Reload with the updated config-entry equipment list after removal.
+    reloaded_manager = TaskManager(
+        hass,
+        entry_id,
+        ["test_removed_equipment_task"],
+        custom_tasks=[task_definition],
+        equipment_records=[],
+    )
+    await reloaded_manager.async_load()
+
+    assert reloaded_manager.data["equipment"] == {}
+    assert reloaded_manager.data["tasks"]["test_removed_equipment_task"]["equipment_ids"] == []
+    assert reloaded_manager.data["history"][-1]["equipment_ids"] == ["hvac-removed"]
+    assert reloaded_manager.data["history"][-1]["task_name"] == "Test removed equipment task"
+
