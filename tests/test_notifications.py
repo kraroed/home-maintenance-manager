@@ -163,3 +163,68 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
     assert args.args[2]["target"] == {"entity_id": "notify.household"}
     assert args.args[2]["message"] == "Clean gutters is due today."
     assert args.kwargs["blocking"] is True
+
+@pytest.mark.asyncio
+async def test_notifications_suppress_repeats_until_task_due_date_changes(
+    hass, monkeypatch
+):
+    """A reminder is sent once per due date while the daily summary is sent once per day."""
+    from custom_components.home_maintenance_manager import notifications
+
+    now = dt_util.now().replace(hour=9, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr(notifications.dt_util, "now", lambda: now)
+
+    created = []
+    monkeypatch.setattr(
+        notifications.persistent_notification,
+        "async_create",
+        lambda hass, message, title, notification_id=None: created.append(
+            (title, message, notification_id)
+        ),
+    )
+    callbacks = []
+
+    def track_interval(hass, action, interval):
+        callbacks.append(action)
+        return lambda: None
+
+    monkeypatch.setattr(notifications, "async_track_time_interval", track_interval)
+
+    task = {
+        "task_id": "clean_gutters",
+        "name": "Clean gutters",
+        "enabled": True,
+        "next_due": now.isoformat(),
+    }
+    manager = SimpleNamespace(
+        data={"tasks": {"clean_gutters": task}},
+        async_save=AsyncMock(),
+    )
+    entry = SimpleNamespace(
+        options={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": True,
+            "notification_lead_days": 7,
+            "daily_summary_time": "08:00",
+        }
+    )
+
+    await async_setup_notifications(hass, entry, manager)
+    assert len(created) == 2
+    assert len(callbacks) == 1
+
+    await callbacks[0](now)
+    assert len(created) == 2
+
+    task["next_due"] = (now + timedelta(days=1)).isoformat()
+    await callbacks[0](now)
+
+    reminders = [item for item in created if item[0] == "Home maintenance reminder"]
+    summaries = [
+        item for item in created if item[0] == "Daily home maintenance summary"
+    ]
+    assert len(reminders) == 2
+    assert len(summaries) == 1
+    assert "due in 1 day(s)" in reminders[1][1]
+    assert manager.async_save.await_count == 3
+
