@@ -400,3 +400,47 @@ async def test_leap_day_seasonal_window_schedules_valid_due_date(
     due = dt_util.as_local(dt_util.parse_datetime(task["next_due"]))
     assert due.date() == date.fromisoformat(expected_due)
 
+@pytest.mark.parametrize(
+    ("reference_day", "expected_due"),
+    [
+        ("2026-05-31", "2026-05-31"),
+        ("2026-06-01", "2027-03-15"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_seasonal_window_end_date_is_inclusive(
+    hass, monkeypatch, reference_day, expected_due
+):
+    """A season includes its final day and rolls forward immediately afterward."""
+    fixed_now = datetime.fromisoformat(f"{reference_day}T12:00:00+00:00")
+    monkeypatch.setattr(dt_util, "utcnow", lambda: fixed_now)
+    task_definition = {
+        "task_id": "test_spring_boundary_task",
+        "name": "Test spring boundary task",
+        "category": "Testing",
+        "description": "A task for seasonal end-boundary coverage.",
+        "schedule_type": "seasonal",
+        "season_keys": ["spring"],
+        "recommended_interval_days": 365,
+    }
+    manager = TaskManager(
+        hass,
+        f"spring-end-boundary-{reference_day}",
+        ["test_spring_boundary_task"],
+        custom_tasks=[task_definition],
+        season_windows={
+            "spring": {"start": "03-15", "end": "05-31"},
+        },
+    )
+
+    await manager.async_load()
+
+    due = dt_util.as_local(
+        dt_util.parse_datetime(
+            manager.data["tasks"]["test_spring_boundary_task"]["next_due"]
+        )
+    )
+    assert due.date() == date.fromisoformat(expected_due)
+    if reference_day == expected_due:
+        assert manager.data["tasks"]["test_spring_boundary_task"]["next_due"] == fixed_now.isoformat()
+
