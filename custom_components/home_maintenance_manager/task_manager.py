@@ -137,6 +137,8 @@ class TaskManager:
         self, hass, entry_id, enabled_ids, task_intervals=None,
         custom_tasks=None, equipment_records=None, season_windows=None
     ):
+        self.hass = hass
+        self.entry_id = entry_id
         self.storage = MaintenanceStorage(hass, entry_id)
         self.library = load_library()
         self.library.update({item["task_id"]: deepcopy(item) for item in (custom_tasks or [])})
@@ -343,6 +345,28 @@ class TaskManager:
             interval = int(task.get("configured_interval_days") or 0)
             next_due_value = (now + timedelta(days=interval)).isoformat() if interval > 0 else None
 
+        task["schedule_next_due"] = next_due_value
+        replaced_equipment = [
+            equipment for equipment in self.data["equipment"].values()
+            if equipment.get("replacement_task_id") == task_id
+        ]
+        if replaced_equipment:
+            replacement_day = dt_util.as_local(now).date().isoformat()
+            for equipment in replaced_equipment:
+                equipment["installed_date"] = replacement_day
+            entry = self.hass.config_entries.async_get_entry(self.entry_id)
+            if entry is not None:
+                updated_records = [
+                    deepcopy(item) for item in self.data["equipment"].values()
+                ]
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    options={**entry.options, "equipment_records": updated_records},
+                )
+                self.equipment_records = updated_records
+
+        self._refresh_equipment_lifespan_due()
+        next_due_value = task.get("next_due")
         self.data["history"].append({
             "history_id": f"{task_id}:{now.isoformat()}",
             "task_id": task_id,
