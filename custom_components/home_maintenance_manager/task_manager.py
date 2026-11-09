@@ -230,10 +230,12 @@ class TaskManager:
             completed_at = dt_util.parse_datetime(record.get("completed_at", ""))
             year = str(dt_util.as_local(completed_at).year) if completed_at else "Unknown"
             cost_breakdown["year"][year] = cost_breakdown["year"].get(year, 0) + amount
-            for equipment_id in record.get("equipment_ids", []):
+            linked_equipment = record.get("equipment_ids", [])
+            allocated_amount = amount / len(linked_equipment) if linked_equipment else 0
+            for equipment_id in linked_equipment:
                 item = equipment_lookup.get(equipment_id, {})
                 label = item.get("name") or equipment_id
-                cost_breakdown["equipment"][label] = cost_breakdown["equipment"].get(label, 0) + amount
+                cost_breakdown["equipment"][label] = cost_breakdown["equipment"].get(label, 0) + allocated_amount
 
         return {
             "tasks": tasks,
