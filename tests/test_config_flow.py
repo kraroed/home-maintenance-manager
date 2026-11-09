@@ -115,6 +115,10 @@ async def test_season_window_options_validate_and_save_all_windows(
         domain=DOMAIN,
         title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+        options={
+            "notification_target": "notify.mobile_app_phone",
+            "task_intervals": {"clean_gutters": 120},
+        },
     )
     entry.add_to_hass(hass)
 
@@ -138,6 +142,8 @@ async def test_season_window_options_validate_and_save_all_windows(
         "winter_end": "03-14",
     }
     assert schema(submitted) == submitted
+    leap_day = {**submitted, "spring_start": "02-29"}
+    assert schema(leap_day)["spring_start"] == "02-29"
     for field in ("spring_start", "winter_end"):
         invalid = {**submitted, field: "02-30"}
         with pytest.raises(vol.Invalid, match="MM-DD"):
@@ -153,3 +159,5 @@ async def test_season_window_options_validate_and_save_all_windows(
         "fall": {"start": "09-01", "end": "11-15"},
         "winter": {"start": "11-16", "end": "03-14"},
     }
+    assert result["data"]["notification_target"] == "notify.mobile_app_phone"
+    assert result["data"]["task_intervals"] == {"clean_gutters": 120}
