@@ -164,12 +164,11 @@ async def async_setup_backup_services(hass):
             path = _backup_directory(hass, entry_id) / filename
             payload = _build_payload(entry_data)
             await hass.async_add_executor_job(_write_json_file, path, payload)
-            links.append(f"[{entry_data.get('property_name', 'Home')}: {filename}]"
-                         f"(/local/{DOMAIN}/{entry_id}/{filename})")
+            links.append(str(path))
         if links:
             persistent_notification.async_create(
                 hass,
-                "Complete JSON backup created:\n\n" + "\n".join(links),
+                "Complete JSON backup created. Files are saved under /config/home_maintenance_manager_backups/.\\n\\n" + "\\n".join(links),
                 "Home Maintenance Manager backup",
                 notification_id=f"{DOMAIN}_backup",
             )
@@ -258,7 +257,7 @@ async def async_setup_backup_services(hass):
             hass,
             "Restore completed. Existing completion history was retained and missing "
             f"backup records were imported. A pre-restore backup is available as "
-            f"{safety_filename}.",
+            f"{safety_path}.",
             "Home Maintenance Manager restore complete",
             notification_id=f"{DOMAIN}_restore_complete",
         )
