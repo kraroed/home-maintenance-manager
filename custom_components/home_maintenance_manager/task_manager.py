@@ -392,6 +392,13 @@ class TaskManager:
             raise ValueError(f"Unknown maintenance task: {task_id}")
         if not task.get("enabled", True):
             raise ValueError(f"Maintenance task is disabled: {task_id}")
+        if any(
+            item.get("replacement_task_id") == task_id
+            for item in self.data.get("equipment", {}).values()
+        ):
+            raise ValueError(
+                "This task's due date is managed by its equipment lifespan."
+            )
         try:
             selected_day = date.fromisoformat(due_date)
             if selected_day.isoformat() != due_date:
@@ -411,6 +418,7 @@ class TaskManager:
             "next_due": next_due,
             "reason": reason.strip(),
         })
+        task["schedule_next_due"] = next_due
         task["next_due"] = next_due
         await self.async_save()
 
