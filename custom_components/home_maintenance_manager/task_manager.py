@@ -218,6 +218,8 @@ class TaskManager:
                     task.get("schedule_type"),
                     task.get("annual_month"),
                     task.get("annual_day"),
+                    task.get("monthly_week"),
+                    task.get("monthly_weekday"),
                 )
                 schedule_changed = previous_schedule != current_schedule
                 configured_interval = self.task_intervals.get(task_id)
