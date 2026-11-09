@@ -21,33 +21,6 @@ complete_task:
       selector:
         text:
           multiline: true
-    attachments:
-      name: Photo and receipt links
-      description: Optional HTTP(S) URLs or /local/ paths, one per line. Upload local files to /config/www/ first.
-      required: false
-      selector:
-        text:
-          multiline: true
-    labor_cost:
-      name: Labor cost (USD)
-      description: Labor or service charge for this completion.
-      required: false
-      default: 0
-      selector:
-        number:
-          min: 0
-          step: 0.01
-          mode: box
-    parts_cost:
-      name: Parts cost (USD)
-      description: Parts, materials, or supplies used for this completion.
-      required: false
-      default: 0
-      selector:
-        number:
-          min: 0
-          step: 0.01
-          mode: box
 
 reschedule_task:
   name: Reschedule maintenance task
