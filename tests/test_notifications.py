@@ -93,7 +93,8 @@ async def test_notifications_respect_disabled_options_and_notify_target(hass, mo
     async def record_notify(domain, service, service_data, blocking=False):
         notify_calls.append((domain, service, service_data, blocking))
 
-    hass.services.async_call = AsyncMock(side_effect=record_notify)
+    notify_mock = AsyncMock(side_effect=record_notify)
+    monkeypatch.setattr(type(hass.services), "async_call", notify_mock)
     manager = SimpleNamespace(
         data={
             "tasks": {
@@ -131,7 +132,8 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
         "async_track_time_interval",
         lambda hass, action, interval: lambda: None,
     )
-    hass.services.async_call = AsyncMock()
+    notify_mock = AsyncMock()
+    monkeypatch.setattr(type(hass.services), "async_call", notify_mock)
     manager = SimpleNamespace(
         data={
             "tasks": {
@@ -155,8 +157,8 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
 
     await async_setup_notifications(hass, entry, manager)
 
-    hass.services.async_call.assert_awaited_once()
-    args = hass.services.async_call.await_args
+    notify_mock.assert_awaited_once()
+    args = notify_mock.await_args
     assert args.args[:2] == ("notify", "send_message")
     assert args.args[2]["target"] == {"entity_id": "notify.household"}
     assert args.args[2]["message"] == "Clean gutters is due today."
