@@ -767,7 +767,7 @@ def test_monthly_weekday_patterns_find_expected_calendar_date(
     reference = datetime(2026, 11, 9, 12, 0, tzinfo=timezone.utc)
     task = {"monthly_week": week, "monthly_weekday": weekday}
 
-    due = dt_util.as_local(_next_monthly_due(task, reference))
+    due = dt_util.as_local(dt_util.parse_datetime(_next_monthly_due(task, reference)))
 
     assert due.date() == expected
 
