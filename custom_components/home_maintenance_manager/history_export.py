@@ -20,7 +20,7 @@ def _write_history_files(directory, history, property_name, export_format):
         filename = "maintenance_history.csv"
         fields = [
             "history_id", "task_id", "task_name", "completed_at",
-            "previous_due", "next_due", "notes", "equipment_ids",
+            "previous_due", "next_due", "notes", "attachments", "equipment_ids",
         ]
         with (directory / filename).open("w", encoding="utf-8-sig", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
@@ -28,6 +28,7 @@ def _write_history_files(directory, history, property_name, export_format):
             for record in history:
                 row = dict(record)
                 row["equipment_ids"] = json.dumps(row.get("equipment_ids", []))
+                row["attachments"] = json.dumps(row.get("attachments", []))
                 writer.writerow(row)
         filenames.append(filename)
     if export_format in ("json", "both"):
