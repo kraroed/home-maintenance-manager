@@ -148,3 +148,65 @@ async def test_storage_validates_notification_state_and_numeric_settings(
         },
         "summary_date": None,
     }
+
+@pytest.mark.asyncio
+async def test_storage_save_and_reload_round_trip(hass, monkeypatch):
+    """A save followed by a fresh storage load preserves complete valid data."""
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.storage.Store", FakeStore
+    )
+    original = {
+        "tasks": {
+            "clean_gutters": {
+                "task_id": "clean_gutters",
+                "next_due": "2026-11-20T00:00:00+00:00",
+                "schedule_history": [
+                    {
+                        "previous_due": "2026-11-15T00:00:00+00:00",
+                        "next_due": "2026-11-20T00:00:00+00:00",
+                        "reason": "Weather",
+                    }
+                ],
+            }
+        },
+        "equipment": {
+            "furnace": {
+                "equipment_id": "furnace",
+                "task_ids": ["replace_filter"],
+            }
+        },
+        "history": [
+            {
+                "history_id": "clean_gutters:completion",
+                "task_id": "clean_gutters",
+                "notes": "Completed after the storm",
+                "attachments": ["/local/maintenance/photo.jpg"],
+            }
+        ],
+        "notification_state": {
+            "individual": {
+                "clean_gutters:2026-11-20T00:00:00+00:00":
+                    "2026-11-09T08:00:00+00:00"
+            },
+            "summary_date": "2026-11-09",
+        },
+        "settings": {
+            "due_soon_days": 14,
+            "daily_summary_enabled": False,
+            "individual_notifications_enabled": True,
+            "season_windows": {
+                "spring": {"start": "03-10", "end": "05-25"},
+                "summer": {"start": "06-01", "end": "08-31"},
+                "fall": {"start": "09-01", "end": "11-15"},
+                "winter": {"start": "11-16", "end": "03-14"},
+            },
+        },
+    }
+
+    writer = MaintenanceStorage(hass, "round-trip")
+    await writer.async_save(original)
+
+    reader = MaintenanceStorage(hass, "round-trip")
+    restored = await reader.async_load()
+
+    assert restored == original
