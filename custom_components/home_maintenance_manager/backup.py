@@ -186,7 +186,7 @@ async def async_setup_backup_services(hass):
         if links:
             persistent_notification.async_create(
                 hass,
-                "Complete JSON backup created. Files are saved under /config/home_maintenance_manager_backups/.\\n\\n" + "\\n".join(links),
+                "Complete JSON backup created. Files are saved under /config/home_maintenance_manager_backups/: " + "; ".join(links),
                 "Home Maintenance Manager backup",
                 notification_id=f"{DOMAIN}_backup",
             )
