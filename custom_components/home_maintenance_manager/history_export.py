@@ -76,9 +76,9 @@ async def async_setup_history_export(hass):
             )
 
     if not hass.services.has_service(DOMAIN, SERVICE_EXPORT_HISTORY):
-            hass.services.async_register(
-                DOMAIN,
-                SERVICE_EXPORT_HISTORY,
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_EXPORT_HISTORY,
             handle_export,
             schema=vol.Schema({
                 vol.Optional("format", default="both"): vol.In(["csv", "json", "both"]),
