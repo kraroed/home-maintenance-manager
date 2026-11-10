@@ -171,20 +171,13 @@
       },
       "add_equipment": {
         "title": "Register household equipment",
-        "description": "Add an appliance or home system. Select Other and enter a custom category name to create a reusable category; choose its icon below. Existing custom categories can be selected again and their icons changed when editing equipment.",
+        "description": "Start with the equipment name, category, icon, and Home Assistant area.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
           "custom_category_name": "Custom category name (when category is Other)",
-          "custom_category_icon": "Custom category icon",
-          "area_id": "Home Assistant area",
-          "manufacturer": "Manufacturer",
-          "model": "Model",
-          "installed_date": "Installation date (YYYY-MM-DD)",
-          "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment",
-          "lifespan_months": "Expected lifespan (months; 0 disables)",
-          "replacement_task_id": "Task to make due when replacement is needed"
+          "custom_category_icon": "Category icon",
+          "area_id": "Home Assistant area"
         }
       },
       "create_area": {
@@ -210,21 +203,14 @@
         }
       },
       "edit_equipment": {
-        "title": "Edit household equipment",
-        "description": "Update equipment details and associated maintenance tasks. Select Other and enter a custom category name to create a reusable category, or select an existing custom category. Choose its icon below to update it for all equipment using that category.",
+        "title": "Edit equipment identity",
+        "description": "Update the equipment name, category, category icon, or Home Assistant area.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
           "custom_category_name": "Custom category name (when category is Other)",
-          "custom_category_icon": "Custom category icon",
-          "area_id": "Home Assistant area",
-          "manufacturer": "Manufacturer",
-          "model": "Model",
-          "installed_date": "Installation date (YYYY-MM-DD)",
-          "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment",
-          "lifespan_months": "Expected lifespan (months; 0 disables)",
-          "replacement_task_id": "Task to make due when replacement is needed"
+          "custom_category_icon": "Category icon",
+          "area_id": "Home Assistant area"
         }
       },
       "remove_equipment": {
@@ -430,6 +416,44 @@
         "data": {
           "start": "Winter start (MM-DD)",
           "end": "Winter end (MM-DD)"
+        }
+      },
+      "add_equipment_details": {
+        "title": "Installation and lifespan",
+        "description": "Add manufacturer and model details, installation date, expected lifespan, and replacement scheduling.",
+        "data": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed",
+          "notes": "Notes"
+        }
+      },
+      "add_equipment_tasks": {
+        "title": "Link maintenance tasks",
+        "description": "Choose the maintenance tasks that apply to this equipment. A designated replacement task is included automatically.",
+        "data": {
+          "task_ids": "Maintenance tasks associated with this equipment"
+        }
+      },
+      "edit_equipment_details": {
+        "title": "Edit installation and lifespan",
+        "description": "Update manufacturer, model, installation date, expected lifespan, and replacement scheduling.",
+        "data": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed",
+          "notes": "Notes"
+        }
+      },
+      "edit_equipment_tasks": {
+        "title": "Edit linked maintenance tasks",
+        "description": "Choose the maintenance tasks associated with this equipment.",
+        "data": {
+          "task_ids": "Maintenance tasks associated with this equipment"
         }
       }
     },
