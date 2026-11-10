@@ -157,10 +157,17 @@ async def test_season_window_options_validate_and_save_all_windows(
     assert schema(submitted) == submitted
     leap_day = {**submitted, "spring_start": "02-29"}
     assert schema(leap_day)["spring_start"] == "02-29"
-    for field in ("spring_start", "winter_end"):
-        invalid = {**submitted, field: "02-30"}
-        with pytest.raises(vol.Invalid, match="MM-DD"):
-            schema(invalid)
+    # The frontend schema enforces MM-DD shape; real calendar dates are
+    # checked after submission because callable validators cannot be serialized.
+    with pytest.raises(vol.Invalid):
+        schema({**submitted, "spring_start": "2-29"})
+
+    invalid_calendar_date = {**submitted, "spring_start": "02-30"}
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input=invalid_calendar_date
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_season_date"}
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input=submitted
