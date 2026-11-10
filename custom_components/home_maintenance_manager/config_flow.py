@@ -12,7 +12,7 @@ from homeassistant.helpers import selector
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
 
-EQUIPMENT_CATEGORY_ICONS = {
+TASK_SELECTION_CATEGORIES = (\n    "hvac", "safety", "appliances", "exterior", "landscape",\n    "plumbing", "electrical", "interior", "seasonal", "systems",\n)\n\nEQUIPMENT_CATEGORY_ICONS = {
     "HVAC": "mdi:hvac", "Plumbing": "mdi:water-pump",
     "Electrical": "mdi:lightning-bolt", "Appliances": "mdi:washing-machine",
     "Water heating": "mdi:water-boiler", "Safety and security": "mdi:shield-home",
@@ -256,24 +256,142 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_manage_tasks(self, user_input=None):
+        """Show bulk actions and expandable task categories."""
         library = await self.hass.async_add_executor_job(load_library)
         library.update({
             item["task_id"]: item
             for item in self.config_entry.options.get("custom_tasks", [])
         })
-        selected = self.config_entry.options.get(
-            CONF_ENABLED_TASK_IDS,
-            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
-        )
-        if user_input is not None:
-            self._selected_task_ids = user_input.get(CONF_ENABLED_TASK_IDS, [])
-            return await self.async_step_intervals()
+        if not getattr(self, "_task_selection_initialized", False):
+            selected = self.config_entry.options.get(
+                CONF_ENABLED_TASK_IDS,
+                self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
+            )
+            self._selected_task_ids = [
+                task_id for task_id in library if task_id in selected
+            ]
+            self._task_selection_initialized = True
+        return await self._async_show_task_selection_menu(library)
 
-        options = [(task_id, item["name"]) for task_id, item in library.items()]
-        schema = vol.Schema({
-            vol.Optional(CONF_ENABLED_TASK_IDS, default=selected): cv.multi_select(options),
+    async def _async_show_task_selection_menu(self, library=None):
+        """Show bulk actions first, followed by available task categories."""
+        if library is None:
+            library = await self.hass.async_add_executor_job(load_library)
+            library.update({
+                item["task_id"]: item
+                for item in self.config_entry.options.get("custom_tasks", [])
+            })
+        menu_options = ["select_all_tasks", "clear_all_tasks"]
+        for category in TASK_SELECTION_CATEGORIES:
+            if any(
+                item.get("category", "").casefold() == category
+                for item in library.values()
+            ):
+                menu_options.append(f"task_category_{category}")
+        if any(item.get("is_custom") for item in library.values()):
+            menu_options.append("task_category_custom")
+        menu_options.append("finish_task_selection")
+        return self.async_show_menu(
+            step_id="manage_tasks",
+            menu_options=menu_options,
+        )
+
+    async def async_step_select_all_tasks(self, user_input=None):
+        """Enable every built-in and custom maintenance task."""
+        library = await self.hass.async_add_executor_job(load_library)
+        library.update({
+            item["task_id"]: item
+            for item in self.config_entry.options.get("custom_tasks", [])
         })
-        return self.async_show_form(step_id="manage_tasks", data_schema=schema)
+        self._selected_task_ids = list(library)
+        return await self._async_show_task_selection_menu(library)
+
+    async def async_step_clear_all_tasks(self, user_input=None):
+        """Clear every selected maintenance task."""
+        self._selected_task_ids = []
+        return await self._async_show_task_selection_menu()
+
+    async def async_step_finish_task_selection(self, user_input=None):
+        """Save the chosen task set and continue to interval configuration."""
+        return await self.async_step_intervals()
+
+    async def _async_step_task_category(self, category, user_input=None):
+        """Edit selections in one category without changing other categories."""
+        library = await self.hass.async_add_executor_job(load_library)
+        library.update({
+            item["task_id"]: item
+            for item in self.config_entry.options.get("custom_tasks", [])
+        })
+        tasks = {
+            task_id: item
+            for task_id, item in library.items()
+            if (
+                item.get("is_custom")
+                if category == "custom"
+                else item.get("category", "").casefold() == category
+            )
+        }
+        if user_input is not None:
+            category_ids = set(tasks)
+            selected_ids = set(self._selected_task_ids) - category_ids
+            selected_ids.update(user_input.get(CONF_ENABLED_TASK_IDS, []))
+            self._selected_task_ids = [
+                task_id for task_id in library if task_id in selected_ids
+            ]
+            return await self._async_show_task_selection_menu(library)
+
+        options = [
+            (task_id, item["name"])
+            for task_id, item in sorted(
+                tasks.items(), key=lambda pair: pair[1]["name"].casefold()
+            )
+        ]
+        schema = vol.Schema({
+            vol.Optional(
+                CONF_ENABLED_TASK_IDS,
+                default=[
+                    task_id for task_id in tasks
+                    if task_id in self._selected_task_ids
+                ],
+            ): cv.multi_select(dict(options)),
+        })
+        return self.async_show_form(
+            step_id=f"task_category_{category}",
+            data_schema=schema,
+        )
+
+    async def async_step_task_category_hvac(self, user_input=None):
+        return await self._async_step_task_category("hvac", user_input)
+
+    async def async_step_task_category_safety(self, user_input=None):
+        return await self._async_step_task_category("safety", user_input)
+
+    async def async_step_task_category_appliances(self, user_input=None):
+        return await self._async_step_task_category("appliances", user_input)
+
+    async def async_step_task_category_exterior(self, user_input=None):
+        return await self._async_step_task_category("exterior", user_input)
+
+    async def async_step_task_category_landscape(self, user_input=None):
+        return await self._async_step_task_category("landscape", user_input)
+
+    async def async_step_task_category_plumbing(self, user_input=None):
+        return await self._async_step_task_category("plumbing", user_input)
+
+    async def async_step_task_category_electrical(self, user_input=None):
+        return await self._async_step_task_category("electrical", user_input)
+
+    async def async_step_task_category_interior(self, user_input=None):
+        return await self._async_step_task_category("interior", user_input)
+
+    async def async_step_task_category_seasonal(self, user_input=None):
+        return await self._async_step_task_category("seasonal", user_input)
+
+    async def async_step_task_category_systems(self, user_input=None):
+        return await self._async_step_task_category("systems", user_input)
+
+    async def async_step_task_category_custom(self, user_input=None):
+        return await self._async_step_task_category("custom", user_input)
 
     async def async_step_intervals(self, user_input=None):
         library = await self.hass.async_add_executor_job(load_library)
