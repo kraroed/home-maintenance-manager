@@ -83,10 +83,12 @@
       },
       "add_equipment": {
         "title": "Register household equipment",
-        "description": "Add an appliance or home system and optionally associate existing maintenance tasks with it. You can leave manufacturer, model, installation date, and notes blank. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
+        "description": "Add an appliance or home system. Select Other and enter a custom category name to create a reusable category; choose its icon below. Existing custom categories can be selected again and their icons changed when editing equipment.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
+          "custom_category_name": "Custom category name (when category is Other)",
+          "custom_category_icon": "Custom category icon",
           "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
@@ -121,10 +123,12 @@
       },
       "edit_equipment": {
         "title": "Edit household equipment",
-        "description": "Update the equipment details and associated maintenance tasks. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
+        "description": "Update equipment details and associated maintenance tasks. Select Other and enter a custom category name to create a reusable category, or select an existing custom category. Choose its icon below to update it for all equipment using that category.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
+          "custom_category_name": "Custom category name (when category is Other)",
+          "custom_category_icon": "Custom category icon",
           "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
@@ -203,6 +207,7 @@
       "invalid_annual_date": "Enter a valid calendar date. February 29 is allowed.",
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
       "area_exists": "An area with this name already exists. Choose it when configuring equipment.",
+      "invalid_custom_category": "Enter a valid custom category name that does not match a built-in category.",
       "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank.",
       "incomplete_lifespan": "For automatic replacement scheduling, enter an installation date, lifespan, and replacement task together, or leave all three unset.",
       "duplicate_replacement_task": "Each equipment record must have its own designated replacement task.",
