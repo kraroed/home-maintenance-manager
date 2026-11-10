@@ -110,9 +110,10 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             property_name = user_input[CONF_PROPERTY_NAME].strip()
             if not property_name:
+                library = await self.hass.async_add_executor_job(load_library)
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=self._schema(),
+                    data_schema=self._schema(library),
                     errors={"base": "invalid_name"},
                 )
             await self.async_set_unique_id(property_name.casefold())
@@ -124,11 +125,14 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_ENABLED_TASK_IDS: user_input.get(CONF_ENABLED_TASK_IDS, []),
                 },
             )
-        return self.async_show_form(step_id="user", data_schema=self._schema())
+        library = await self.hass.async_add_executor_job(load_library)
+        return self.async_show_form(
+            step_id="user", data_schema=self._schema(library)
+        )
 
     @staticmethod
-    def _schema():
-        options = [(task_id, item["name"]) for task_id, item in load_library().items()]
+    def _schema(library):
+        options = [(task_id, item["name"]) for task_id, item in library.items()]
         return vol.Schema({
             vol.Required(CONF_PROPERTY_NAME, default="My Home"): str,
             vol.Optional(CONF_ENABLED_TASK_IDS, default=[]): cv.multi_select(dict(options)),
@@ -252,7 +256,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_manage_tasks(self, user_input=None):
-        library = load_library()
+        library = await self.hass.async_add_executor_job(load_library)
         library.update({
             item["task_id"]: item
             for item in self.config_entry.options.get("custom_tasks", [])
@@ -272,7 +276,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(step_id="manage_tasks", data_schema=schema)
 
     async def async_step_intervals(self, user_input=None):
-        library = load_library()
+        library = await self.hass.async_add_executor_job(load_library)
         library.update({
             item["task_id"]: item
             for item in self.config_entry.options.get("custom_tasks", [])
@@ -328,7 +332,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
             task_id = f"custom_{slug}"
             existing_tasks = self.config_entry.options.get("custom_tasks", [])
-            all_ids = set(load_library()) | {
+            library = await self.hass.async_add_executor_job(load_library)
+            all_ids = set(library) | {
                 task["task_id"] for task in existing_tasks
             }
             if not slug or task_id in all_ids:
@@ -447,7 +452,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             proposed_id = f"custom_{slug}"
             if not slug or (
                 proposed_id != current["task_id"]
-                and (proposed_id in load_library()
+                and (proposed_id in library
                      or any(item["task_id"] == proposed_id for item in custom_tasks))
             ):
                 return self.async_show_form(
@@ -622,7 +627,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_add_equipment(self, user_input=None):
-        library = load_library()
+        library = await self.hass.async_add_executor_job(load_library)
         library.update({
             item["task_id"]: item
             for item in self.config_entry.options.get("custom_tasks", [])
@@ -753,7 +758,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if current is None:
             return self.async_abort(reason="equipment_not_found")
 
-        library = load_library()
+        library = await self.hass.async_add_executor_job(load_library)
         library.update({
             item["task_id"]: item
             for item in self.config_entry.options.get("custom_tasks", [])
