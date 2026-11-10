@@ -127,11 +127,6 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
         self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{equipment_id}"
         self._attr_name = f"{name} Equipment"
-        item = next(
-            (record for record in coordinator.data.get("equipment", [])
-             if record.get("equipment_id") == equipment_id),
-            {},
-        )
         self._attr_icon = "mdi:tools"
 
     def _equipment(self):
