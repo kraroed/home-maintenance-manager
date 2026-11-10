@@ -77,21 +77,11 @@
       },
       "add_custom_task": {
         "title": "Add a custom maintenance task",
-        "description": "Create a custom task using an interval, annual calendar date, or monthly weekday pattern. You can also add inspection steps, warning signs, actions, and safety notes.",
+        "description": "Start with the task name, category, and a short description. Choose an existing category or create a reusable new one.",
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description",
-          "schedule_type": "Schedule type",
-          "interval_days": "Repeat every (days) — interval schedules",
-          "annual_month": "Annual month (1–12)",
-          "annual_day": "Annual day (1–31)",
-          "how_to_inspect": "How to inspect (one step per line)",
-          "what_to_look_for": "What to look for (one item per line)",
-          "what_to_do_if_issue": "What to do if something is wrong",
-          "safety_notes": "Safety precautions",
-          "monthly_week": "Week of the month",
-          "monthly_weekday": "Day of the week"
+          "description": "Description"
         }
       },
       "add_equipment": {
@@ -289,6 +279,41 @@
         "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
         "data": {
           "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "custom_task_category": {
+        "title": "Create a task category",
+        "description": "Enter a category name. It will be saved with this task and available for future custom tasks.",
+        "data": {
+          "category_name": "New category name"
+        }
+      },
+      "custom_task_schedule": {
+        "title": "Choose the maintenance schedule",
+        "description": "Choose how often this task repeats. The next step will show only the fields needed for that schedule.",
+        "data": {
+          "schedule_type": "Schedule type"
+        }
+      },
+      "custom_task_schedule_details": {
+        "title": "Set the schedule",
+        "description": "Enter the recurrence details for the selected schedule type.",
+        "data": {
+          "interval_days": "Repeat every (days)",
+          "annual_month": "Annual month (1–12)",
+          "annual_day": "Annual day (1–31)",
+          "monthly_week": "Week of the month",
+          "monthly_weekday": "Day of the week"
+        }
+      },
+      "custom_task_instructions": {
+        "title": "Inspection and safety guidance",
+        "description": "These details are optional. Add practical inspection steps, warning signs, corrective actions, and safety precautions.",
+        "data": {
+          "how_to_inspect": "How to inspect (one step per line)",
+          "what_to_look_for": "What to look for (one item per line)",
+          "what_to_do_if_issue": "What to do if something is wrong",
+          "safety_notes": "Safety precautions"
         }
       }
     },
