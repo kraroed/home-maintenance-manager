@@ -161,104 +161,154 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_configure_notifications(self, user_input=None):
+        """Choose which maintenance notifications should be sent."""
+        options = self.config_entry.options
         if user_input is not None:
+            self._notification_draft = {
+                "individual_notifications_enabled": user_input["individual_notifications_enabled"],
+                "daily_summary_enabled": user_input["daily_summary_enabled"],
+            }
+            return await self.async_step_notification_delivery()
+        return self.async_show_form(
+            step_id="configure_notifications",
+            data_schema=vol.Schema({
+                vol.Optional(
+                    "individual_notifications_enabled",
+                    default=options.get("individual_notifications_enabled", True),
+                ): bool,
+                vol.Optional(
+                    "daily_summary_enabled",
+                    default=options.get("daily_summary_enabled", True),
+                ): bool,
+            }),
+        )
+
+    async def async_step_notification_delivery(self, user_input=None):
+        """Configure delivery target and timing for enabled notifications."""
+        options = self.config_entry.options
+        draft = getattr(self, "_notification_draft", {
+            "individual_notifications_enabled": options.get("individual_notifications_enabled", True),
+            "daily_summary_enabled": options.get("daily_summary_enabled", True),
+        })
+        if user_input is not None:
+            draft.update(user_input)
             return self.async_create_entry(
                 title="",
                 data={
-                    **self.config_entry.options,
-                    "individual_notifications_enabled": user_input["individual_notifications_enabled"],
-                    "daily_summary_enabled": user_input["daily_summary_enabled"],
+                    **options,
+                    **draft,
                     "notification_target": user_input.get("notification_target", "").strip(),
-                    "notification_lead_days": user_input["notification_lead_days"],
-                    "daily_summary_time": user_input["daily_summary_time"],
+                    "notification_lead_days": user_input.get("notification_lead_days", options.get("notification_lead_days", 7)),
+                    "daily_summary_time": user_input.get("daily_summary_time", options.get("daily_summary_time", "08:00")),
                 },
             )
 
-        options = self.config_entry.options
-        # Discover Home Assistant mobile-app notification services on this
-        # installation. These are services (notify.mobile_app_*), not entities.
         notify_services = self.hass.services.async_services().get("notify", {})
         mobile_app_services = sorted(
-            f"notify.{service}"
-            for service in notify_services
+            f"notify.{service}" for service in notify_services
             if service.startswith("mobile_app_")
         )
         current_target = options.get("notification_target", "")
         if current_target and current_target not in mobile_app_services:
-            # Keep an existing setting selectable if its service is temporarily
-            # unavailable or has been renamed; users can still clear/change it.
             mobile_app_services.append(current_target)
-
         if mobile_app_services:
-            notification_target_schema = vol.In({
+            target_schema = vol.In({
                 "": "Home Assistant persistent notifications",
                 **{service: service for service in mobile_app_services},
             })
         else:
-            # Some installations may not have the Companion App integration.
-            # Preserve manual configuration as a fallback in that case.
-            notification_target_schema = vol.All(str, vol.Length(max=255))
+            target_schema = vol.All(str, vol.Length(max=255))
 
-        schema = vol.Schema({
-            vol.Optional(
-                "individual_notifications_enabled",
-                default=options.get("individual_notifications_enabled", True),
-            ): bool,
-            vol.Optional(
-                "daily_summary_enabled",
-                default=options.get("daily_summary_enabled", True),
-            ): bool,
-            vol.Optional(
-                "notification_target",
-                default=current_target,
-            ): notification_target_schema,
-            vol.Required(
+        fields = {}
+        if draft["individual_notifications_enabled"] or draft["daily_summary_enabled"]:
+            fields[vol.Optional(
+                "notification_target", default=current_target
+            )] = target_schema
+        if draft["individual_notifications_enabled"]:
+            fields[vol.Required(
                 "notification_lead_days",
                 default=options.get("notification_lead_days", 7),
-            ): vol.All(vol.Coerce(int), vol.Range(min=0, max=90)),
-            vol.Required(
+            )] = vol.All(vol.Coerce(int), vol.Range(min=0, max=90))
+        if draft["daily_summary_enabled"]:
+            fields[vol.Required(
                 "daily_summary_time",
                 default=options.get("daily_summary_time", "08:00"),
-            ): vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$"),
-        })
+            )] = vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
+        if not fields:
+            return self.async_create_entry(
+                title="", data={**options, **draft}
+            )
         return self.async_show_form(
-            step_id="configure_notifications",
-            data_schema=schema,
+            step_id="notification_delivery", data_schema=vol.Schema(fields)
         )
 
     async def async_step_configure_season_windows(self, user_input=None):
-        configured = self.config_entry.options.get("season_windows", {})
+        """Start the seasonal-window wizard with spring dates."""
+        self._season_window_draft = dict(
+            self.config_entry.options.get("season_windows", {})
+        )
+        return await self.async_step_season_window_spring(user_input)
+
+    async def _async_step_season_window(self, season, next_season, user_input=None):
+        """Collect one season's dates, validating before moving to the next."""
+        defaults = {
+            "spring": {"start": "03-15", "end": "05-31"},
+            "summer": {"start": "06-01", "end": "08-31"},
+            "fall": {"start": "09-01", "end": "11-15"},
+            "winter": {"start": "11-16", "end": "03-14"},
+        }
+        configured = getattr(self, "_season_window_draft", {})
+        current = configured.get(season, defaults[season])
         if user_input is not None:
-            invalid_fields = [
-                f"{season}_{edge}"
-                for season in ("spring", "summer", "fall", "winter")
-                for edge in ("start", "end")
-                if not _is_valid_month_day(user_input[f"{season}_{edge}"])
-            ]
-            if invalid_fields:
+            if not all(_is_valid_month_day(user_input[key]) for key in ("start", "end")):
                 return self.async_show_form(
-                    step_id="configure_season_windows",
-                    data_schema=_season_window_schema(user_input),
+                    step_id=f"season_window_{season}",
+                    data_schema=vol.Schema({
+                        vol.Required("start", default=user_input["start"]): vol.Match(
+                            r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                        ),
+                        vol.Required("end", default=user_input["end"]): vol.Match(
+                            r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                        ),
+                    }),
                     errors={"base": "invalid_season_date"},
                 )
+            configured[season] = dict(user_input)
+            self._season_window_draft = configured
+            if next_season:
+                return await getattr(self, f"async_step_season_window_{next_season}")()
             return self.async_create_entry(
                 title="",
                 data={
                     **self.config_entry.options,
-                    "season_windows": {
-                        season: {
-                            "start": user_input[f"{season}_start"],
-                            "end": user_input[f"{season}_end"],
-                        }
-                        for season in ("spring", "summer", "fall", "winter")
-                    },
+                    "season_windows": configured,
                 },
             )
-
         return self.async_show_form(
-            step_id="configure_season_windows",
-            data_schema=_season_window_schema(configured),
+            step_id=f"season_window_{season}",
+            data_schema=vol.Schema({
+                vol.Required("start", default=current.get("start", defaults[season]["start"])): vol.Match(
+                    r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                ),
+                vol.Required("end", default=current.get("end", defaults[season]["end"])): vol.Match(
+                    r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                ),
+            }),
         )
+
+    async def async_step_season_window_spring(self, user_input=None):
+        return await self._async_step_season_window("spring", "summer", user_input)
+
+    async def async_step_season_window_summer(self, user_input=None):
+        return await self._async_step_season_window("summer", "fall", user_input)
+
+    async def async_step_season_window_fall(self, user_input=None):
+        return await self._async_step_season_window("fall", "winter", user_input)
+
+    async def async_step_season_window_winter(self, user_input=None):
+        return await self._async_step_season_window("winter", None, user_input)
+
+
 
     async def async_step_manage_tasks(self, user_input=None):
         """Show bulk actions and expandable task categories."""
