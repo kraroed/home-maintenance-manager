@@ -691,7 +691,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             self._custom_task_draft["category"] = category.casefold()
             return self.async_show_form(
                 step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(),
+                data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
             )
         return self.async_show_form(
             step_id="custom_task_category",
@@ -724,7 +724,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             )
         return self.async_show_form(
             step_id="custom_task_schedule",
-            data_schema=self._custom_task_schedule_type_schema(),
+            data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
         )
 
     async def async_step_custom_task_schedule_details(self, user_input=None):
@@ -747,7 +747,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             )
         return self.async_show_form(
             step_id="custom_task_schedule_details",
-            data_schema=self._custom_task_schedule_details_schema(schedule_type),
+            data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
         )
 
     @staticmethod
@@ -761,19 +761,19 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             })
         if schedule_type == "annual":
             return vol.Schema({
-                vol.Required("annual_month", default=1): vol.All(
+                vol.Required("annual_month", default=current.get("annual_month", 1)): vol.All(
                     vol.Coerce(int), vol.Range(min=1, max=12)
                 ),
-                vol.Required("annual_day", default=1): vol.All(
+                vol.Required("annual_day", default=current.get("annual_day", 1)): vol.All(
                     vol.Coerce(int), vol.Range(min=1, max=31)
                 ),
             })
         return vol.Schema({
-            vol.Required("monthly_week", default="first"): vol.In({
+            vol.Required("monthly_week", default=current.get("monthly_week", "first")): vol.In({
                 "first": "First", "second": "Second", "third": "Third",
                 "fourth": "Fourth", "last": "Last",
             }),
-            vol.Required("monthly_weekday", default=5): vol.In({
+            vol.Required("monthly_weekday", default=current.get("monthly_weekday", 5)): vol.In({
                 0: "Monday", 1: "Tuesday", 2: "Wednesday",
                 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday",
             }),
@@ -794,7 +794,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if user_input is None:
             return self.async_show_form(
                 step_id="custom_task_instructions",
-                data_schema=self._custom_task_instructions_schema(),
+                data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
             )
         draft = {**self._custom_task_draft, **user_input}
         name = draft["name"].strip()
@@ -822,7 +822,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             )
 
         schedule_type = draft["schedule_type"]
-        interval = int(draft.get("interval_days", 90))
+        interval = int(draft.get("interval_days", draft.get("recommended_interval_days", 90)))
         custom_task = {
             "task_id": task_id,
             "name": name,
