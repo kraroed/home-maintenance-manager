@@ -118,7 +118,10 @@ def test_equipment_installation_date_requires_real_iso_date(hass):
         task_options=[("clean_gutters", "Clean gutters")]
     )
     valid = {"installed_date": "2024-02-29", "lifespan_months": 0, "replacement_task_id": ""}
-    assert schema(valid) == valid
+    parsed = schema(valid)
+    assert parsed["installed_date"] == "2024-02-29"
+    assert parsed["lifespan_months"] == 0
+    assert parsed["replacement_task_id"] == ""
     assert schema({**valid, "installed_date": ""})["installed_date"] == ""
     for invalid_format in ("20240229", "not-a-date"):
         with pytest.raises(vol.Invalid):
