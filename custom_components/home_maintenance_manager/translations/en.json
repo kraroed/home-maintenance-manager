@@ -240,21 +240,11 @@
       },
       "edit_custom_task": {
         "title": "Edit custom maintenance task",
-        "description": "Update task details and schedule. Annual tasks repeat on a selected month and day; monthly tasks repeat on a selected weekday pattern. Existing completion history is retained.",
+        "description": "Start by updating the task name, category, and description. The following steps guide you through its schedule and inspection guidance.",
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description",
-          "schedule_type": "Schedule type",
-          "interval_days": "Repeat every (days) — interval schedules",
-          "annual_month": "Annual month (1–12)",
-          "annual_day": "Annual day (1–31)",
-          "how_to_inspect": "How to inspect (one step per line)",
-          "what_to_look_for": "What to look for (one item per line)",
-          "what_to_do_if_issue": "What to do if something is wrong",
-          "safety_notes": "Safety precautions",
-          "monthly_week": "Week of the month",
-          "monthly_weekday": "Day of the week"
+          "description": "Description"
         }
       },
       "remove_custom_task": {
