@@ -13,28 +13,48 @@ from custom_components.home_maintenance_manager.const import (
     DOMAIN,
 )
 
+async def _submit_equipment_wizard(hass, flow_id, identity, details=None, tasks=None, editing=False):
+    """Submit the three guided equipment wizard steps."""
+    prefix = "edit" if editing else "add"
+    result = await hass.config_entries.options.async_configure(flow_id, user_input=identity)
+    assert result["step_id"] == f"{prefix}_equipment_details"
+    result = await hass.config_entries.options.async_configure(flow_id, user_input=details or {})
+    assert result["step_id"] == f"{prefix}_equipment_tasks"
+    return await hass.config_entries.options.async_configure(
+        flow_id, user_input={"task_ids": tasks or []}
+    )
+
+
 @pytest.mark.asyncio
-async def test_user_flow_creates_property_with_selected_tasks(hass, enable_custom_integrations):
-    """The initial setup flow stores the property and selected task IDs."""
+async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_integrations):
+    """Initial setup asks for the property, then selects tasks by category."""
     result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={"source": SOURCE_USER},
+        DOMAIN, context={"source": SOURCE_USER}
     )
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={
-            "property_name": "Primary Residence",
-            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"property_name": "Primary Residence"}
     )
-
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "setup_tasks"
+    assert "setup_category_exterior" in result["menu_options"]
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "setup_category_exterior"}
+    )
+    assert result["step_id"] == "setup_category_exterior"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_ENABLED_TASK_IDS: ["clean_gutters"]}
+    )
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_setup"}
+    )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "Primary Residence"
     assert result["data"]["property_name"] == "Primary Residence"
     assert result["data"][CONF_ENABLED_TASK_IDS] == ["clean_gutters"]
+
 
 @pytest.mark.asyncio
 async def test_add_equipment_options_flow_saves_task_associations(hass, enable_custom_integrations):
@@ -59,30 +79,21 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "add_equipment"
 
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"name": "Main HVAC", "category": "HVAC"}
+    )
     invalid_result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main HVAC",
-            "category": "HVAC",
-            "installed_date": "2024-02-30",
-            "task_ids": ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"installed_date": "2024-02-30"}
     )
     assert invalid_result["type"] == FlowResultType.FORM
-    assert invalid_result["errors"] == {"installed_date": "invalid_date"}
-    result = invalid_result
-
+    assert invalid_result["step_id"] == "add_equipment_details"
+    assert invalid_result["errors"] == {"base": "invalid_date"}
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main HVAC",
-            "category": "HVAC",
-            "manufacturer": "Example Manufacturer",
-            "model": "HVAC-100",
-            "installed_date": "2024-05-01",
-            "notes": "Upstairs and downstairs system",
-            "task_ids": ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"manufacturer": "Example Manufacturer", "model": "HVAC-100",
+                                       "installed_date": "2024-05-01", "notes": "Upstairs and downstairs system"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_ids": ["clean_gutters"]}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -103,23 +114,15 @@ def test_equipment_installation_date_requires_real_iso_date(hass):
     )
     flow = HomeMaintenanceOptionsFlow(entry)
     flow.hass = hass
-    schema = flow._equipment_schema([("clean_gutters", "Clean gutters")])
-    valid = {
-        "name": "Main HVAC",
-        "category": "HVAC",
-        "installed_date": "2024-02-29",
-        "task_ids": ["clean_gutters"],
-    }
-    assert schema(valid)["installed_date"] == "2024-02-29"
-
-    blank_date = {**valid, "installed_date": ""}
-    assert schema(blank_date)["installed_date"] == ""
-
-    for invalid_date in ("2024-02-30",):
-        # Calendar validity is checked in the flow handler so the form schema
-        # remains serializable by Home Assistant's frontend schema codec.
-        assert schema({**valid, "installed_date": invalid_date})["installed_date"] == invalid_date
-
+    schema = flow._equipment_details_schema(
+        task_options=[("clean_gutters", "Clean gutters")]
+    )
+    valid = {"installed_date": "2024-02-29", "lifespan_months": 0, "replacement_task_id": ""}
+    parsed = schema(valid)
+    assert parsed["installed_date"] == "2024-02-29"
+    assert parsed["lifespan_months"] == 0
+    assert parsed["replacement_task_id"] == ""
+    assert schema({**valid, "installed_date": ""})["installed_date"] == ""
     for invalid_format in ("20240229", "not-a-date"):
         with pytest.raises(vol.Invalid):
             schema({**valid, "installed_date": invalid_format})
@@ -141,15 +144,10 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Standby Generator",
-            "category": "Other",
-            "custom_category_name": "Generator",
-            "custom_category_icon": "mdi:air-purifier",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Standby Generator", "category": "Other",
+         "custom_category_name": "Generator", "custom_category_icon": "mdi:air-purifier"},
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -170,13 +168,8 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Portable Generator",
-            "category": "Generator",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"], {"name": "Portable Generator", "category": "Generator"}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -188,10 +181,10 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     ]
 
 @pytest.mark.asyncio
-async def test_season_window_options_validate_and_save_all_windows(
+async def test_season_window_options_use_one_step_per_season(
     hass, enable_custom_integrations
 ):
-    """Seasonal schedule settings can be customized with valid MM-DD dates."""
+    """Seasonal settings are collected one season at a time and preserve options."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Primary Residence",
@@ -202,43 +195,30 @@ async def test_season_window_options_validate_and_save_all_windows(
         },
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    assert result["type"] == FlowResultType.MENU
-
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={"next_step_id": "configure_season_windows"},
+        result["flow_id"], user_input={"next_step_id": "configure_season_windows"}
     )
-    assert result["type"] == FlowResultType.FORM
-    schema = result["data_schema"]
-    submitted = {
-        "spring_start": "03-10",
-        "spring_end": "05-25",
-        "summer_start": "06-01",
-        "summer_end": "08-31",
-        "fall_start": "09-01",
-        "fall_end": "11-15",
-        "winter_start": "11-16",
-        "winter_end": "03-14",
-    }
-    assert schema(submitted) == submitted
-    leap_day = {**submitted, "spring_start": "02-29"}
-    assert schema(leap_day)["spring_start"] == "02-29"
-    # The frontend schema enforces MM-DD shape; real calendar dates are
-    # checked after submission because callable validators cannot be serialized.
-    with pytest.raises(vol.Invalid):
-        schema({**submitted, "spring_start": "2-29"})
-
-    invalid_calendar_date = {**submitted, "spring_start": "02-30"}
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input=invalid_calendar_date
+    assert result["step_id"] == "season_window_spring"
+    invalid = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "02-30", "end": "05-25"}
     )
-    assert result["type"] == FlowResultType.FORM
-    assert result["errors"] == {"base": "invalid_season_date"}
-
+    assert invalid["type"] == FlowResultType.FORM
+    assert invalid["errors"] == {"base": "invalid_season_date"}
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input=submitted
+        invalid["flow_id"], user_input={"start": "03-10", "end": "05-25"}
+    )
+    assert result["step_id"] == "season_window_summer"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "06-01", "end": "08-31"}
+    )
+    assert result["step_id"] == "season_window_fall"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "09-01", "end": "11-15"}
+    )
+    assert result["step_id"] == "season_window_winter"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "11-16", "end": "03-14"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["season_windows"] == {
@@ -291,17 +271,12 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "edit_equipment"
 
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main and Upstairs HVAC",
-            "category": "HVAC",
-            "manufacturer": "New Manufacturer",
-            "model": "NEW-200",
-            "installed_date": "2024-02-29",
-            "notes": "Updated equipment details",
-            "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Main and Upstairs HVAC", "category": "HVAC"},
+        {"manufacturer": "New Manufacturer", "model": "NEW-200",
+         "installed_date": "2024-02-29", "notes": "Updated equipment details"},
+        ["clean_gutters", "replace_disposable_hvac_filter"], editing=True,
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -498,13 +473,25 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         result["flow_id"],
         user_input={
             "name": "Replace upstairs HVAC filter",
-            "category": "Heating and Cooling",
+            "category": "other",
             "description": "Updated description",
-            "schedule_type": "interval",
-            "interval_days": 120,
-            "annual_month": 1,
-            "annual_day": 1,
         },
+    )
+    assert result["step_id"] == "custom_task_category"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"category_name": "Heating and Cooling"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"schedule_type": "interval"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_days": 120}
+    )
+    assert result["step_id"] == "custom_task_instructions"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -563,14 +550,8 @@ async def test_equipment_can_create_and_assign_home_assistant_area(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Water Heater",
-            "category": "Plumbing",
-            "area_id": area.id,
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"], {"name": "Water Heater", "category": "Plumbing", "area_id": area.id}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["equipment_records"][0]["area_id"] == area.id
@@ -735,13 +716,21 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
         result["flow_id"],
         user_input={
             "name": "Winterize Sprinklers",
-            "category": "Outdoor",
+            "category": "outdoor",
             "description": "Prepare irrigation for winter.",
-            "schedule_type": "annual",
-            "interval_days": 90,
-            "annual_month": 10,
-            "annual_day": 15,
         },
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"schedule_type": "annual"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"annual_month": 10, "annual_day": 15}
+    )
+    assert result["step_id"] == "custom_task_instructions"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -804,16 +793,11 @@ async def test_add_equipment_lifespan_designates_and_links_replacement_task(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Smoke Detector Hall",
-            "category": "Safety and security",
-            "installed_date": "2020-01-15",
-            "lifespan_months": 120,
-            "replacement_task_id": "clean_gutters",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Smoke Detector Hall", "category": "Safety and security"},
+        {"installed_date": "2020-01-15", "lifespan_months": 120,
+         "replacement_task_id": "clean_gutters"},
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     record = result["data"]["equipment_records"][0]
@@ -841,25 +825,22 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Smoke Detector Hall",
-            "category": "Safety and security",
-            "installed_date": "",
-            "lifespan_months": 120,
-            "replacement_task_id": "",
-            "task_ids": [],
-        },
+        result["flow_id"], user_input={"name": "Smoke Detector Hall", "category": "Safety and security"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"installed_date": "", "lifespan_months": 120, "replacement_task_id": ""}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_ids": []}
     )
     assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "add_equipment_details"
     assert result["errors"] == {"base": "incomplete_lifespan"}
 
 
 @pytest.mark.asyncio
-async def test_notification_options_discover_mobile_app_services(
-    hass, enable_custom_integrations
-):
-    """Notification options offer mobile-app services registered on this HA instance."""
+async def test_notification_options_use_guided_steps(hass, enable_custom_integrations):
+    """Notification type selection leads to a relevant delivery settings step."""
     hass.services.async_register("notify", "mobile_app_test_phone", lambda call: None)
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -867,27 +848,31 @@ async def test_notification_options_discover_mobile_app_services(
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "configure_notifications"}
     )
-    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "configure_notifications"
-
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
             "individual_notifications_enabled": True,
             "daily_summary_enabled": True,
+        },
+    )
+    assert result["step_id"] == "notification_delivery"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
             "notification_target": "notify.mobile_app_test_phone",
             "notification_lead_days": 7,
             "daily_summary_time": "08:00",
         },
     )
-
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["notification_target"] == "notify.mobile_app_test_phone"
+    assert result["data"]["notification_lead_days"] == 7
+    assert result["data"]["daily_summary_time"] == "08:00"
 
 
 @pytest.mark.asyncio
@@ -938,15 +923,24 @@ async def test_manage_tasks_supports_bulk_actions_and_category_selection(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "finish_task_selection"}
     )
-    assert result["type"] == FlowResultType.FORM
+    assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "intervals"
-
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "interval_inspect_hvac_air_filter": 30,
-            "interval_test_smoke_alarms": 30,
-        },
+        result["flow_id"], user_input={"next_step_id": "interval_category_hvac"}
+    )
+    assert result["step_id"] == "interval_category_hvac"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_inspect_hvac_air_filter": 30}
+    )
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "interval_category_safety"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_test_smoke_alarms": 30}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_intervals"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_ENABLED_TASK_IDS] == [

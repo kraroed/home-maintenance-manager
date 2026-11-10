@@ -3,10 +3,98 @@
     "step": {
       "user": {
         "title": "Home Maintenance Manager",
-        "description": "Name your property and individually select maintenance tasks to track.",
+        "description": "Name your property. The next step lets you choose maintenance tasks by category.",
         "data": {
-          "property_name": "Property name",
-          "enabled_task_ids": "Maintenance tasks to enable"
+          "property_name": "Property name"
+        }
+      },
+      "setup_tasks": {
+        "title": "Choose maintenance tasks",
+        "description": "Select tasks by category. Use Select all or Clear all, then finish setup when you are ready.",
+        "menu_options": {
+          "select_all_setup_tasks": "Select all tasks",
+          "clear_all_setup_tasks": "Clear all tasks",
+          "setup_category_hvac": "HVAC",
+          "setup_category_safety": "Safety",
+          "setup_category_appliances": "Appliances",
+          "setup_category_exterior": "Exterior",
+          "setup_category_landscape": "Landscape",
+          "setup_category_plumbing": "Plumbing",
+          "setup_category_electrical": "Electrical",
+          "setup_category_interior": "Interior",
+          "setup_category_seasonal": "Seasonal",
+          "setup_category_systems": "Home systems",
+          "finish_setup": "Finish setup"
+        }
+      },
+      "setup_category_hvac": {
+        "title": "Hvac maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_safety": {
+        "title": "Safety maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_appliances": {
+        "title": "Appliances maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_exterior": {
+        "title": "Exterior maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_landscape": {
+        "title": "Landscape maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_plumbing": {
+        "title": "Plumbing maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_electrical": {
+        "title": "Electrical maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_interior": {
+        "title": "Interior maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_seasonal": {
+        "title": "Seasonal maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "setup_category_systems": {
+        "title": "Systems maintenance tasks",
+        "description": "Select or clear tasks in this category. Your choices in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
         }
       }
     },
@@ -32,13 +120,10 @@
       },
       "configure_notifications": {
         "title": "Maintenance notifications",
-        "description": "Enable individual reminders and a daily summary. Select an available Home Assistant mobile app notify service to send mobile notifications. If no mobile app services are available, you can enter a service name manually. Leave it blank to use Home Assistant persistent notifications.",
+        "description": "Choose whether to receive individual task reminders, a daily maintenance summary, or both. The next step will show only the settings needed for your choices.",
         "data": {
           "individual_notifications_enabled": "Send individual task reminders",
-          "daily_summary_enabled": "Send a daily maintenance summary",
-          "notification_target": "Mobile app notification service",
-          "notification_lead_days": "Remind this many days before a task is due",
-          "daily_summary_time": "Daily summary time (24-hour HH:MM)"
+          "daily_summary_enabled": "Send a daily maintenance summary"
         }
       },
       "manage_tasks": {
@@ -63,16 +148,19 @@
       },
       "intervals": {
         "title": "Maintenance intervals",
-        "description": "Set the interval in days for each selected recurring task. Seasonal tasks use their season windows instead.",
-        "data": {
-          "interval_inspect_hvac_air_filter": "Inspect HVAC air filter (days)",
-          "interval_replace_disposable_hvac_filter": "Replace disposable HVAC filter (days)",
-          "interval_test_smoke_alarms": "Test smoke alarms (days)",
-          "interval_test_carbon_monoxide_alarms": "Test carbon monoxide alarms (days)",
-          "interval_inspect_fire_extinguishers": "Inspect fire extinguishers (days)",
-          "interval_clean_refrigerator_coils": "Clean refrigerator condenser coils (days)",
-          "interval_clean_dryer_vent": "Clean clothes dryer vent (days)",
-          "interval_inspect_sump_pump": "Test sump pump (days)"
+        "description": "Choose a category to set the interval for each selected recurring task. Seasonal tasks use their season windows instead.",
+        "menu_options": {
+          "interval_category_hvac": "HVAC",
+          "interval_category_safety": "Safety",
+          "interval_category_appliances": "Appliances",
+          "interval_category_exterior": "Exterior",
+          "interval_category_landscape": "Landscape",
+          "interval_category_plumbing": "Plumbing",
+          "interval_category_electrical": "Electrical",
+          "interval_category_interior": "Interior",
+          "interval_category_seasonal": "Seasonal",
+          "interval_category_systems": "Home systems",
+          "finish_intervals": "Finish interval setup"
         }
       },
       "add_custom_task": {
@@ -86,20 +174,13 @@
       },
       "add_equipment": {
         "title": "Register household equipment",
-        "description": "Add an appliance or home system. Select Other and enter a custom category name to create a reusable category; choose its icon below. Existing custom categories can be selected again and their icons changed when editing equipment.",
+        "description": "Start with the equipment name, category, icon, and Home Assistant area.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
           "custom_category_name": "Custom category name (when category is Other)",
-          "custom_category_icon": "Custom category icon",
-          "area_id": "Home Assistant area",
-          "manufacturer": "Manufacturer",
-          "model": "Model",
-          "installed_date": "Installation date (YYYY-MM-DD)",
-          "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment",
-          "lifespan_months": "Expected lifespan (months; 0 disables)",
-          "replacement_task_id": "Task to make due when replacement is needed"
+          "custom_category_icon": "Category icon",
+          "area_id": "Home Assistant area"
         }
       },
       "create_area": {
@@ -125,21 +206,14 @@
         }
       },
       "edit_equipment": {
-        "title": "Edit household equipment",
-        "description": "Update equipment details and associated maintenance tasks. Select Other and enter a custom category name to create a reusable category, or select an existing custom category. Choose its icon below to update it for all equipment using that category.",
+        "title": "Edit equipment identity",
+        "description": "Update the equipment name, category, category icon, or Home Assistant area.",
         "data": {
           "name": "Equipment name",
           "category": "Equipment category",
           "custom_category_name": "Custom category name (when category is Other)",
-          "custom_category_icon": "Custom category icon",
-          "area_id": "Home Assistant area",
-          "manufacturer": "Manufacturer",
-          "model": "Model",
-          "installed_date": "Installation date (YYYY-MM-DD)",
-          "notes": "Notes",
-          "task_ids": "Maintenance tasks associated with this equipment",
-          "lifespan_months": "Expected lifespan (months; 0 disables)",
-          "replacement_task_id": "Task to make due when replacement is needed"
+          "custom_category_icon": "Category icon",
+          "area_id": "Home Assistant area"
         }
       },
       "remove_equipment": {
@@ -166,21 +240,11 @@
       },
       "edit_custom_task": {
         "title": "Edit custom maintenance task",
-        "description": "Update task details and schedule. Annual tasks repeat on a selected month and day; monthly tasks repeat on a selected weekday pattern. Existing completion history is retained.",
+        "description": "Start by updating the task name, category, and description. The following steps guide you through its schedule and inspection guidance.",
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description",
-          "schedule_type": "Schedule type",
-          "interval_days": "Repeat every (days) — interval schedules",
-          "annual_month": "Annual month (1–12)",
-          "annual_day": "Annual day (1–31)",
-          "how_to_inspect": "How to inspect (one step per line)",
-          "what_to_look_for": "What to look for (one item per line)",
-          "what_to_do_if_issue": "What to do if something is wrong",
-          "safety_notes": "Safety precautions",
-          "monthly_week": "Week of the month",
-          "monthly_weekday": "Day of the week"
+          "description": "Description"
         }
       },
       "remove_custom_task": {
@@ -192,17 +256,7 @@
       },
       "configure_season_windows": {
         "title": "Seasonal scheduling windows",
-        "description": "Set the start and end dates for each season. Enter dates in MM-DD format. Winter can span the end of the year.",
-        "data": {
-          "spring_start": "Spring start (MM-DD)",
-          "spring_end": "Spring end (MM-DD)",
-          "summer_start": "Summer start (MM-DD)",
-          "summer_end": "Summer end (MM-DD)",
-          "fall_start": "Fall start (MM-DD)",
-          "fall_end": "Fall end (MM-DD)",
-          "winter_start": "Winter start (MM-DD)",
-          "winter_end": "Winter end (MM-DD)"
-        }
+        "description": "Configure each season separately. Winter can span the end of the year."
       },
       "task_category_hvac": {
         "title": "HVAC maintenance tasks",
@@ -314,6 +368,252 @@
           "what_to_look_for": "What to look for (one item per line)",
           "what_to_do_if_issue": "What to do if something is wrong",
           "safety_notes": "Safety precautions"
+        }
+      },
+      "notification_delivery": {
+        "title": "Notification delivery and timing",
+        "description": "Choose where enabled notifications are sent and set their timing.",
+        "data": {
+          "notification_target": "Mobile app notification service",
+          "notification_lead_days": "Remind this many days before a task is due",
+          "daily_summary_time": "Daily summary time (24-hour HH:MM)"
+        }
+      },
+      "season_window_spring": {
+        "title": "Spring scheduling window",
+        "description": "Set the start and end dates for spring. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Spring start (MM-DD)",
+          "end": "Spring end (MM-DD)"
+        }
+      },
+      "season_window_summer": {
+        "title": "Summer scheduling window",
+        "description": "Set the start and end dates for summer. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Summer start (MM-DD)",
+          "end": "Summer end (MM-DD)"
+        }
+      },
+      "season_window_fall": {
+        "title": "Fall scheduling window",
+        "description": "Set the start and end dates for fall. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Fall start (MM-DD)",
+          "end": "Fall end (MM-DD)"
+        }
+      },
+      "season_window_winter": {
+        "title": "Winter scheduling window",
+        "description": "Set the start and end dates for winter. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Winter start (MM-DD)",
+          "end": "Winter end (MM-DD)"
+        }
+      },
+      "add_equipment_details": {
+        "title": "Installation and lifespan",
+        "description": "Add manufacturer and model details, installation date, expected lifespan, and replacement scheduling.",
+        "data": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed",
+          "notes": "Notes"
+        }
+      },
+      "add_equipment_tasks": {
+        "title": "Link maintenance tasks",
+        "description": "Choose the maintenance tasks that apply to this equipment. A designated replacement task is included automatically.",
+        "data": {
+          "task_ids": "Maintenance tasks associated with this equipment"
+        }
+      },
+      "edit_equipment_details": {
+        "title": "Edit installation and lifespan",
+        "description": "Update manufacturer, model, installation date, expected lifespan, and replacement scheduling.",
+        "data": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "installed_date": "Installation date (YYYY-MM-DD)",
+          "lifespan_months": "Expected lifespan (months; 0 disables)",
+          "replacement_task_id": "Task to make due when replacement is needed",
+          "notes": "Notes"
+        }
+      },
+      "edit_equipment_tasks": {
+        "title": "Edit linked maintenance tasks",
+        "description": "Choose the maintenance tasks associated with this equipment.",
+        "data": {
+          "task_ids": "Maintenance tasks associated with this equipment"
+        }
+      },
+      "interval_category_hvac": {
+        "title": "Hvac maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_inspect_hvac_air_filter": "Inspect HVAC air filter (days)",
+          "interval_replace_disposable_hvac_filter": "Replace disposable HVAC filter (days)",
+          "interval_clean_bathroom_exhaust_fan": "Clean bathroom exhaust fan grille (days)",
+          "interval_inspect_furnace_heat_exchanger": "Arrange furnace heat-exchanger inspection (days)",
+          "interval_service_heat_pump": "Arrange heat-pump inspection and service (days)",
+          "interval_clean_hvac_condensate_drain": "Inspect and clear HVAC condensate drain (days)",
+          "interval_inspect_humidifier": "Clean and inspect whole-home humidifier (days)",
+          "interval_clean_dehumidifier_filter": "Clean dehumidifier filter and reservoir (days)",
+          "interval_inspect_hrv_erv_filters": "Inspect HRV or ERV filters (days)",
+          "interval_inspect_ductwork": "Inspect accessible HVAC ductwork (days)",
+          "interval_check_thermostat_operation": "Check thermostat operation and settings (days)",
+          "interval_inspect_furnace_flue": "Inspect visible furnace venting and flue (days)",
+          "interval_replace_hvac_filter_reminder": "Review reusable HVAC filter condition (days)"
+        }
+      },
+      "interval_category_safety": {
+        "title": "Safety maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_test_smoke_alarms": "Test smoke alarms (days)",
+          "interval_test_carbon_monoxide_alarms": "Test carbon monoxide alarms (days)",
+          "interval_inspect_fire_extinguishers": "Inspect fire extinguishers (days)",
+          "interval_test_garage_door_safety": "Test garage door safety features (days)",
+          "interval_inspect_chimney_fireplace": "Arrange chimney and fireplace inspection (days)",
+          "interval_inspect_fire_escape_routes": "Review household fire escape routes (days)",
+          "interval_review_fire_escape_plan": "Practice household fire escape plan (days)",
+          "interval_inspect_fire_extinguisher_service": "Review fire extinguisher service dates (days)",
+          "interval_inspect_first_aid_kit": "Inspect first-aid kit supplies (days)",
+          "interval_inspect_emergency_lighting": "Test emergency flashlights and lighting (days)",
+          "interval_inspect_co_alarm_replacement_dates": "Review carbon monoxide alarm replacement dates (days)",
+          "interval_inspect_smoke_alarm_replacement_dates": "Review smoke alarm replacement dates (days)",
+          "interval_inspect_fire_sprinkler_heads": "Visually inspect accessible fire sprinkler heads (days)",
+          "interval_review_emergency_supplies": "Review household emergency supplies (days)"
+        }
+      },
+      "interval_category_appliances": {
+        "title": "Appliances maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_clean_refrigerator_coils": "Clean refrigerator condenser coils (days)",
+          "interval_clean_dryer_vent": "Clean clothes dryer vent (days)",
+          "interval_inspect_washing_machine_hoses": "Inspect washing machine hoses (days)",
+          "interval_clean_washing_machine": "Clean washing machine (days)",
+          "interval_clean_dishwasher_filter": "Clean dishwasher filter (days)",
+          "interval_clean_range_hood_filter": "Clean range hood filter (days)",
+          "interval_replace_refrigerator_water_filter": "Replace refrigerator water filter (days)",
+          "interval_check_dryer_exhaust_outlet": "Check exterior dryer exhaust outlet (days)",
+          "interval_clean_oven_interior": "Clean oven interior (days)",
+          "interval_clean_microwave_interior": "Clean microwave interior and vents (days)",
+          "interval_inspect_freezer_ice_buildup": "Inspect freezer for excess ice buildup (days)",
+          "interval_clean_ice_maker": "Clean refrigerator ice maker components (days)",
+          "interval_inspect_garbage_disposal": "Inspect garbage disposal operation (days)",
+          "interval_clean_coffee_machine": "Descale coffee maker or espresso machine (days)"
+        }
+      },
+      "interval_category_exterior": {
+        "title": "Exterior maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_inspect_deck_and_steps": "Inspect deck, porch, and exterior steps (days)",
+          "interval_inspect_exterior_foundation": "Inspect visible foundation and drainage (days)",
+          "interval_inspect_roof_from_ground": "Inspect roof and flashing from the ground (days)",
+          "interval_inspect_siding": "Inspect exterior siding and trim (days)",
+          "interval_inspect_exterior_paint": "Inspect exterior paint and coatings (days)",
+          "interval_inspect_roof_flashing": "Arrange professional roof flashing inspection (days)",
+          "interval_inspect_soffit_fascia": "Inspect soffits and fascia from ground (days)",
+          "interval_inspect_downspout_discharge": "Check downspout discharge and extensions (days)",
+          "interval_inspect_driveway_walkways": "Inspect driveway and walkways (days)",
+          "interval_inspect_fence_gates": "Inspect fences and gates (days)",
+          "interval_inspect_retaining_walls": "Inspect retaining walls and visible drainage (days)",
+          "interval_inspect_window_wells": "Clean and inspect window wells (days)",
+          "interval_inspect_exterior_caulk": "Inspect exterior caulking and sealant (days)"
+        }
+      },
+      "interval_category_landscape": {
+        "title": "Landscape maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_spring_startup_irrigation": "Start up irrigation system for the season (days)",
+          "interval_inspect_sprinkler_heads": "Inspect sprinkler heads and coverage (days)",
+          "interval_inspect_irrigation_valves": "Inspect irrigation valves and valve boxes (days)",
+          "interval_inspect_drip_irrigation": "Inspect drip irrigation emitters and tubing (days)",
+          "interval_inspect_backflow_irrigation": "Review irrigation backflow device test status (days)",
+          "interval_inspect_trees_near_home": "Inspect trees near the home (days)",
+          "interval_clean_yard_drains": "Clear yard and area drains (days)",
+          "interval_inspect_landscape_grading": "Check landscape grading near foundation (days)",
+          "interval_service_lawn_mower": "Service lawn mower before or after season (days)",
+          "interval_inspect_outdoor_hose_bibs": "Inspect outdoor hose bibs and hose connections (days)",
+          "interval_prune_vegetation_from_structure": "Trim vegetation away from house exterior (days)"
+        }
+      },
+      "interval_category_plumbing": {
+        "title": "Plumbing maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_inspect_sump_pump": "Test sump pump (days)",
+          "interval_inspect_plumbing_for_leaks": "Check visible plumbing for leaks (days)",
+          "interval_check_water_softener_salt": "Check water softener salt (days)",
+          "interval_inspect_toilet_components": "Inspect toilet for leaks and running (days)",
+          "interval_clean_showerheads_aerators": "Clean showerheads and faucet aerators (days)",
+          "interval_inspect_sump_pump_backup": "Test sump pump backup system (days)",
+          "interval_service_water_heater": "Review water heater maintenance requirements (days)",
+          "interval_inspect_main_water_shutoff": "Locate and inspect main water shutoff access (days)",
+          "interval_inspect_water_pressure": "Check household water pressure (days)",
+          "interval_inspect_pressure_regulator": "Inspect pressure-reducing valve condition (days)",
+          "interval_inspect_water_heater_leaks": "Inspect water heater and connections for leaks (days)",
+          "interval_review_water_heater_anode": "Review water heater anode-rod service interval (days)",
+          "interval_inspect_faucet_supply_lines": "Inspect faucet and toilet supply connections (days)",
+          "interval_clean_sink_drain_stoppers": "Clean sink drain stoppers (days)",
+          "interval_inspect_backflow_preventer": "Review backflow preventer inspection status (days)"
+        }
+      },
+      "interval_category_electrical": {
+        "title": "Electrical maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_test_gfci_outlets": "Test GFCI outlets (days)",
+          "interval_inspect_electrical_panel_exterior": "Visually inspect electrical panel exterior (days)",
+          "interval_test_afci_breakers": "Test AFCI protection where test buttons are provided (days)",
+          "interval_inspect_outdoor_receptacles": "Inspect outdoor electrical receptacles and covers (days)",
+          "interval_inspect_extension_cords": "Inspect household extension cords (days)",
+          "interval_test_standby_generator_transfer": "Arrange standby generator transfer-system inspection (days)",
+          "interval_inspect_surge_protectors": "Review surge protector status (days)",
+          "interval_inspect_exterior_lighting": "Inspect exterior lighting and photocells (days)"
+        }
+      },
+      "interval_category_interior": {
+        "title": "Interior maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_inspect_caulking_and_grout": "Inspect bathroom and kitchen caulk (days)",
+          "interval_inspect_weatherstripping": "Inspect door and window weatherstripping (days)",
+          "interval_clean_window_tracks": "Clean window and sliding-door tracks (days)",
+          "interval_inspect_attic_for_moisture": "Check accessible attic for moisture (days)",
+          "interval_inspect_interior_paint": "Inspect interior paint and wall finishes (days)",
+          "interval_inspect_flooring_transitions": "Inspect flooring and transition strips (days)",
+          "interval_clean_carpet_and_rugs": "Deep-clean carpets and area rugs (days)",
+          "interval_inspect_interior_doors": "Inspect interior doors and hardware (days)",
+          "interval_inspect_window_glazing": "Inspect window glazing and visible seals (days)",
+          "interval_inspect_moisture_prone_areas": "Check moisture-prone interior areas (days)"
+        }
+      },
+      "interval_category_seasonal": {
+        "title": "Seasonal maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {}
+      },
+      "interval_category_systems": {
+        "title": "Systems maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_inspect_well_system": "Arrange private well system inspection (days)",
+          "interval_test_well_water": "Test private well water quality (days)",
+          "interval_inspect_septic_system": "Arrange septic system inspection (days)",
+          "interval_review_septic_pumping": "Review septic tank pumping schedule (days)",
+          "interval_service_standby_generator": "Service standby generator (days)",
+          "interval_inspect_pool_equipment": "Inspect pool equipment and safety systems (days)",
+          "interval_service_spa_hot_tub": "Service spa or hot tub equipment (days)",
+          "interval_inspect_radon_mitigation": "Check radon mitigation system operation (days)",
+          "interval_inspect_crawlspace": "Inspect accessible crawlspace conditions (days)",
+          "interval_inspect_solar_system": "Review residential solar system condition (days)"
         }
       }
     },
