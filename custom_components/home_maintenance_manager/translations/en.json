@@ -172,6 +172,20 @@
         "data": {
           "confirm": "I confirm that I want to remove this custom task"
         }
+      },
+      "configure_season_windows": {
+        "title": "Seasonal scheduling windows",
+        "description": "Set the start and end dates for each season. Enter dates in MM-DD format. Winter can span the end of the year.",
+        "data": {
+          "spring_start": "Spring start (MM-DD)",
+          "spring_end": "Spring end (MM-DD)",
+          "summer_start": "Summer start (MM-DD)",
+          "summer_end": "Summer end (MM-DD)",
+          "fall_start": "Fall start (MM-DD)",
+          "fall_end": "Fall end (MM-DD)",
+          "winter_start": "Winter start (MM-DD)",
+          "winter_end": "Winter end (MM-DD)"
+        }
       }
     },
     "error": {
