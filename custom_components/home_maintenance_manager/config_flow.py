@@ -823,7 +823,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
 
         schedule_type = draft["schedule_type"]
         interval = int(draft.get("interval_days", draft.get("recommended_interval_days", 90)))
+        existing_record = next(
+            (item for item in existing_tasks if item["task_id"] == original_id), {}
+        ) if editing else {}
         custom_task = {
+            **existing_record,
             "task_id": task_id,
             "name": name,
             "category": draft["category"].strip().casefold() or "custom",
@@ -838,9 +842,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 {"monthly_week": draft["monthly_week"], "monthly_weekday": int(draft["monthly_weekday"])}
                 if schedule_type == "monthly" else {}
             ),
-            "priority": "normal",
-            "requires_equipment": False,
-            "recommendation_note": "Custom task created by the user.",
+            **({
+                "priority": "normal",
+                "requires_equipment": False,
+                "recommendation_note": "Custom task created by the user.",
+            } if not editing else {}),
             "how_to_inspect": [
                 line.strip() for line in draft.get("how_to_inspect", "").splitlines()
                 if line.strip()
