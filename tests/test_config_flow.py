@@ -581,29 +581,28 @@ async def test_add_custom_annual_task_saves_calendar_schedule(
 ):
     """Adding an annual custom task stores its month/day without an interval."""
     entry = MockConfigEntry(
-        domain=DOMAIN,
-        title="Primary Residence",
+        domain=DOMAIN, title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+        flow_id, user_input={"next_step_id": "add_custom_task"}
     )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Winterize Sprinklers",
-            "category": "Outdoor",
-            "description": "Prepare irrigation for winter.",
-            "schedule_type": "annual",
-            "interval_days": 90,
-            "annual_month": 10,
-            "annual_day": 15,
-        },
+        flow_id, user_input={"name": "Winterize Sprinklers", "category": "landscape",
+                             "description": "Prepare irrigation for winter."}
     )
-
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "annual"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"annual_month": 10, "annual_day": 15}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={}
+    )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     task = result["data"]["custom_tasks"][0]
     assert task["task_id"] == "custom_winterize_sprinklers"
@@ -612,51 +611,86 @@ async def test_add_custom_annual_task_saves_calendar_schedule(
     assert task["annual_day"] == 15
     assert result["data"][CONF_ENABLED_TASK_IDS] == ["custom_winterize_sprinklers"]
     assert "custom_winterize_sprinklers" not in result["data"]["task_intervals"]
-
 @pytest.mark.asyncio
 async def test_add_custom_annual_task_rejects_invalid_calendar_date(
     hass, enable_custom_integrations
 ):
     """Annual schedules reject impossible dates but allow leap day."""
     entry = MockConfigEntry(
-        domain=DOMAIN,
-        title="Primary Residence",
+        domain=DOMAIN, title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+        flow_id, user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"name": "Annual Inspection", "category": "safety"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "annual"}
     )
     invalid = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Annual Inspection",
-            "category": "General",
-            "schedule_type": "annual",
-            "interval_days": 90,
-            "annual_month": 2,
-            "annual_day": 30,
-        },
+        flow_id, user_input={"annual_month": 2, "annual_day": 30}
     )
     assert invalid["type"] == FlowResultType.FORM
     assert invalid["errors"] == {"base": "invalid_annual_date"}
-
     valid = await hass.config_entries.options.async_configure(
-        invalid["flow_id"],
-        user_input={
-            "name": "Annual Inspection",
-            "category": "General",
-            "schedule_type": "annual",
-            "interval_days": 90,
-            "annual_month": 2,
-            "annual_day": 29,
-        },
+        flow_id, user_input={"annual_month": 2, "annual_day": 29}
     )
+    valid = await hass.config_entries.options.async_configure(flow_id, user_input={})
     assert valid["type"] == FlowResultType.CREATE_ENTRY
     assert valid["data"]["custom_tasks"][0]["annual_month"] == 2
     assert valid["data"]["custom_tasks"][0]["annual_day"] == 29
+
+@pytest.mark.asyncio
+async def test_add_custom_task_can_create_reusable_category(
+    hass, enable_custom_integrations
+):
+    """The Other category path creates a reusable custom category."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"name": "Inspect Pool Cover", "category": "other"}
+    )
+    assert result["step_id"] == "custom_task_category"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"category_name": "Pool Care"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "interval"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"interval_days": 60}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "how_to_inspect": "Check for cracks",
+            "what_to_look_for": "Tears and worn straps",
+            "what_to_do_if_issue": "Repair or replace the cover",
+            "safety_notes": "Keep clear of the pool when working alone",
+        }
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    task = result["data"]["custom_tasks"][0]
+    assert task["category"] == "pool care"
+    assert task["recommended_interval_days"] == 60
+    assert task["how_to_inspect"] == ["Check for cracks"]
+    assert task["what_to_look_for"] == ["Tears and worn straps"]
+    assert task["what_to_do_if_issue"] == "Repair or replace the cover"
+    assert task["safety_notes"] == "Keep clear of the pool when working alone"
+    assert result["data"]["task_intervals"]["custom_inspect_pool_cover"] == 60
+
 
 @pytest.mark.asyncio
 async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_history(
@@ -724,31 +758,26 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
 ):
     """Adding a monthly custom task stores its ordinal weekday schedule."""
     entry = MockConfigEntry(
-        domain=DOMAIN,
-        title="Primary Residence",
+        domain=DOMAIN, title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "add_custom_task"}
+        flow_id, user_input={"next_step_id": "add_custom_task"}
     )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Monthly Alarm Test",
-            "category": "Safety and security",
-            "description": "Test household alarms monthly.",
-            "schedule_type": "monthly",
-            "interval_days": 90,
-            "annual_month": 1,
-            "annual_day": 1,
-            "monthly_week": "second",
-            "monthly_weekday": 1,
-        },
+        flow_id, user_input={"name": "Monthly Alarm Test", "category": "safety",
+                             "description": "Test household alarms monthly."}
     )
-
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "monthly"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"monthly_week": "second", "monthly_weekday": 1}
+    )
+    result = await hass.config_entries.options.async_configure(flow_id, user_input={})
     assert result["type"] == FlowResultType.CREATE_ENTRY
     task = result["data"]["custom_tasks"][0]
     assert task["task_id"] == "custom_monthly_alarm_test"
@@ -757,7 +786,6 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
     assert task["monthly_weekday"] == 1
     assert "annual_month" not in task
     assert "custom_monthly_alarm_test" not in result["data"]["task_intervals"]
-
 @pytest.mark.asyncio
 async def test_add_equipment_lifespan_designates_and_links_replacement_task(
     hass, enable_custom_integrations
