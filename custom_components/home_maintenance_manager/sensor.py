@@ -132,7 +132,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
              if record.get("equipment_id") == equipment_id),
             {},
         )
-        self._attr_icon = self.CATEGORY_ICONS.get(item.get("category"), "mdi:tools")
+        self._attr_icon = "mdi:tools"
 
     def _equipment(self):
         return next(
@@ -154,6 +154,14 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             registry.async_update_entity(self.entity_id, area_id=area_id)
 
     @property
+    def icon(self):
+        """Return an icon representing the equipment category."""
+        item = self._equipment()
+        return self.CATEGORY_ICONS.get(
+            item.get("category") if item else None, "mdi:tools"
+        )
+
+    @property
     def native_value(self):
         item = self._equipment()
         return item.get("name") if item else "unavailable"
@@ -167,10 +175,11 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "equipment_id": self.equipment_id,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "category_icon": self.CATEGORY_ICONS.get(item.get("category"), "mdi:tools"),
             **{
                 key: item.get(key)
                 for key in (
-                    "category", "category_icon", "area_id", "manufacturer", "model", "installed_date",
+                    "category", "area_id", "manufacturer", "model", "installed_date",
                     "lifespan_months", "replacement_task_id", "replacement_due",
                     "notes", "task_ids",
                 )
