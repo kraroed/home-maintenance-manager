@@ -112,7 +112,7 @@ async def test_notifications_respect_disabled_options_and_notify_target(hass, mo
         options={
             "individual_notifications_enabled": False,
             "daily_summary_enabled": False,
-            "notification_target": "notify.household",
+            "notification_target": "notify.mobile_app_household",
         }
     )
 
@@ -124,7 +124,7 @@ async def test_notifications_respect_disabled_options_and_notify_target(hass, mo
 
 @pytest.mark.asyncio
 async def test_notifications_send_to_configured_notify_target(hass, monkeypatch):
-    """A configured notify target receives the reminder through notify.send_message."""
+    """A configured notify service receives the reminder directly."""
     from custom_components.home_maintenance_manager import notifications
 
     monkeypatch.setattr(
@@ -159,8 +159,8 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
 
     notify_mock.assert_awaited_once()
     args = notify_mock.await_args
-    assert args.args[:2] == ("notify", "send_message")
-    assert args.args[2]["target"] == {"entity_id": "notify.household"}
+    assert args.args[:2] == ("notify", "mobile_app_household")
+    assert "target" not in args.args[2]
     assert args.args[2]["message"].startswith("Clean gutters is due today (due ")
     assert args.kwargs["blocking"] is True
 
