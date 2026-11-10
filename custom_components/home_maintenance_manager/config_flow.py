@@ -954,7 +954,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_area_id = current.get("area_id") or ""
         if current_area_id and current_area_id not in area_options:
             area_options[current_area_id] = "Previously assigned area (unavailable)"
-        custom_categories = self.config_entry.options.get("equipment_categories", [])
+        custom_categories = self._config_entry.options.get("equipment_categories", [])
         category_options = {name: name for name in EQUIPMENT_CATEGORY_ICONS}
         category_options.update({
             item["name"]: item["name"] for item in custom_categories
