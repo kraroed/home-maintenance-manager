@@ -1070,14 +1070,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_add_equipment(self, user_input=None):
         """Start the guided equipment registration flow."""
-        current = {}
+        if user_input is None:
+            self._equipment_draft = {}
+            return self.async_show_form(
+                step_id="add_equipment",
+                data_schema=self._equipment_identity_schema(),
+            )
         if user_input is not None:
             self._equipment_draft = dict(user_input)
             return await self.async_step_add_equipment_details()
-        return self.async_show_form(
-            step_id="add_equipment",
-            data_schema=self._equipment_identity_schema(current),
-        )
+        return await self.async_step_add_equipment_details()
 
     async def async_step_add_equipment_details(self, user_input=None):
         """Collect installation and lifespan details."""
@@ -1090,13 +1092,17 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             except vol.Invalid:
                 return self.async_show_form(
                     step_id="add_equipment_details",
-                    data_schema=self._equipment_details_schema(self._equipment_draft),
+                    data_schema=self._equipment_details_schema(
+                        self._equipment_draft, await self._async_equipment_task_options()
+                    ),
                     errors={"base": "invalid_date"},
                 )
             return await self.async_step_add_equipment_tasks()
         return self.async_show_form(
             step_id="add_equipment_details",
-            data_schema=self._equipment_details_schema(self._equipment_draft),
+            data_schema=self._equipment_details_schema(
+                self._equipment_draft, await self._async_equipment_task_options()
+            ),
         )
 
     async def async_step_add_equipment_tasks(self, user_input=None):
@@ -1252,7 +1258,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
 
     @staticmethod
-    def _equipment_details_schema(current=None):
+    def _equipment_details_schema(current=None, task_options=()):
         """Build the installation and lifespan wizard step."""
         current = current or {}
         return vol.Schema({
@@ -1271,7 +1277,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(
                 "replacement_task_id",
                 default=current.get("replacement_task_id") or "",
-            ): str,
+            ): vol.In({"": "None", **dict(task_options)}),
             vol.Optional("notes", default=current.get("notes", "")): vol.All(
                 str, vol.Length(max=500)
             ),
