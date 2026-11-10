@@ -86,7 +86,7 @@
         "description": "Add an appliance or home system and optionally associate existing maintenance tasks with it. You can leave manufacturer, model, installation date, and notes blank. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
         "data": {
           "name": "Equipment name",
-          "category": "Category",
+          "category": "Equipment category",
           "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
@@ -124,7 +124,7 @@
         "description": "Update the equipment details and associated maintenance tasks. To schedule automatic replacement, provide an installation date, expected lifespan, and a designated replacement task. The replacement task is added to the equipment's associated tasks.",
         "data": {
           "name": "Equipment name",
-          "category": "Category",
+          "category": "Equipment category",
           "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
