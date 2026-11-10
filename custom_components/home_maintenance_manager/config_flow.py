@@ -716,31 +716,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         """Choose the recurrence pattern before showing its relevant fields."""
         if user_input is not None:
             self._custom_task_draft["schedule_type"] = user_input["schedule_type"]
-            schedule_type = user_input["schedule_type"]
-            fields = {}
-            if schedule_type == "interval":
-                fields[vol.Required("interval_days", default=90)] = vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=3650)
-                )
-            elif schedule_type == "annual":
-                fields[vol.Required("annual_month", default=current.get("annual_month", 1))] = vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=12)
-                )
-                fields[vol.Required("annual_day", default=current.get("annual_day", 1))] = vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=31)
-                )
-            else:
-                fields[vol.Required("monthly_week", default=current.get("monthly_week", "first"))] = vol.In({
-                    "first": "First", "second": "Second", "third": "Third",
-                    "fourth": "Fourth", "last": "Last",
-                })
-                fields[vol.Required("monthly_weekday", default=current.get("monthly_weekday", 5))] = vol.In({
-                    0: "Monday", 1: "Tuesday", 2: "Wednesday",
-                    3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday",
-                })
             return self.async_show_form(
                 step_id="custom_task_schedule_details",
-                data_schema=vol.Schema(fields),
+                data_schema=self._custom_task_schedule_details_schema(
+                    user_input["schedule_type"], self._custom_task_draft
+                ),
             )
         return self.async_show_form(
             step_id="custom_task_schedule",
@@ -822,16 +802,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         task_id = f"custom_{slug}"
         existing_tasks = self.config_entry.options.get("custom_tasks", [])
         library = await self.hass.async_add_executor_job(load_library)
-        all_ids = set(library) | {task["task_id"] for task in existing_tasks}
-        if not slug or task_id in all_ids:
+        editing = getattr(self, "_custom_task_editing", False)
+        original_id = getattr(self, "_custom_task_original_id", None)
+        collision = task_id in library or any(
+            item["task_id"] == task_id and item["task_id"] != original_id
+            for item in existing_tasks
+        )
+        if not slug or (collision and task_id != original_id):
             return self.async_show_form(
-                step_id="add_custom_task",
+                step_id="edit_custom_task" if editing else "add_custom_task",
                 data_schema=vol.Schema({
                     vol.Required("name", default=name): vol.All(str, vol.Length(min=1, max=80)),
-                    vol.Required("category", default=draft["category"]): vol.In({
-                        draft["category"]: draft["category"].title(),
-                        "other": "Other / Create a new category",
-                    }),
+                    vol.Required("category", default=draft["category"]): str,
                     vol.Optional("description", default=draft.get("description", "")): vol.All(
                         str, vol.Length(max=300)
                     ),
