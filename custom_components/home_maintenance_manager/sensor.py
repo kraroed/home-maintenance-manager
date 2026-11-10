@@ -127,7 +127,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
         self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{equipment_id}"
         self._attr_name = f"{name} Equipment"
-        self._attr_icon = "mdi:tools"
+        self._update_category_icon()
 
     def _equipment(self):
         return next(
@@ -136,9 +136,25 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             None,
         )
 
+    def _update_category_icon(self):
+        """Keep the entity icon synchronized with its equipment category."""
+        item = self._equipment()
+        self._attr_icon = (
+            (item.get("category_icon") or self.CATEGORY_ICONS.get(
+                item.get("category"), "mdi:tools"
+            ))
+            if item else "mdi:tools"
+        )
+
+    def _handle_coordinator_update(self):
+        """Refresh the entity icon whenever equipment configuration changes."""
+        self._update_category_icon()
+        super()._handle_coordinator_update()
+
     async def async_added_to_hass(self):
         """Apply the configured Home Assistant area to this equipment entity."""
         await super().async_added_to_hass()
+        self._update_category_icon()
         item = self._equipment()
         if item is None:
             return
