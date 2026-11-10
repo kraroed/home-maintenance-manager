@@ -94,11 +94,16 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert equipment[0]["model"] == "HVAC-100"
     assert equipment[0]["task_ids"] == ["clean_gutters"]
 
-def test_equipment_installation_date_requires_real_iso_date():
+def test_equipment_installation_date_requires_real_iso_date(hass):
     """Equipment dates accept blanks and real dates but reject impossible dates."""
-    schema = HomeMaintenanceOptionsFlow._equipment_schema(
-        [("clean_gutters", "Clean gutters")]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
+    flow = HomeMaintenanceOptionsFlow(entry)
+    flow.hass = hass
+    schema = flow._equipment_schema([("clean_gutters", "Clean gutters")])
     valid = {
         "name": "Main HVAC",
         "category": "HVAC",
@@ -459,6 +464,51 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
     assert result["data"]["equipment_records"][0]["task_ids"] == [
         "custom_replace_filter"
     ]
+
+
+@pytest.mark.asyncio
+async def test_equipment_can_create_and_assign_home_assistant_area(
+    hass, enable_custom_integrations
+):
+    """Users can create an HA area and assign it to household equipment."""
+    from homeassistant.helpers import area_registry as ar
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "create_area"}
+    )
+    assert result["step_id"] == "create_area"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"name": "Basement"}
+    )
+    assert result["type"] == FlowResultType.MENU
+    area = next(
+        area for area in ar.async_get(hass).async_list_areas()
+        if area.name == "Basement"
+    )
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Water Heater",
+            "category": "Plumbing",
+            "area_id": area.id,
+            "task_ids": [],
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["equipment_records"][0]["area_id"] == area.id
 
 @pytest.mark.asyncio
 async def test_add_custom_annual_task_saves_calendar_schedule(
