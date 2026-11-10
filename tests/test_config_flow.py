@@ -188,10 +188,10 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     ]
 
 @pytest.mark.asyncio
-async def test_season_window_options_validate_and_save_all_windows(
+async def test_season_window_options_use_one_step_per_season(
     hass, enable_custom_integrations
 ):
-    """Seasonal schedule settings can be customized with valid MM-DD dates."""
+    """Seasonal settings are collected one season at a time and preserve options."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Primary Residence",
@@ -202,43 +202,30 @@ async def test_season_window_options_validate_and_save_all_windows(
         },
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    assert result["type"] == FlowResultType.MENU
-
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={"next_step_id": "configure_season_windows"},
+        result["flow_id"], user_input={"next_step_id": "configure_season_windows"}
     )
-    assert result["type"] == FlowResultType.FORM
-    schema = result["data_schema"]
-    submitted = {
-        "spring_start": "03-10",
-        "spring_end": "05-25",
-        "summer_start": "06-01",
-        "summer_end": "08-31",
-        "fall_start": "09-01",
-        "fall_end": "11-15",
-        "winter_start": "11-16",
-        "winter_end": "03-14",
-    }
-    assert schema(submitted) == submitted
-    leap_day = {**submitted, "spring_start": "02-29"}
-    assert schema(leap_day)["spring_start"] == "02-29"
-    # The frontend schema enforces MM-DD shape; real calendar dates are
-    # checked after submission because callable validators cannot be serialized.
-    with pytest.raises(vol.Invalid):
-        schema({**submitted, "spring_start": "2-29"})
-
-    invalid_calendar_date = {**submitted, "spring_start": "02-30"}
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input=invalid_calendar_date
+    assert result["step_id"] == "season_window_spring"
+    invalid = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "02-30", "end": "05-25"}
     )
-    assert result["type"] == FlowResultType.FORM
-    assert result["errors"] == {"base": "invalid_season_date"}
-
+    assert invalid["type"] == FlowResultType.FORM
+    assert invalid["errors"] == {"base": "invalid_season_date"}
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input=submitted
+        invalid["flow_id"], user_input={"start": "03-10", "end": "05-25"}
+    )
+    assert result["step_id"] == "season_window_summer"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "06-01", "end": "08-31"}
+    )
+    assert result["step_id"] == "season_window_fall"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "09-01", "end": "11-15"}
+    )
+    assert result["step_id"] == "season_window_winter"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"start": "11-16", "end": "03-14"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["season_windows"] == {
@@ -856,10 +843,8 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
 
 
 @pytest.mark.asyncio
-async def test_notification_options_discover_mobile_app_services(
-    hass, enable_custom_integrations
-):
-    """Notification options offer mobile-app services registered on this HA instance."""
+async def test_notification_options_use_guided_steps(hass, enable_custom_integrations):
+    """Notification type selection leads to a relevant delivery settings step."""
     hass.services.async_register("notify", "mobile_app_test_phone", lambda call: None)
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -867,27 +852,31 @@ async def test_notification_options_discover_mobile_app_services(
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
     entry.add_to_hass(hass)
-
     result = await hass.config_entries.options.async_init(entry.entry_id)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "configure_notifications"}
     )
-    assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "configure_notifications"
-
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
             "individual_notifications_enabled": True,
             "daily_summary_enabled": True,
+        },
+    )
+    assert result["step_id"] == "notification_delivery"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
             "notification_target": "notify.mobile_app_test_phone",
             "notification_lead_days": 7,
             "daily_summary_time": "08:00",
         },
     )
-
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["notification_target"] == "notify.mobile_app_test_phone"
+    assert result["data"]["notification_lead_days"] == 7
+    assert result["data"]["daily_summary_time"] == "08:00"
 
 
 @pytest.mark.asyncio
