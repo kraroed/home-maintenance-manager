@@ -13,6 +13,18 @@ from custom_components.home_maintenance_manager.const import (
     DOMAIN,
 )
 
+async def _submit_equipment_wizard(hass, flow_id, identity, details=None, tasks=None, editing=False):
+    """Submit the three guided equipment wizard steps."""
+    prefix = "edit" if editing else "add"
+    result = await hass.config_entries.options.async_configure(flow_id, user_input=identity)
+    assert result["step_id"] == f"{prefix}_equipment_details"
+    result = await hass.config_entries.options.async_configure(flow_id, user_input=details or {})
+    assert result["step_id"] == f"{prefix}_equipment_tasks"
+    return await hass.config_entries.options.async_configure(
+        flow_id, user_input={"task_ids": tasks or []}
+    )
+
+
 @pytest.mark.asyncio
 async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_integrations):
     """Initial setup asks for the property, then selects tasks by category."""
