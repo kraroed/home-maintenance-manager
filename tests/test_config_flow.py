@@ -94,11 +94,16 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert equipment[0]["model"] == "HVAC-100"
     assert equipment[0]["task_ids"] == ["clean_gutters"]
 
-def test_equipment_installation_date_requires_real_iso_date():
+def test_equipment_installation_date_requires_real_iso_date(hass):
     """Equipment dates accept blanks and real dates but reject impossible dates."""
-    schema = HomeMaintenanceOptionsFlow._equipment_schema(
-        [("clean_gutters", "Clean gutters")]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
+    flow = HomeMaintenanceOptionsFlow(entry)
+    flow.hass = hass
+    schema = flow._equipment_schema([("clean_gutters", "Clean gutters")])
     valid = {
         "name": "Main HVAC",
         "category": "HVAC",
@@ -118,6 +123,69 @@ def test_equipment_installation_date_requires_real_iso_date():
     for invalid_format in ("20240229", "not-a-date"):
         with pytest.raises(vol.Invalid):
             schema({**valid, "installed_date": invalid_format})
+
+
+@pytest.mark.asyncio
+async def test_custom_equipment_category_is_reusable_with_saved_icon(
+    hass, enable_custom_integrations
+):
+    """Other can create a reusable custom category with its own icon."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Standby Generator",
+            "category": "Other",
+            "custom_category_name": "Generator",
+            "custom_category_icon": "mdi:engine",
+            "task_ids": [],
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["equipment_records"][0]["category"] == "Generator"
+    assert result["data"]["equipment_records"][0]["category_icon"] == "mdi:engine"
+    assert result["data"]["equipment_categories"] == [
+        {"name": "Generator", "icon": "mdi:engine"}
+    ]
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+        options=result["data"],
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Portable Generator",
+            "category": "Generator",
+            "task_ids": [],
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    records = result["data"]["equipment_records"]
+    assert records[-1]["category"] == "Generator"
+    assert records[-1]["category_icon"] == "mdi:engine"
+    assert result["data"]["equipment_categories"] == [
+        {"name": "Generator", "icon": "mdi:engine"}
+    ]
 
 @pytest.mark.asyncio
 async def test_season_window_options_validate_and_save_all_windows(
@@ -243,6 +311,8 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         "equipment_id": "equipment_main_hvac",
         "name": "Main and Upstairs HVAC",
         "category": "HVAC",
+        "category_icon": "mdi:hvac",
+        "area_id": None,
         "manufacturer": "New Manufacturer",
         "model": "NEW-200",
         "installed_date": "2024-02-29",
@@ -460,6 +530,51 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "custom_replace_filter"
     ]
 
+
+@pytest.mark.asyncio
+async def test_equipment_can_create_and_assign_home_assistant_area(
+    hass, enable_custom_integrations
+):
+    """Users can create an HA area and assign it to household equipment."""
+    from homeassistant.helpers import area_registry as ar
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "create_area"}
+    )
+    assert result["step_id"] == "create_area"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"name": "Basement"}
+    )
+    assert result["type"] == FlowResultType.MENU
+    area = next(
+        area for area in ar.async_get(hass).async_list_areas()
+        if area.name == "Basement"
+    )
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Water Heater",
+            "category": "Plumbing",
+            "area_id": area.id,
+            "task_ids": [],
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["equipment_records"][0]["area_id"] == area.id
+
 @pytest.mark.asyncio
 async def test_add_custom_annual_task_saves_calendar_schedule(
     hass, enable_custom_integrations
@@ -623,7 +738,7 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
         result["flow_id"],
         user_input={
             "name": "Monthly Alarm Test",
-            "category": "Safety",
+            "category": "Safety and security",
             "description": "Test household alarms monthly.",
             "schedule_type": "monthly",
             "interval_days": 90,
@@ -665,7 +780,7 @@ async def test_add_equipment_lifespan_designates_and_links_replacement_task(
         result["flow_id"],
         user_input={
             "name": "Smoke Detector Hall",
-            "category": "Safety",
+            "category": "Safety and security",
             "installed_date": "2020-01-15",
             "lifespan_months": 120,
             "replacement_task_id": "clean_gutters",
@@ -701,7 +816,7 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
         result["flow_id"],
         user_input={
             "name": "Smoke Detector Hall",
-            "category": "Safety",
+            "category": "Safety and security",
             "installed_date": "",
             "lifespan_months": 120,
             "replacement_task_id": "",

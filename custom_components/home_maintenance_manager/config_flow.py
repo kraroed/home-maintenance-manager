@@ -5,10 +5,61 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import config_validation as cv
 
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
+
+EQUIPMENT_CATEGORY_ICONS = {
+    "HVAC": "mdi:hvac", "Plumbing": "mdi:water-pump",
+    "Electrical": "mdi:lightning-bolt", "Appliances": "mdi:washing-machine",
+    "Water heating": "mdi:water-boiler", "Safety and security": "mdi:shield-home",
+    "Roofing": "mdi:home-roof", "Windows and doors": "mdi:door",
+    "Structure": "mdi:home-variant", "Outdoor": "mdi:tree",
+    "Pool and spa": "mdi:pool", "Other": "mdi:tools",
+}
+EQUIPMENT_ICON_OPTIONS = {
+    "mdi:tools": "Tools", "mdi:generator-portable": "Generator",
+    "mdi:water-pump": "Water pump", "mdi:water-boiler": "Water heater",
+    "mdi:hvac": "HVAC", "mdi:lightning-bolt": "Electrical",
+    "mdi:solar-power": "Solar power", "mdi:fan": "Fan",
+    "mdi:engine": "Engine", "mdi:garage": "Garage",
+    "mdi:pool": "Pool", "mdi:shield-home": "Safety",
+    "mdi:camera": "Camera", "mdi:car": "Vehicle",
+    "mdi:home": "Home", "mdi:tree": "Outdoor",
+}
+
+def _resolve_equipment_category(options, user_input):
+    """Resolve a built-in or reusable custom equipment category and icon."""
+    custom_categories = [
+        dict(item) for item in options.get("equipment_categories", [])
+        if isinstance(item, dict) and item.get("name")
+    ]
+    category = user_input["category"]
+    custom_name = user_input.get("custom_category_name", "").strip()
+    if category == "Other" and custom_name:
+        category = custom_name
+    if category in EQUIPMENT_CATEGORY_ICONS:
+        return category, custom_categories, EQUIPMENT_CATEGORY_ICONS[category]
+    if not category or len(category) > 40 or category.casefold() in {
+        name.casefold() for name in EQUIPMENT_CATEGORY_ICONS
+    }:
+        return None, custom_categories, None
+    existing = next(
+        (item for item in custom_categories
+         if item["name"].casefold() == category.casefold()),
+        None,
+    )
+    icon = user_input.get("custom_category_icon") or (
+        existing.get("icon") if existing else "mdi:tools"
+    )
+    if existing:
+        existing["name"], existing["icon"] = category, icon
+    else:
+        custom_categories.append({"name": category, "icon": icon})
+    return category, custom_categories, icon
+
 
 
 def _is_valid_month_day(value):
@@ -101,7 +152,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "configure_notifications", "configure_season_windows"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows"],
         )
 
     async def async_step_configure_notifications(self, user_input=None):
@@ -546,6 +597,34 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             description_placeholders={"task_name": current["name"]},
         )
 
+    async def async_step_create_area(self, user_input=None):
+        """Create a Home Assistant area for household equipment."""
+        registry = ar.async_get(self.hass)
+        if user_input is not None:
+            name = user_input["name"].strip()
+            if any(area.name.casefold() == name.casefold()
+                   for area in registry.async_list_areas()):
+                return self.async_show_form(
+                    step_id="create_area",
+                    data_schema=vol.Schema({
+                        vol.Required("name", default=name): vol.All(
+                            str, vol.Length(min=1, max=80)
+                        ),
+                    }),
+                    errors={"base": "area_exists"},
+                )
+            registry.async_create(name)
+            return self.async_show_menu(
+                step_id="init",
+                menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows"],
+            )
+        return self.async_show_form(
+            step_id="create_area",
+            data_schema=vol.Schema({
+                vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
+            }),
+        )
+
     async def async_step_add_equipment(self, user_input=None):
         library = load_library()
         library.update({
@@ -568,6 +647,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     step_id="add_equipment",
                     data_schema=self._equipment_schema(task_options),
                     errors={"installed_date": "invalid_date"},
+                )
+            category, equipment_categories, category_icon = _resolve_equipment_category(
+                self.config_entry.options, user_input
+            )
+            if category is None:
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "invalid_custom_category"},
                 )
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
@@ -605,7 +693,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             equipment.append({
                 "equipment_id": equipment_id,
                 "name": name,
-                "category": user_input["category"].strip(),
+                "category": category,
+                "category_icon": category_icon,
+                "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
                 "installed_date": user_input.get("installed_date", "").strip(),
@@ -614,9 +704,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "notes": user_input.get("notes", "").strip(),
                 "task_ids": task_ids,
             })
+            equipment = [
+                {**item, "category_icon": category_icon}
+                if item.get("category") == category else item
+                for item in equipment
+            ]
             return self.async_create_entry(
                 title="",
-                data={**self.config_entry.options, "equipment_records": equipment},
+                data={
+                    **self.config_entry.options,
+                    "equipment_records": equipment,
+                    "equipment_categories": equipment_categories,
+                },
             )
 
         return self.async_show_form(
@@ -680,6 +779,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_schema(task_options, current),
                     errors={"installed_date": "invalid_date"},
                 )
+            category, equipment_categories, category_icon = _resolve_equipment_category(
+                self.config_entry.options, user_input
+            )
+            if category is None:
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "invalid_custom_category"},
+                )
             replacement_task_id = user_input.get("replacement_task_id") or ""
             lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
             if (lifespan_months or replacement_task_id) and not (
@@ -707,7 +815,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             updated = {
                 **current,
                 "name": user_input["name"].strip(),
-                "category": user_input["category"].strip(),
+                "category": category,
+                "category_icon": category_icon,
+                "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
                 "installed_date": user_input.get("installed_date", "").strip(),
@@ -720,9 +830,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 updated if item["equipment_id"] == current["equipment_id"] else item
                 for item in equipment
             ]
+            equipment = [
+                {**item, "category_icon": category_icon}
+                if item.get("category") == category else item
+                for item in equipment
+            ]
             return self.async_create_entry(
                 title="",
-                data={**self.config_entry.options, "equipment_records": equipment},
+                data={
+                    **self.config_entry.options,
+                    "equipment_records": equipment,
+                    "equipment_categories": equipment_categories,
+                },
             )
 
         schema = self._equipment_schema(task_options, current)
@@ -823,16 +942,37 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         })
 
-    @staticmethod
-    def _equipment_schema(task_options, current=None):
+    def _equipment_schema(self, task_options, current=None):
         current = current or {}
+        area_options = {
+            "": "No area",
+            **{
+                area.id: area.name
+                for area in ar.async_get(self.hass).async_list_areas()
+            },
+        }
+        current_area_id = current.get("area_id") or ""
+        if current_area_id and current_area_id not in area_options:
+            area_options[current_area_id] = "Previously assigned area (unavailable)"
+        custom_categories = self._config_entry.options.get("equipment_categories", [])
+        category_options = {name: name for name in EQUIPMENT_CATEGORY_ICONS}
+        category_options.update({
+            item["name"]: item["name"] for item in custom_categories
+            if isinstance(item, dict) and item.get("name")
+        })
+        current_category = current.get("category", "HVAC")
+        if current_category and current_category not in category_options:
+            category_options[current_category] = f"Legacy category: {current_category}"
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
             ),
-            vol.Required("category", default=current.get("category", "HVAC")): vol.All(
-                str, vol.Length(min=1, max=40)
+            vol.Required("category", default=current_category): vol.In(category_options),
+            vol.Optional("custom_category_name", default=""): vol.All(
+                str, vol.Length(max=40)
             ),
+            vol.Optional("custom_category_icon"): vol.In(EQUIPMENT_ICON_OPTIONS),
+            vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
             ),

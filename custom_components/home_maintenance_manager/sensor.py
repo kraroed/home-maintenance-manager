@@ -1,4 +1,5 @@
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -105,6 +106,21 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
 
 
 class EquipmentSensor(CoordinatorEntity, SensorEntity):
+    CATEGORY_ICONS = {
+        "HVAC": "mdi:hvac",
+        "Plumbing": "mdi:water-pump",
+        "Electrical": "mdi:lightning-bolt",
+        "Appliances": "mdi:washing-machine",
+        "Water heating": "mdi:water-boiler",
+        "Safety and security": "mdi:shield-home",
+        "Roofing": "mdi:home-roof",
+        "Windows and doors": "mdi:door",
+        "Structure": "mdi:home-variant",
+        "Outdoor": "mdi:tree",
+        "Pool and spa": "mdi:pool",
+        "Other": "mdi:tools",
+    }
+
     def __init__(self, coordinator, equipment_id, name):
         super().__init__(coordinator)
         self.equipment_id = equipment_id
@@ -118,6 +134,28 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             (item for item in self.coordinator.data.get("equipment", [])
              if item["equipment_id"] == self.equipment_id),
             None,
+        )
+
+    async def async_added_to_hass(self):
+        """Apply the configured Home Assistant area to this equipment entity."""
+        await super().async_added_to_hass()
+        item = self._equipment()
+        if item is None:
+            return
+        area_id = item.get("area_id") or None
+        registry = er.async_get(self.hass)
+        registry_entry = registry.async_get(self.entity_id)
+        if registry_entry and registry_entry.area_id != area_id:
+            registry.async_update_entity(self.entity_id, area_id=area_id)
+
+    @property
+    def icon(self):
+        """Return an icon representing the equipment category."""
+        item = self._equipment()
+        if item is None:
+            return "mdi:tools"
+        return item.get("category_icon") or self.CATEGORY_ICONS.get(
+            item.get("category"), "mdi:tools"
         )
 
     @property
@@ -134,10 +172,13 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "equipment_id": self.equipment_id,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "category_icon": item.get("category_icon") or self.CATEGORY_ICONS.get(
+                item.get("category"), "mdi:tools"
+            ),
             **{
                 key: item.get(key)
                 for key in (
-                    "category", "manufacturer", "model", "installed_date",
+                    "category", "area_id", "manufacturer", "model", "installed_date",
                     "lifespan_months", "replacement_task_id", "replacement_due",
                     "notes", "task_ids",
                 )
