@@ -46,11 +46,13 @@ def _resolve_equipment_category(options, user_input):
         name.casefold() for name in EQUIPMENT_CATEGORY_ICONS
     }:
         return None, custom_categories, None
-    icon = user_input.get("custom_category_icon") or "mdi:tools"
     existing = next(
         (item for item in custom_categories
          if item["name"].casefold() == category.casefold()),
         None,
+    )
+    icon = user_input.get("custom_category_icon") or (
+        existing.get("icon") if existing else "mdi:tools"
     )
     if existing:
         existing["name"], existing["icon"] = category, icon
@@ -973,10 +975,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("custom_category_name", default=""): vol.All(
                 str, vol.Length(max=40)
             ),
-            vol.Optional(
-                "custom_category_icon",
-                default=current.get("category_icon", current_custom.get("icon", "mdi:tools")),
-            ): vol.In(EQUIPMENT_ICON_OPTIONS),
+            vol.Optional("custom_category_icon"): vol.In(EQUIPMENT_ICON_OPTIONS),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
