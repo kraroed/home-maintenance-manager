@@ -328,15 +328,6 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_add_custom_task(self, user_input=None):
         if user_input is not None:
-            category, equipment_categories, category_icon = _resolve_equipment_category(
-                self.config_entry.options, user_input
-            )
-            if category is None:
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"base": "invalid_custom_category"},
-                )
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
             task_id = f"custom_{slug}"
@@ -656,6 +647,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     step_id="add_equipment",
                     data_schema=self._equipment_schema(task_options),
                     errors={"installed_date": "invalid_date"},
+                )
+            category, equipment_categories, category_icon = _resolve_equipment_category(
+                self.config_entry.options, user_input
+            )
+            if category is None:
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "invalid_custom_category"},
                 )
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
