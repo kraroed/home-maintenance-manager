@@ -8,5 +8,5 @@
   "documentation": "https://github.com/kraroed/home-maintenance-manager",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/kraroed/home-maintenance-manager/issues",
-  "version": "0.9.5"
+  "version": "0.9.6"
 }
