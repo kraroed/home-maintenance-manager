@@ -147,16 +147,16 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
             "name": "Standby Generator",
             "category": "Other",
             "custom_category_name": "Generator",
-            "custom_category_icon": "mdi:engine",
+            "custom_category_icon": "mdi:air-purifier",
             "task_ids": [],
         },
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["equipment_records"][0]["category"] == "Generator"
-    assert result["data"]["equipment_records"][0]["category_icon"] == "mdi:engine"
+    assert result["data"]["equipment_records"][0]["category_icon"] == "mdi:air-purifier"
     assert result["data"]["equipment_categories"] == [
-        {"name": "Generator", "icon": "mdi:engine"}
+        {"name": "Generator", "icon": "mdi:air-purifier"}
     ]
 
     entry = MockConfigEntry(
@@ -182,9 +182,9 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     assert result["type"] == FlowResultType.CREATE_ENTRY
     records = result["data"]["equipment_records"]
     assert records[-1]["category"] == "Generator"
-    assert records[-1]["category_icon"] == "mdi:engine"
+    assert records[-1]["category_icon"] == "mdi:air-purifier"
     assert result["data"]["equipment_categories"] == [
-        {"name": "Generator", "icon": "mdi:engine"}
+        {"name": "Generator", "icon": "mdi:air-purifier"}
     ]
 
 @pytest.mark.asyncio

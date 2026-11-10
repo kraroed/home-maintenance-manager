@@ -7,6 +7,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import selector
 
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
@@ -18,16 +19,6 @@ EQUIPMENT_CATEGORY_ICONS = {
     "Roofing": "mdi:home-roof", "Windows and doors": "mdi:door",
     "Structure": "mdi:home-variant", "Outdoor": "mdi:tree",
     "Pool and spa": "mdi:pool", "Other": "mdi:tools",
-}
-EQUIPMENT_ICON_OPTIONS = {
-    "mdi:tools": "Tools", "mdi:generator-portable": "Generator",
-    "mdi:water-pump": "Water pump", "mdi:water-boiler": "Water heater",
-    "mdi:hvac": "HVAC", "mdi:lightning-bolt": "Electrical",
-    "mdi:solar-power": "Solar power", "mdi:fan": "Fan",
-    "mdi:engine": "Engine", "mdi:garage": "Garage",
-    "mdi:pool": "Pool", "mdi:shield-home": "Safety",
-    "mdi:camera": "Camera", "mdi:car": "Vehicle",
-    "mdi:home": "Home", "mdi:tree": "Outdoor",
 }
 
 def _resolve_equipment_category(options, user_input):
@@ -51,8 +42,13 @@ def _resolve_equipment_category(options, user_input):
          if item["name"].casefold() == category.casefold()),
         None,
     )
-    icon = user_input.get("custom_category_icon") or (
-        existing.get("icon") if existing else "mdi:tools"
+    selected_icon = user_input.get("custom_category_icon")
+    # The add-equipment form initially defaults its icon selector to the
+    # built-in HVAC icon. When a user selects an existing custom category,
+    # that untouched form default must not overwrite the category's saved icon.
+    icon = (
+        existing.get("icon") if existing and selected_icon in (None, "", "mdi:hvac")
+        else selected_icon or (existing.get("icon") if existing else "mdi:tools")
     )
     if existing:
         existing["name"], existing["icon"] = category, icon
@@ -963,6 +959,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_category = current.get("category", "HVAC")
         if current_category and current_category not in category_options:
             category_options[current_category] = f"Legacy category: {current_category}"
+        saved_custom_category = next(
+            (
+                item for item in custom_categories
+                if item.get("name", "").casefold() == current_category.casefold()
+            ),
+            None,
+        )
+        default_icon = (
+            current.get("category_icon")
+            or (saved_custom_category.get("icon") if saved_custom_category else None)
+            or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
+        )
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
@@ -971,7 +979,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("custom_category_name", default=""): vol.All(
                 str, vol.Length(max=40)
             ),
-            vol.Optional("custom_category_icon"): vol.In(EQUIPMENT_ICON_OPTIONS),
+            vol.Optional(
+                "custom_category_icon", default=default_icon
+            ): selector.IconSelector(selector.IconSelectorConfig()),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
