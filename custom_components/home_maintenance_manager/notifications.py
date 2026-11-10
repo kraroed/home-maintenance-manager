@@ -18,6 +18,16 @@ def _due_date(task):
     return dt_util.as_local(parsed).date() if parsed else None
 
 
+def _equipment_names(task, equipment):
+    """Return names for equipment associated with a maintenance task."""
+    names = []
+    for equipment_id in task.get("equipment_ids", []):
+        item = equipment.get(equipment_id)
+        if isinstance(item, dict) and item.get("name"):
+            names.append(item["name"])
+    return names
+
+
 def _action_id(entry_id, task_id, action):
     return f"{ACTION_PREFIX}|{entry_id}|{task_id}|{action}"
 
@@ -60,6 +70,7 @@ async def async_setup_notifications(hass, entry, manager, coordinator=None):
             task for task in manager.data.get("tasks", {}).values()
             if task.get("enabled", True) and task.get("next_due")
         ]
+        equipment = manager.data.get("equipment", {})
         if individual_enabled:
             for task in tasks:
                 due_date = _due_date(task)
@@ -101,9 +112,16 @@ async def async_setup_notifications(hass, entry, manager, coordinator=None):
                             },
                         ]
                     }
+                message = (
+                    f"{task['name']} is {timing} "
+                    f"(due {due_date.isoformat()})."
+                )
+                equipment_names = _equipment_names(task, equipment)
+                if equipment_names:
+                    message += "\nEquipment: " + ", ".join(equipment_names)
                 await send_message(
                     "Home maintenance reminder",
-                    f"{task['name']} is {timing}.",
+                    message,
                     data=action_data,
                 )
                 individual_state[due_key] = now.isoformat()
@@ -123,16 +141,41 @@ async def async_setup_notifications(hass, entry, manager, coordinator=None):
                         if due_date is not None and due_date <= today + timedelta(days=lead_days):
                             due_tasks.append((task, due_date))
                     if due_tasks:
-                        lines = []
-                        for task, due_date in sorted(due_tasks, key=lambda item: item[1]):
-                            if due_date < today:
-                                status = f"overdue {(today - due_date).days} day(s)"
-                            elif due_date == today:
-                                status = "due today"
-                            else:
-                                status = f"due {due_date.isoformat()}"
-                            lines.append(f"• {task['name']} — {status}")
-                        message = "Maintenance tasks needing attention:\n" + "\n".join(lines)
+                        overdue = sorted(
+                            (item for item in due_tasks if item[1] < today),
+                            key=lambda item: item[1],
+                        )
+                        upcoming = sorted(
+                            (item for item in due_tasks if item[1] >= today),
+                            key=lambda item: item[1],
+                        )
+                        lines = ["Maintenance tasks needing attention:"]
+                        if overdue:
+                            lines.append("\nOverdue:")
+                            for task, due_date in overdue:
+                                days = (today - due_date).days
+                                lines.append(
+                                    f"• {task['name']} — {days} day(s) overdue "
+                                    f"(due {due_date.isoformat()})"
+                                )
+                                names = _equipment_names(task, equipment)
+                                if names:
+                                    lines.append("  Equipment: " + ", ".join(names))
+                        if upcoming:
+                            lines.append("\nDue soon:")
+                            for task, due_date in upcoming:
+                                if due_date == today:
+                                    status = "due today"
+                                else:
+                                    status = f"due in {(due_date - today).days} day(s)"
+                                lines.append(
+                                    f"• {task['name']} — {status} "
+                                    f"(due {due_date.isoformat()})"
+                                )
+                                names = _equipment_names(task, equipment)
+                                if names:
+                                    lines.append("  Equipment: " + ", ".join(names))
+                        message = "\n".join(lines)
                     else:
                         message = "There are no maintenance tasks due or coming due in the reminder window."
                     await send_message(
