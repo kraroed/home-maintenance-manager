@@ -716,13 +716,21 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
         result["flow_id"],
         user_input={
             "name": "Winterize Sprinklers",
-            "category": "Outdoor",
+            "category": "outdoor",
             "description": "Prepare irrigation for winter.",
-            "schedule_type": "annual",
-            "interval_days": 90,
-            "annual_month": 10,
-            "annual_day": 15,
         },
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"schedule_type": "annual"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"annual_month": 10, "annual_day": 15}
+    )
+    assert result["step_id"] == "custom_task_instructions"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
