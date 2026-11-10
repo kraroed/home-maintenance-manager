@@ -540,54 +540,92 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         return await self._async_step_task_category("custom", user_input)
 
     async def async_step_intervals(self, user_input=None):
-        library = await self.hass.async_add_executor_job(load_library)
-        library.update({
-            item["task_id"]: item
-            for item in self.config_entry.options.get("custom_tasks", [])
-        })
-        existing = self.config_entry.options.get("task_intervals", {})
-        selected = [
-            task_id for task_id in self._selected_task_ids
-            if task_id in library
-            and library[task_id].get("schedule_type") == "interval"
-            and not library[task_id].get("is_custom")
-        ]
-        if user_input is not None:
-            intervals = dict(existing)
-            intervals.update({
-                task_id: user_input[f"interval_{task_id}"]
-                for task_id in selected if f"interval_{task_id}" in user_input
-            })
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    CONF_ENABLED_TASK_IDS: self._selected_task_ids,
-                    "task_intervals": intervals,
-                },
-            )
+        """Start category-by-category interval configuration."""
+        self._interval_draft = dict(self.config_entry.options.get("task_intervals", {}))
+        return await self._async_show_interval_menu()
 
+    async def _async_interval_tasks(self, category):
+        """Return selected built-in recurring tasks for one category."""
+        library = await self.hass.async_add_executor_job(load_library)
+        return {
+            task_id: item for task_id, item in library.items()
+            if task_id in self._selected_task_ids
+            and item.get("schedule_type") == "interval"
+            and not item.get("is_custom")
+            and item.get("category", "").casefold() == category
+        }
+
+    async def _async_show_interval_menu(self):
+        """Show only categories that contain selected recurring tasks."""
+        menu_options = []
+        for category in TASK_SELECTION_CATEGORIES:
+            if await self._async_interval_tasks(category):
+                menu_options.append(f"interval_category_{category}")
+        if not menu_options:
+            return await self.async_step_finish_intervals()
+        menu_options.append("finish_intervals")
+        return self.async_show_menu(step_id="intervals", menu_options=menu_options)
+
+    async def _async_step_interval_category(self, category, user_input=None):
+        """Edit recurring intervals for one selected task category."""
+        tasks = await self._async_interval_tasks(category)
+        if user_input is not None:
+            self._interval_draft.update({
+                task_id: user_input[f"interval_{task_id}"]
+                for task_id in tasks if f"interval_{task_id}" in user_input
+            })
+            return await self._async_show_interval_menu()
         fields = {}
-        for task_id in selected:
-            default = existing.get(
-                task_id, library[task_id].get("recommended_interval_days", 30)
+        for task_id, item in sorted(tasks.items(), key=lambda pair: pair[1]["name"].casefold()):
+            default = self._interval_draft.get(
+                task_id, item.get("recommended_interval_days", 30)
             )
             fields[vol.Required(
                 f"interval_{task_id}", default=int(default)
             )] = vol.All(vol.Coerce(int), vol.Range(min=1, max=3650))
-
-        if not fields:
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    CONF_ENABLED_TASK_IDS: self._selected_task_ids,
-                    "task_intervals": existing,
-                },
-            )
         return self.async_show_form(
-            step_id="intervals",
-            data_schema=vol.Schema(fields),
+            step_id=f"interval_category_{category}", data_schema=vol.Schema(fields)
+        )
+
+    async def async_step_interval_category_hvac(self, user_input=None):
+        return await self._async_step_interval_category("hvac", user_input)
+
+    async def async_step_interval_category_safety(self, user_input=None):
+        return await self._async_step_interval_category("safety", user_input)
+
+    async def async_step_interval_category_appliances(self, user_input=None):
+        return await self._async_step_interval_category("appliances", user_input)
+
+    async def async_step_interval_category_exterior(self, user_input=None):
+        return await self._async_step_interval_category("exterior", user_input)
+
+    async def async_step_interval_category_landscape(self, user_input=None):
+        return await self._async_step_interval_category("landscape", user_input)
+
+    async def async_step_interval_category_plumbing(self, user_input=None):
+        return await self._async_step_interval_category("plumbing", user_input)
+
+    async def async_step_interval_category_electrical(self, user_input=None):
+        return await self._async_step_interval_category("electrical", user_input)
+
+    async def async_step_interval_category_interior(self, user_input=None):
+        return await self._async_step_interval_category("interior", user_input)
+
+    async def async_step_interval_category_seasonal(self, user_input=None):
+        return await self._async_step_interval_category("seasonal", user_input)
+
+    async def async_step_interval_category_systems(self, user_input=None):
+        return await self._async_step_interval_category("systems", user_input)
+
+    async def async_step_finish_intervals(self, user_input=None):
+        """Persist task selection and all category interval choices."""
+        return self.async_create_entry(
+            title="",
+            data={
+                **self.config_entry.options,
+                CONF_ENABLED_TASK_IDS: self._selected_task_ids,
+                "task_intervals": self._interval_draft,
+            },
         )
 
     async def async_step_add_custom_task(self, user_input=None):
