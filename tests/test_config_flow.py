@@ -311,6 +311,8 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
         "equipment_id": "equipment_main_hvac",
         "name": "Main and Upstairs HVAC",
         "category": "HVAC",
+        "category_icon": "mdi:hvac",
+        "area_id": None,
         "manufacturer": "New Manufacturer",
         "model": "NEW-200",
         "installed_date": "2024-02-29",
