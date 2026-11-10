@@ -106,13 +106,33 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
 
 
 class EquipmentSensor(CoordinatorEntity, SensorEntity):
+    CATEGORY_ICONS = {
+        "hvac": "mdi:hvac",
+        "plumbing": "mdi:water-pump",
+        "electrical": "mdi:lightning-bolt",
+        "appliances": "mdi:washing-machine",
+        "water_heating": "mdi:water-boiler",
+        "safety_security": "mdi:shield-home",
+        "roofing": "mdi:home-roof",
+        "windows_doors": "mdi:door",
+        "structure": "mdi:home-variant",
+        "outdoor": "mdi:tree",
+        "pool_spa": "mdi:pool",
+        "other": "mdi:tools",
+    }
+
     def __init__(self, coordinator, equipment_id, name):
         super().__init__(coordinator)
         self.equipment_id = equipment_id
         self.integration_instance = coordinator.manager.storage.store.key
         self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{equipment_id}"
         self._attr_name = f"{name} Equipment"
-        self._attr_icon = "mdi:tools"
+        item = next(
+            (record for record in coordinator.data.get("equipment", [])
+             if record.get("equipment_id") == equipment_id),
+            {},
+        )
+        self._attr_icon = self.CATEGORY_ICONS.get(item.get("category"), "mdi:tools")
 
     def _equipment(self):
         return next(
@@ -150,7 +170,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             **{
                 key: item.get(key)
                 for key in (
-                    "category", "area_id", "manufacturer", "model", "installed_date",
+                    "category", "category_icon", "area_id", "manufacturer", "model", "installed_date",
                     "lifespan_months", "replacement_task_id", "replacement_due",
                     "notes", "task_ids",
                 )
