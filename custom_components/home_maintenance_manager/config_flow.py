@@ -42,8 +42,13 @@ def _resolve_equipment_category(options, user_input):
          if item["name"].casefold() == category.casefold()),
         None,
     )
-    icon = user_input.get("custom_category_icon") or (
-        existing.get("icon") if existing else "mdi:tools"
+    selected_icon = user_input.get("custom_category_icon")
+    # The add-equipment form initially defaults its icon selector to the
+    # built-in HVAC icon. When a user selects an existing custom category,
+    # that untouched form default must not overwrite the category's saved icon.
+    icon = (
+        existing.get("icon") if existing and selected_icon in (None, "", "mdi:hvac")
+        else selected_icon or (existing.get("icon") if existing else "mdi:tools")
     )
     if existing:
         existing["name"], existing["icon"] = category, icon
