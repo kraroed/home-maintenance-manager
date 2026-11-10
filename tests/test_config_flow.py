@@ -67,30 +67,21 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "add_equipment"
 
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"name": "Main HVAC", "category": "HVAC"}
+    )
     invalid_result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main HVAC",
-            "category": "HVAC",
-            "installed_date": "2024-02-30",
-            "task_ids": ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"installed_date": "2024-02-30"}
     )
     assert invalid_result["type"] == FlowResultType.FORM
-    assert invalid_result["errors"] == {"installed_date": "invalid_date"}
-    result = invalid_result
-
+    assert invalid_result["step_id"] == "add_equipment_details"
+    assert invalid_result["errors"] == {"base": "invalid_date"}
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main HVAC",
-            "category": "HVAC",
-            "manufacturer": "Example Manufacturer",
-            "model": "HVAC-100",
-            "installed_date": "2024-05-01",
-            "notes": "Upstairs and downstairs system",
-            "task_ids": ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"manufacturer": "Example Manufacturer", "model": "HVAC-100",
+                                       "installed_date": "2024-05-01", "notes": "Upstairs and downstairs system"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_ids": ["clean_gutters"]}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -111,23 +102,12 @@ def test_equipment_installation_date_requires_real_iso_date(hass):
     )
     flow = HomeMaintenanceOptionsFlow(entry)
     flow.hass = hass
-    schema = flow._equipment_schema([("clean_gutters", "Clean gutters")])
-    valid = {
-        "name": "Main HVAC",
-        "category": "HVAC",
-        "installed_date": "2024-02-29",
-        "task_ids": ["clean_gutters"],
-    }
-    assert schema(valid)["installed_date"] == "2024-02-29"
-
-    blank_date = {**valid, "installed_date": ""}
-    assert schema(blank_date)["installed_date"] == ""
-
-    for invalid_date in ("2024-02-30",):
-        # Calendar validity is checked in the flow handler so the form schema
-        # remains serializable by Home Assistant's frontend schema codec.
-        assert schema({**valid, "installed_date": invalid_date})["installed_date"] == invalid_date
-
+    schema = flow._equipment_details_schema(
+        task_options=[("clean_gutters", "Clean gutters")]
+    )
+    valid = {"installed_date": "2024-02-29", "lifespan_months": 0, "replacement_task_id": ""}
+    assert schema(valid) == valid
+    assert schema({**valid, "installed_date": ""})["installed_date"] == ""
     for invalid_format in ("20240229", "not-a-date"):
         with pytest.raises(vol.Invalid):
             schema({**valid, "installed_date": invalid_format})
@@ -149,15 +129,10 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Standby Generator",
-            "category": "Other",
-            "custom_category_name": "Generator",
-            "custom_category_icon": "mdi:air-purifier",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Standby Generator", "category": "Other",
+         "custom_category_name": "Generator", "custom_category_icon": "mdi:air-purifier"},
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -178,13 +153,8 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Portable Generator",
-            "category": "Generator",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"], {"name": "Portable Generator", "category": "Generator"}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -286,17 +256,12 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "edit_equipment"
 
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Main and Upstairs HVAC",
-            "category": "HVAC",
-            "manufacturer": "New Manufacturer",
-            "model": "NEW-200",
-            "installed_date": "2024-02-29",
-            "notes": "Updated equipment details",
-            "task_ids": ["clean_gutters", "replace_disposable_hvac_filter"],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Main and Upstairs HVAC", "category": "HVAC"},
+        {"manufacturer": "New Manufacturer", "model": "NEW-200",
+         "installed_date": "2024-02-29", "notes": "Updated equipment details"},
+        ["clean_gutters", "replace_disposable_hvac_filter"], editing=True,
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -558,14 +523,8 @@ async def test_equipment_can_create_and_assign_home_assistant_area(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Water Heater",
-            "category": "Plumbing",
-            "area_id": area.id,
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"], {"name": "Water Heater", "category": "Plumbing", "area_id": area.id}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["equipment_records"][0]["area_id"] == area.id
@@ -799,16 +758,11 @@ async def test_add_equipment_lifespan_designates_and_links_replacement_task(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Smoke Detector Hall",
-            "category": "Safety and security",
-            "installed_date": "2020-01-15",
-            "lifespan_months": 120,
-            "replacement_task_id": "clean_gutters",
-            "task_ids": [],
-        },
+    result = await _submit_equipment_wizard(
+        hass, result["flow_id"],
+        {"name": "Smoke Detector Hall", "category": "Safety and security"},
+        {"installed_date": "2020-01-15", "lifespan_months": 120,
+         "replacement_task_id": "clean_gutters"},
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     record = result["data"]["equipment_records"][0]
@@ -836,17 +790,16 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "name": "Smoke Detector Hall",
-            "category": "Safety and security",
-            "installed_date": "",
-            "lifespan_months": 120,
-            "replacement_task_id": "",
-            "task_ids": [],
-        },
+        result["flow_id"], user_input={"name": "Smoke Detector Hall", "category": "Safety and security"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"installed_date": "", "lifespan_months": 120, "replacement_task_id": ""}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_ids": []}
     )
     assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "add_equipment_details"
     assert result["errors"] == {"base": "incomplete_lifespan"}
 
 
