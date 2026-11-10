@@ -634,7 +634,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             equipment.append({
                 "equipment_id": equipment_id,
                 "name": name,
-                "category": user_input["category"].strip(),
+                "category": user_input["category"],
                 "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
@@ -737,7 +737,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             updated = {
                 **current,
                 "name": user_input["name"].strip(),
-                "category": user_input["category"].strip(),
+                "category": user_input["category"],
                 "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
@@ -870,9 +870,30 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
             ),
-            vol.Required("category", default=current.get("category", "HVAC")): vol.All(
-                str, vol.Length(min=1, max=40)
-            ),
+            vol.Required(
+                "category",
+                default=current.get("category", "hvac"),
+            ): vol.In({
+                "hvac": "HVAC",
+                "plumbing": "Plumbing",
+                "electrical": "Electrical",
+                "appliances": "Appliances",
+                "water_heating": "Water heating",
+                "safety_security": "Safety and security",
+                "roofing": "Roofing",
+                "windows_doors": "Windows and doors",
+                "structure": "Structure",
+                "outdoor": "Outdoor",
+                "pool_spa": "Pool and spa",
+                "other": "Other",
+                **({
+                    current.get("category"): f"Legacy category: {current.get('category')}"
+                } if current.get("category") and current.get("category") not in {
+                    "hvac", "plumbing", "electrical", "appliances",
+                    "water_heating", "safety_security", "roofing",
+                    "windows_doors", "structure", "outdoor", "pool_spa", "other"
+                } else {}),
+            }),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
