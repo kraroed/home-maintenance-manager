@@ -124,6 +124,69 @@ def test_equipment_installation_date_requires_real_iso_date(hass):
         with pytest.raises(vol.Invalid):
             schema({**valid, "installed_date": invalid_format})
 
+
+@pytest.mark.asyncio
+async def test_custom_equipment_category_is_reusable_with_saved_icon(
+    hass, enable_custom_integrations
+):
+    """Other can create a reusable custom category with its own icon."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Standby Generator",
+            "category": "Other",
+            "custom_category_name": "Generator",
+            "custom_category_icon": "mdi:engine",
+            "task_ids": [],
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["equipment_records"][0]["category"] == "Generator"
+    assert result["data"]["equipment_records"][0]["category_icon"] == "mdi:engine"
+    assert result["data"]["equipment_categories"] == [
+        {"name": "Generator", "icon": "mdi:engine"}
+    ]
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+        options=result["data"],
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "name": "Portable Generator",
+            "category": "Generator",
+            "task_ids": [],
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    records = result["data"]["equipment_records"]
+    assert records[-1]["category"] == "Generator"
+    assert records[-1]["category_icon"] == "mdi:engine"
+    assert result["data"]["equipment_categories"] == [
+        {"name": "Generator", "icon": "mdi:engine"}
+    ]
+
 @pytest.mark.asyncio
 async def test_season_window_options_validate_and_save_all_windows(
     hass, enable_custom_integrations
