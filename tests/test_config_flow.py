@@ -470,13 +470,25 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         result["flow_id"],
         user_input={
             "name": "Replace upstairs HVAC filter",
-            "category": "Heating and Cooling",
+            "category": "other",
             "description": "Updated description",
-            "schedule_type": "interval",
-            "interval_days": 120,
-            "annual_month": 1,
-            "annual_day": 1,
         },
+    )
+    assert result["step_id"] == "custom_task_category"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"category_name": "Heating and Cooling"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"schedule_type": "interval"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_days": 120}
+    )
+    assert result["step_id"] == "custom_task_instructions"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
