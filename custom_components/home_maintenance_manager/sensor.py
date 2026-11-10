@@ -1,4 +1,5 @@
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -119,6 +120,18 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
              if item["equipment_id"] == self.equipment_id),
             None,
         )
+
+    async def async_added_to_hass(self):
+        """Apply the configured Home Assistant area to this equipment entity."""
+        await super().async_added_to_hass()
+        item = self._equipment()
+        if item is None:
+            return
+        area_id = item.get("area_id") or None
+        registry = er.async_get(self.hass)
+        registry_entry = registry.async_get(self.entity_id)
+        if registry_entry and registry_entry.area_id != area_id:
+            registry.async_update_entity(self.entity_id, area_id=area_id)
 
     @property
     def native_value(self):
