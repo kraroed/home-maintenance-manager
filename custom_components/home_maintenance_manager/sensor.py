@@ -87,6 +87,10 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "safety_notes": task.get("safety_notes", ""),
             "schedule_type": task.get("schedule_type"),
             "season_keys": task.get("season_keys", []),
+            "annual_month": task.get("annual_month"),
+            "annual_day": task.get("annual_day"),
+            "monthly_week": task.get("monthly_week"),
+            "monthly_weekday": task.get("monthly_weekday"),
             "recommended_interval_days": task.get("recommended_interval_days"),
             "configured_interval_days": task.get("configured_interval_days"),
             "last_completed": task.get("last_completed"),
@@ -132,6 +136,10 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "integration_instance": self.integration_instance,
             **{
                 key: item.get(key)
-                for key in ("category", "manufacturer", "model", "installed_date", "notes", "task_ids")
+                for key in (
+                    "category", "manufacturer", "model", "installed_date",
+                    "lifespan_months", "replacement_task_id", "replacement_due",
+                    "notes", "task_ids",
+                )
             },
         }
