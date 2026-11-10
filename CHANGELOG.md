@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.4
+
+### Equipment
+- Allow equipment to be assigned to an existing Home Assistant area or create a new area from the integration options.
+- Replace free-text equipment categories with a selectable list of built-in categories.
+- Assign category-specific icons to equipment.
+- Add reusable custom equipment categories with user-selectable icons; saved categories can be reused across equipment.
+
 ## 0.9.3
 
 ### Fixes
