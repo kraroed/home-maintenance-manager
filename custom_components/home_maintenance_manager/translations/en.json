@@ -148,16 +148,19 @@
       },
       "intervals": {
         "title": "Maintenance intervals",
-        "description": "Set the interval in days for each selected recurring task. Seasonal tasks use their season windows instead.",
-        "data": {
-          "interval_inspect_hvac_air_filter": "Inspect HVAC air filter (days)",
-          "interval_replace_disposable_hvac_filter": "Replace disposable HVAC filter (days)",
-          "interval_test_smoke_alarms": "Test smoke alarms (days)",
-          "interval_test_carbon_monoxide_alarms": "Test carbon monoxide alarms (days)",
-          "interval_inspect_fire_extinguishers": "Inspect fire extinguishers (days)",
-          "interval_clean_refrigerator_coils": "Clean refrigerator condenser coils (days)",
-          "interval_clean_dryer_vent": "Clean clothes dryer vent (days)",
-          "interval_inspect_sump_pump": "Test sump pump (days)"
+        "description": "Choose a category to set the interval for each selected recurring task. Seasonal tasks use their season windows instead.",
+        "menu_options": {
+          "interval_category_hvac": "HVAC",
+          "interval_category_safety": "Safety",
+          "interval_category_appliances": "Appliances",
+          "interval_category_exterior": "Exterior",
+          "interval_category_landscape": "Landscape",
+          "interval_category_plumbing": "Plumbing",
+          "interval_category_electrical": "Electrical",
+          "interval_category_interior": "Interior",
+          "interval_category_seasonal": "Seasonal",
+          "interval_category_systems": "Home systems",
+          "finish_intervals": "Finish interval setup"
         }
       },
       "add_custom_task": {
@@ -454,6 +457,173 @@
         "description": "Choose the maintenance tasks associated with this equipment.",
         "data": {
           "task_ids": "Maintenance tasks associated with this equipment"
+        }
+      },
+      "interval_category_hvac": {
+        "title": "Hvac maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_0": "Inspect HVAC air filter (days)",
+          "interval_1": "Replace disposable HVAC filter (days)",
+          "interval_17": "Clean bathroom exhaust fan grille (days)",
+          "interval_35": "Arrange furnace heat-exchanger inspection (days)",
+          "interval_36": "Arrange heat-pump inspection and service (days)",
+          "interval_37": "Inspect and clear HVAC condensate drain (days)",
+          "interval_38": "Clean and inspect whole-home humidifier (days)",
+          "interval_39": "Clean dehumidifier filter and reservoir (days)",
+          "interval_40": "Inspect HRV or ERV filters (days)",
+          "interval_41": "Inspect accessible HVAC ductwork (days)",
+          "interval_42": "Check thermostat operation and settings (days)",
+          "interval_43": "Inspect visible furnace venting and flue (days)",
+          "interval_44": "Review reusable HVAC filter condition (days)"
+        }
+      },
+      "interval_category_safety": {
+        "title": "Safety maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_2": "Test smoke alarms (days)",
+          "interval_3": "Test carbon monoxide alarms (days)",
+          "interval_4": "Inspect fire extinguishers (days)",
+          "interval_23": "Test garage door safety features (days)",
+          "interval_28": "Arrange chimney and fireplace inspection (days)",
+          "interval_45": "Review household fire escape routes (days)",
+          "interval_46": "Practice household fire escape plan (days)",
+          "interval_47": "Review fire extinguisher service dates (days)",
+          "interval_48": "Inspect first-aid kit supplies (days)",
+          "interval_49": "Test emergency flashlights and lighting (days)",
+          "interval_50": "Review carbon monoxide alarm replacement dates (days)",
+          "interval_51": "Review smoke alarm replacement dates (days)",
+          "interval_52": "Visually inspect accessible fire sprinkler heads (days)",
+          "interval_53": "Review household emergency supplies (days)"
+        }
+      },
+      "interval_category_appliances": {
+        "title": "Appliances maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_5": "Clean refrigerator condenser coils (days)",
+          "interval_6": "Clean clothes dryer vent (days)",
+          "interval_12": "Inspect washing machine hoses (days)",
+          "interval_13": "Clean washing machine (days)",
+          "interval_14": "Clean dishwasher filter (days)",
+          "interval_15": "Clean range hood filter (days)",
+          "interval_16": "Replace refrigerator water filter (days)",
+          "interval_30": "Check exterior dryer exhaust outlet (days)",
+          "interval_62": "Clean oven interior (days)",
+          "interval_63": "Clean microwave interior and vents (days)",
+          "interval_64": "Inspect freezer for excess ice buildup (days)",
+          "interval_65": "Clean refrigerator ice maker components (days)",
+          "interval_66": "Inspect garbage disposal operation (days)",
+          "interval_67": "Descale coffee maker or espresso machine (days)"
+        }
+      },
+      "interval_category_exterior": {
+        "title": "Exterior maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_24": "Inspect deck, porch, and exterior steps (days)",
+          "interval_25": "Inspect visible foundation and drainage (days)",
+          "interval_29": "Inspect roof and flashing from the ground (days)",
+          "interval_81": "Inspect exterior siding and trim (days)",
+          "interval_82": "Inspect exterior paint and coatings (days)",
+          "interval_83": "Arrange professional roof flashing inspection (days)",
+          "interval_84": "Inspect soffits and fascia from ground (days)",
+          "interval_85": "Check downspout discharge and extensions (days)",
+          "interval_86": "Inspect driveway and walkways (days)",
+          "interval_87": "Inspect fences and gates (days)",
+          "interval_88": "Inspect retaining walls and visible drainage (days)",
+          "interval_89": "Clean and inspect window wells (days)",
+          "interval_90": "Inspect exterior caulking and sealant (days)"
+        }
+      },
+      "interval_category_landscape": {
+        "title": "Landscape maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_91": "Start up irrigation system for the season (days)",
+          "interval_92": "Inspect sprinkler heads and coverage (days)",
+          "interval_93": "Inspect irrigation valves and valve boxes (days)",
+          "interval_94": "Inspect drip irrigation emitters and tubing (days)",
+          "interval_95": "Review irrigation backflow device test status (days)",
+          "interval_96": "Inspect trees near the home (days)",
+          "interval_97": "Clear yard and area drains (days)",
+          "interval_98": "Check landscape grading near foundation (days)",
+          "interval_99": "Service lawn mower before or after season (days)",
+          "interval_100": "Inspect outdoor hose bibs and hose connections (days)",
+          "interval_101": "Trim vegetation away from house exterior (days)"
+        }
+      },
+      "interval_category_plumbing": {
+        "title": "Plumbing maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_9": "Test sump pump (days)",
+          "interval_11": "Check visible plumbing for leaks (days)",
+          "interval_18": "Check water softener salt (days)",
+          "interval_19": "Inspect toilet for leaks and running (days)",
+          "interval_32": "Clean showerheads and faucet aerators (days)",
+          "interval_33": "Test sump pump backup system (days)",
+          "interval_34": "Review water heater maintenance requirements (days)",
+          "interval_54": "Locate and inspect main water shutoff access (days)",
+          "interval_55": "Check household water pressure (days)",
+          "interval_56": "Inspect pressure-reducing valve condition (days)",
+          "interval_57": "Inspect water heater and connections for leaks (days)",
+          "interval_58": "Review water heater anode-rod service interval (days)",
+          "interval_59": "Inspect faucet and toilet supply connections (days)",
+          "interval_60": "Clean sink drain stoppers (days)",
+          "interval_61": "Review backflow preventer inspection status (days)"
+        }
+      },
+      "interval_category_electrical": {
+        "title": "Electrical maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_10": "Test GFCI outlets (days)",
+          "interval_68": "Visually inspect electrical panel exterior (days)",
+          "interval_69": "Test AFCI protection where test buttons are provided (days)",
+          "interval_70": "Inspect outdoor electrical receptacles and covers (days)",
+          "interval_71": "Inspect household extension cords (days)",
+          "interval_72": "Arrange standby generator transfer-system inspection (days)",
+          "interval_73": "Review surge protector status (days)",
+          "interval_74": "Inspect exterior lighting and photocells (days)"
+        }
+      },
+      "interval_category_interior": {
+        "title": "Interior maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_20": "Inspect bathroom and kitchen caulk (days)",
+          "interval_21": "Inspect door and window weatherstripping (days)",
+          "interval_22": "Clean window and sliding-door tracks (days)",
+          "interval_31": "Check accessible attic for moisture (days)",
+          "interval_75": "Inspect interior paint and wall finishes (days)",
+          "interval_76": "Inspect flooring and transition strips (days)",
+          "interval_77": "Deep-clean carpets and area rugs (days)",
+          "interval_78": "Inspect interior doors and hardware (days)",
+          "interval_79": "Inspect window glazing and visible seals (days)",
+          "interval_80": "Check moisture-prone interior areas (days)"
+        }
+      },
+      "interval_category_seasonal": {
+        "title": "Seasonal maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {}
+      },
+      "interval_category_systems": {
+        "title": "Systems maintenance intervals",
+        "description": "Set the repeat interval in days for each selected task in this category.",
+        "data": {
+          "interval_110": "Arrange private well system inspection (days)",
+          "interval_111": "Test private well water quality (days)",
+          "interval_112": "Arrange septic system inspection (days)",
+          "interval_113": "Review septic tank pumping schedule (days)",
+          "interval_114": "Service standby generator (days)",
+          "interval_115": "Inspect pool equipment and safety systems (days)",
+          "interval_116": "Service spa or hot tub equipment (days)",
+          "interval_117": "Check radon mitigation system operation (days)",
+          "interval_118": "Inspect accessible crawlspace conditions (days)",
+          "interval_119": "Review residential solar system condition (days)"
         }
       }
     },
