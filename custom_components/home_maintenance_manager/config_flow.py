@@ -20,16 +20,6 @@ EQUIPMENT_CATEGORY_ICONS = {
     "Structure": "mdi:home-variant", "Outdoor": "mdi:tree",
     "Pool and spa": "mdi:pool", "Other": "mdi:tools",
 }
-EQUIPMENT_ICON_OPTIONS = {
-    "mdi:tools": "Tools", "mdi:generator-portable": "Generator",
-    "mdi:water-pump": "Water pump", "mdi:water-boiler": "Water heater",
-    "mdi:hvac": "HVAC", "mdi:lightning-bolt": "Electrical",
-    "mdi:solar-power": "Solar power", "mdi:fan": "Fan",
-    "mdi:engine": "Engine", "mdi:garage": "Garage",
-    "mdi:pool": "Pool", "mdi:shield-home": "Safety",
-    "mdi:camera": "Camera", "mdi:car": "Vehicle",
-    "mdi:home": "Home", "mdi:tree": "Outdoor",
-}
 
 def _resolve_equipment_category(options, user_input):
     """Resolve a built-in or reusable custom equipment category and icon."""
