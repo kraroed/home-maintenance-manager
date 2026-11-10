@@ -69,7 +69,7 @@ async def test_notifications_send_due_reminder_and_daily_summary(hass, monkeypat
     assert callable(cancel)
     assert len(created) == 2
     assert created[0][0] == "Home maintenance reminder"
-    assert "Clean gutters is due today." == created[0][1]
+    assert created[0][1].startswith("Clean gutters is due today (due ")
     assert "Disabled task" not in " ".join(item[1] for item in created)
     assert created[1][0] == "Daily home maintenance summary"
     assert "Clean gutters — due today" in created[1][1]
@@ -161,7 +161,7 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
     args = notify_mock.await_args
     assert args.args[:2] == ("notify", "send_message")
     assert args.args[2]["target"] == {"entity_id": "notify.household"}
-    assert args.args[2]["message"] == "Clean gutters is due today."
+    assert args.args[2]["message"].startswith("Clean gutters is due today (due ")
     assert args.kwargs["blocking"] is True
 
 @pytest.mark.asyncio
@@ -225,7 +225,7 @@ async def test_notifications_suppress_repeats_until_task_due_date_changes(
     ]
     assert len(reminders) == 2
     assert len(summaries) == 1
-    assert "due in 1 day(s)" in reminders[1][1]
+    assert "due in 1 day(s) (due " in reminders[1][1]
     assert manager.async_save.await_count == 3
 
 
@@ -349,3 +349,56 @@ async def test_mobile_notification_snooze_persists_until_tomorrow(hass, monkeypa
     assert marker.startswith("snoozed:")
     assert dt_util.parse_datetime(marker.removeprefix("snoozed:")) > now
     assert manager.async_save.await_count >= 2
+
+
+@pytest.mark.asyncio
+async def test_reminders_include_due_date_and_associated_equipment(hass, monkeypatch):
+    """Individual reminders include the exact due date and linked equipment."""
+    from homeassistant.components import persistent_notification
+    from custom_components.home_maintenance_manager import notifications
+
+    created = []
+    monkeypatch.setattr(
+        persistent_notification,
+        "async_create",
+        lambda hass, message, title, notification_id=None: created.append(message),
+    )
+    monkeypatch.setattr(
+        notifications,
+        "async_track_time_interval",
+        lambda hass, action, interval: lambda: None,
+    )
+    due = dt_util.now().date()
+    due_at_midnight = dt_util.now().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    manager = SimpleNamespace(
+        data={
+            "tasks": {
+                "replace_filter": {
+                    "task_id": "replace_filter",
+                    "name": "Replace furnace filter",
+                    "enabled": True,
+                    "next_due": dt_util.as_utc(due_at_midnight).isoformat(),
+                    "equipment_ids": ["furnace"],
+                }
+            },
+            "equipment": {
+                "furnace": {"equipment_id": "furnace", "name": "Main furnace"}
+            },
+        },
+        async_save=AsyncMock(),
+    )
+    entry = SimpleNamespace(
+        options={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": False,
+            "notification_lead_days": 7,
+        }
+    )
+
+    await async_setup_notifications(hass, entry, manager)
+
+    assert len(created) == 1
+    assert f"due {due.isoformat()}" in created[0]
+    assert "Equipment: Main furnace" in created[0]
