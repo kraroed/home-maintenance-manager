@@ -151,7 +151,7 @@ async def test_notifications_send_to_configured_notify_target(hass, monkeypatch)
         options={
             "individual_notifications_enabled": True,
             "daily_summary_enabled": False,
-            "notification_target": "notify.household",
+            "notification_target": "notify.mobile_app_household",
         }
     )
 
