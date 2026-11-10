@@ -887,7 +887,7 @@ async def test_manage_tasks_supports_bulk_actions_and_category_selection(
     assert "finish_task_selection" in result["menu_options"]
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "select_all_tasks"}
+        result["flow_id"], user_input={"next_step_id": "clear_all_tasks"}
     )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "task_category_hvac"}
