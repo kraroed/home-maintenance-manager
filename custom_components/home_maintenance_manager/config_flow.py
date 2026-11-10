@@ -450,6 +450,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
             proposed_id = f"custom_{slug}"
+            library = await self.hass.async_add_executor_job(load_library)
             if not slug or (
                 proposed_id != current["task_id"]
                 and (proposed_id in library
