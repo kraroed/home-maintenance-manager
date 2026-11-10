@@ -14,27 +14,35 @@ from custom_components.home_maintenance_manager.const import (
 )
 
 @pytest.mark.asyncio
-async def test_user_flow_creates_property_with_selected_tasks(hass, enable_custom_integrations):
-    """The initial setup flow stores the property and selected task IDs."""
+async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_integrations):
+    """Initial setup asks for the property, then selects tasks by category."""
     result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={"source": SOURCE_USER},
+        DOMAIN, context={"source": SOURCE_USER}
     )
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={
-            "property_name": "Primary Residence",
-            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
-        },
+        result["flow_id"], user_input={"property_name": "Primary Residence"}
     )
-
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "setup_tasks"
+    assert "setup_category_exterior" in result["menu_options"]
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "setup_category_exterior"}
+    )
+    assert result["step_id"] == "setup_category_exterior"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_ENABLED_TASK_IDS: ["clean_gutters"]}
+    )
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_setup"}
+    )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "Primary Residence"
     assert result["data"]["property_name"] == "Primary Residence"
     assert result["data"][CONF_ENABLED_TASK_IDS] == ["clean_gutters"]
+
 
 @pytest.mark.asyncio
 async def test_add_equipment_options_flow_saves_task_associations(hass, enable_custom_integrations):
