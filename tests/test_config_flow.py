@@ -644,6 +644,54 @@ async def test_add_custom_annual_task_rejects_invalid_calendar_date(
     assert valid["type"] == FlowResultType.CREATE_ENTRY
     assert valid["data"]["custom_tasks"][0]["annual_month"] == 2
     assert valid["data"]["custom_tasks"][0]["annual_day"] == 29
+
+@pytest.mark.asyncio
+async def test_add_custom_task_can_create_reusable_category(
+    hass, enable_custom_integrations
+):
+    """The Other category path creates a reusable custom category."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"name": "Inspect Pool Cover", "category": "other"}
+    )
+    assert result["step_id"] == "custom_task_category"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"category_name": "Pool Care"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "interval"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"interval_days": 60}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "how_to_inspect": "Check for cracks",
+            "what_to_look_for": "Tears and worn straps",
+            "what_to_do_if_issue": "Repair or replace the cover",
+            "safety_notes": "Keep clear of the pool when working alone",
+        }
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    task = result["data"]["custom_tasks"][0]
+    assert task["category"] == "pool care"
+    assert task["recommended_interval_days"] == 60
+    assert task["how_to_inspect"] == ["Check for cracks"]
+    assert task["what_to_look_for"] == ["Tears and worn straps"]
+    assert task["what_to_do_if_issue"] == "Repair or replace the cover"
+    assert task["safety_notes"] == "Keep clear of the pool when working alone"
+    assert result["data"]["task_intervals"]["custom_inspect_pool_cover"] == 60
+
+
 @pytest.mark.asyncio
 async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_history(
     hass, enable_custom_integrations
