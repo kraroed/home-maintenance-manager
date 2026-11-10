@@ -673,7 +673,7 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
         result["flow_id"],
         user_input={
             "name": "Monthly Alarm Test",
-            "category": "Safety",
+            "category": "Safety and security",
             "description": "Test household alarms monthly.",
             "schedule_type": "monthly",
             "interval_days": 90,
@@ -715,7 +715,7 @@ async def test_add_equipment_lifespan_designates_and_links_replacement_task(
         result["flow_id"],
         user_input={
             "name": "Smoke Detector Hall",
-            "category": "Safety",
+            "category": "Safety and security",
             "installed_date": "2020-01-15",
             "lifespan_months": 120,
             "replacement_task_id": "clean_gutters",
@@ -751,7 +751,7 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
         result["flow_id"],
         user_input={
             "name": "Smoke Detector Hall",
-            "category": "Safety",
+            "category": "Safety and security",
             "installed_date": "",
             "lifespan_months": 120,
             "replacement_task_id": "",
