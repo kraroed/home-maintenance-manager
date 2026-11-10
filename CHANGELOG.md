@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.3
+
+### Fixes
+- Fix seasonal date configuration forms by replacing a non-serializable custom schema validator with a Home Assistant-compatible validator.
+- Validate real calendar dates after form submission, including support for February 29, and show a clear error for impossible dates.
+- Load the built-in task library asynchronously to avoid blocking file I/O in the Home Assistant event loop.
+
+## 0.9.2
+
+### Fixes
+- Add the missing English translations for the configurable seasonal date-window options flow.
+
 ## 0.9.1
 
 ### Notifications
