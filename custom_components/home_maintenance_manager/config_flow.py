@@ -1069,226 +1069,46 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_add_equipment(self, user_input=None):
-        library = await self.hass.async_add_executor_job(load_library)
-        library.update({
-            item["task_id"]: item
-            for item in self.config_entry.options.get("custom_tasks", [])
-        })
-        enabled = self.config_entry.options.get(
-            CONF_ENABLED_TASK_IDS,
-            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
-        )
-        task_options = [
-            (task_id, library[task_id]["name"])
-            for task_id in enabled if task_id in library
-        ]
+        """Start the guided equipment registration flow."""
+        current = {}
         if user_input is not None:
-            try:
-                _validate_optional_iso_date(user_input.get("installed_date", "").strip())
-            except vol.Invalid:
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"installed_date": "invalid_date"},
-                )
-            category, equipment_categories, category_icon = _resolve_equipment_category(
-                self.config_entry.options, user_input
-            )
-            if category is None:
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"base": "invalid_custom_category"},
-                )
-            name = user_input["name"].strip()
-            slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
-            equipment_id = f"equipment_{slug}"
-            equipment = list(self.config_entry.options.get("equipment_records", []))
-            if not slug or any(item["equipment_id"] == equipment_id for item in equipment):
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"base": "duplicate_equipment"},
-                )
-            replacement_task_id = user_input.get("replacement_task_id") or ""
-            lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
-            if (lifespan_months or replacement_task_id) and not (
-                lifespan_months and replacement_task_id
-                and user_input.get("installed_date", "").strip()
-            ):
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"base": "incomplete_lifespan"},
-                )
-            if replacement_task_id and any(
-                item.get("replacement_task_id") == replacement_task_id
-                for item in equipment
-            ):
-                return self.async_show_form(
-                    step_id="add_equipment",
-                    data_schema=self._equipment_schema(task_options),
-                    errors={"base": "duplicate_replacement_task"},
-                )
-            task_ids = list(user_input.get("task_ids", []))
-            if replacement_task_id and replacement_task_id not in task_ids:
-                task_ids.append(replacement_task_id)
-            equipment.append({
-                "equipment_id": equipment_id,
-                "name": name,
-                "category": category,
-                "category_icon": category_icon,
-                "area_id": user_input.get("area_id") or None,
-                "manufacturer": user_input.get("manufacturer", "").strip(),
-                "model": user_input.get("model", "").strip(),
-                "installed_date": user_input.get("installed_date", "").strip(),
-                "lifespan_months": lifespan_months,
-                "replacement_task_id": replacement_task_id or None,
-                "notes": user_input.get("notes", "").strip(),
-                "task_ids": task_ids,
-            })
-            equipment = [
-                {**item, "category_icon": category_icon}
-                if item.get("category") == category else item
-                for item in equipment
-            ]
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    "equipment_records": equipment,
-                    "equipment_categories": equipment_categories,
-                },
-            )
-
+            self._equipment_draft = dict(user_input)
+            return await self.async_step_add_equipment_details()
         return self.async_show_form(
             step_id="add_equipment",
-            data_schema=self._equipment_schema(task_options),
+            data_schema=self._equipment_identity_schema(current),
         )
 
-    async def async_step_manage_equipment(self, user_input=None):
-        equipment = self.config_entry.options.get("equipment_records", [])
-        if not equipment:
-            return self.async_abort(reason="no_equipment")
+    async def async_step_add_equipment_details(self, user_input=None):
+        """Collect installation and lifespan details."""
         if user_input is not None:
-            self._selected_equipment_id = user_input["equipment_id"]
-            return self.async_show_menu(
-                step_id="equipment_actions",
-                menu_options=["edit_equipment", "remove_equipment"],
-            )
-        options = [(item["equipment_id"], item["name"]) for item in equipment]
-        return self.async_show_form(
-            step_id="manage_equipment",
-            data_schema=vol.Schema({
-                vol.Required("equipment_id"): vol.In(dict(options)),
-            }),
-        )
-
-    async def async_step_equipment_actions(self, user_input=None):
-        return self.async_show_menu(
-            step_id="equipment_actions",
-            menu_options=["edit_equipment", "remove_equipment"],
-        )
-
-    async def async_step_edit_equipment(self, user_input=None):
-        equipment = list(self.config_entry.options.get("equipment_records", []))
-        current = next(
-            (item for item in equipment
-             if item["equipment_id"] == getattr(self, "_selected_equipment_id", None)),
-            None,
-        )
-        if current is None:
-            return self.async_abort(reason="equipment_not_found")
-
-        library = await self.hass.async_add_executor_job(load_library)
-        library.update({
-            item["task_id"]: item
-            for item in self.config_entry.options.get("custom_tasks", [])
-        })
-        enabled = self.config_entry.options.get(
-            CONF_ENABLED_TASK_IDS,
-            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
-        )
-        task_options = [
-            (task_id, library[task_id]["name"])
-            for task_id in enabled if task_id in library
-        ]
-        if user_input is not None:
+            self._equipment_draft.update(user_input)
             try:
-                _validate_optional_iso_date(user_input.get("installed_date", "").strip())
+                _validate_optional_iso_date(
+                    self._equipment_draft.get("installed_date", "").strip()
+                )
             except vol.Invalid:
                 return self.async_show_form(
-                    step_id="edit_equipment",
-                    data_schema=self._equipment_schema(task_options, current),
-                    errors={"installed_date": "invalid_date"},
+                    step_id="add_equipment_details",
+                    data_schema=self._equipment_details_schema(self._equipment_draft),
+                    errors={"base": "invalid_date"},
                 )
-            category, equipment_categories, category_icon = _resolve_equipment_category(
-                self.config_entry.options, user_input
-            )
-            if category is None:
-                return self.async_show_form(
-                    step_id="edit_equipment",
-                    data_schema=self._equipment_schema(task_options, current),
-                    errors={"base": "invalid_custom_category"},
-                )
-            replacement_task_id = user_input.get("replacement_task_id") or ""
-            lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
-            if (lifespan_months or replacement_task_id) and not (
-                lifespan_months and replacement_task_id
-                and user_input.get("installed_date", "").strip()
-            ):
-                return self.async_show_form(
-                    step_id="edit_equipment",
-                    data_schema=self._equipment_schema(task_options, current),
-                    errors={"base": "incomplete_lifespan"},
-                )
-            if replacement_task_id and any(
-                item.get("equipment_id") != current["equipment_id"]
-                and item.get("replacement_task_id") == replacement_task_id
-                for item in equipment
-            ):
-                return self.async_show_form(
-                    step_id="edit_equipment",
-                    data_schema=self._equipment_schema(task_options, current),
-                    errors={"base": "duplicate_replacement_task"},
-                )
-            task_ids = list(user_input.get("task_ids", []))
-            if replacement_task_id and replacement_task_id not in task_ids:
-                task_ids.append(replacement_task_id)
-            updated = {
-                **current,
-                "name": user_input["name"].strip(),
-                "category": category,
-                "category_icon": category_icon,
-                "area_id": user_input.get("area_id") or None,
-                "manufacturer": user_input.get("manufacturer", "").strip(),
-                "model": user_input.get("model", "").strip(),
-                "installed_date": user_input.get("installed_date", "").strip(),
-                "lifespan_months": lifespan_months,
-                "replacement_task_id": replacement_task_id or None,
-                "notes": user_input.get("notes", "").strip(),
-                "task_ids": task_ids,
-            }
-            equipment = [
-                updated if item["equipment_id"] == current["equipment_id"] else item
-                for item in equipment
-            ]
-            equipment = [
-                {**item, "category_icon": category_icon}
-                if item.get("category") == category else item
-                for item in equipment
-            ]
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    "equipment_records": equipment,
-                    "equipment_categories": equipment_categories,
-                },
-            )
+            return await self.async_step_add_equipment_tasks()
+        return self.async_show_form(
+            step_id="add_equipment_details",
+            data_schema=self._equipment_details_schema(self._equipment_draft),
+        )
 
-        schema = self._equipment_schema(task_options, current)
-        return self.async_show_form(step_id="edit_equipment", data_schema=schema)
+    async def async_step_add_equipment_tasks(self, user_input=None):
+        """Choose maintenance tasks associated with this equipment."""
+        task_options = await self._async_equipment_task_options()
+        if user_input is not None:
+            self._equipment_draft.update(user_input)
+            return await self._async_save_equipment(editing=False)
+        return self.async_show_form(
+            step_id="add_equipment_tasks",
+            data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft),
+        )
 
     async def async_step_remove_equipment(self, user_input=None):
         equipment = list(self.config_entry.options.get("equipment_records", []))
@@ -1385,7 +1205,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         })
 
-    def _equipment_schema(self, task_options, current=None):
+    def _equipment_identity_schema(self, current=None):
+        """Build the first equipment wizard step: identity, category, and area."""
         current = current or {}
         area_options = {
             "": "No area",
@@ -1397,12 +1218,75 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_area_id = current.get("area_id") or ""
         if current_area_id and current_area_id not in area_options:
             area_options[current_area_id] = "Previously assigned area (unavailable)"
-        custom_categories = self._config_entry.options.get("equipment_categories", [])
+        custom_categories = self.config_entry.options.get("equipment_categories", [])
         category_options = {name: name for name in EQUIPMENT_CATEGORY_ICONS}
         category_options.update({
             item["name"]: item["name"] for item in custom_categories
             if isinstance(item, dict) and item.get("name")
         })
+        current_category = current.get("category", "HVAC")
+        if current_category and current_category not in category_options:
+            category_options[current_category] = f"Legacy category: {current_category}"
+        saved_custom_category = next(
+            (item for item in custom_categories
+             if item.get("name", "").casefold() == current_category.casefold()),
+            None,
+        )
+        default_icon = (
+            current.get("category_icon")
+            or (saved_custom_category.get("icon") if saved_custom_category else None)
+            or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
+        )
+        return vol.Schema({
+            vol.Required("name", default=current.get("name", "")): vol.All(
+                str, vol.Length(min=1, max=80)
+            ),
+            vol.Required("category", default=current_category): vol.In(category_options),
+            vol.Optional("custom_category_name", default=""): vol.All(
+                str, vol.Length(max=40)
+            ),
+            vol.Optional(
+                "custom_category_icon", default=default_icon
+            ): selector.IconSelector(selector.IconSelectorConfig()),
+            vol.Optional("area_id", default=current_area_id): vol.In(area_options),
+        })
+
+    @staticmethod
+    def _equipment_details_schema(current=None):
+        """Build the installation and lifespan wizard step."""
+        current = current or {}
+        return vol.Schema({
+            vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
+                str, vol.Length(max=80)
+            ),
+            vol.Optional("model", default=current.get("model", "")): vol.All(
+                str, vol.Length(max=80)
+            ),
+            vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
+                str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+            ),
+            vol.Optional("lifespan_months", default=current.get("lifespan_months", 0)): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=1200)
+            ),
+            vol.Optional(
+                "replacement_task_id",
+                default=current.get("replacement_task_id") or "",
+            ): str,
+            vol.Optional("notes", default=current.get("notes", "")): vol.All(
+                str, vol.Length(max=500)
+            ),
+        })
+
+    @staticmethod
+    def _equipment_tasks_schema(task_options, current=None):
+        """Build the final equipment wizard step for linked maintenance tasks."""
+        current = current or {}
+        return vol.Schema({
+            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(
+                dict(task_options)
+            ),
+        })
+
         current_category = current.get("category", "HVAC")
         if current_category and current_category not in category_options:
             category_options[current_category] = f"Legacy category: {current_category}"
