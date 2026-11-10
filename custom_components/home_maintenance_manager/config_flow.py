@@ -136,6 +136,10 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
         })
 
+    async def async_step_setup_tasks(self, user_input=None):
+        """Display the task-category selection menu during initial setup."""
+        return await self._async_show_setup_task_menu()
+
     async def _async_show_setup_task_menu(self):
         """Show task categories for initial setup."""
         library = await self.hass.async_add_executor_job(load_library)
