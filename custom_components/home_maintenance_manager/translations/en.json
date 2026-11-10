@@ -43,9 +43,22 @@
       },
       "manage_tasks": {
         "title": "Maintenance task selection",
-        "description": "Select the built-in and custom tasks to track. Configure intervals in the next step.",
-        "data": {
-          "enabled_task_ids": "Enabled maintenance tasks"
+        "description": "Select tasks by expanding a category. Use Select all or Clear all at the top, then finish to configure intervals.",
+        "menu_options": {
+          "select_all_tasks": "Select all tasks",
+          "clear_all_tasks": "Clear all tasks",
+          "task_category_hvac": "HVAC",
+          "task_category_safety": "Safety",
+          "task_category_appliances": "Appliances",
+          "task_category_exterior": "Exterior",
+          "task_category_landscape": "Landscape",
+          "task_category_plumbing": "Plumbing",
+          "task_category_electrical": "Electrical",
+          "task_category_interior": "Interior",
+          "task_category_seasonal": "Seasonal",
+          "task_category_systems": "Home systems",
+          "task_category_custom": "Custom tasks",
+          "finish_task_selection": "Finish task selection"
         }
       },
       "intervals": {
@@ -199,6 +212,83 @@
           "fall_end": "Fall end (MM-DD)",
           "winter_start": "Winter start (MM-DD)",
           "winter_end": "Winter end (MM-DD)"
+        }
+      },
+      "task_category_hvac": {
+        "title": "HVAC maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_safety": {
+        "title": "Safety maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_appliances": {
+        "title": "Appliance maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_exterior": {
+        "title": "Exterior maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_landscape": {
+        "title": "Landscape maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_plumbing": {
+        "title": "Plumbing maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_electrical": {
+        "title": "Electrical maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_interior": {
+        "title": "Interior maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_seasonal": {
+        "title": "Seasonal maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_systems": {
+        "title": "Home systems maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
+        }
+      },
+      "task_category_custom": {
+        "title": "Custom maintenance tasks",
+        "description": "Select or clear individual tasks in this category. Your selections in other categories will be kept.",
+        "data": {
+          "enabled_task_ids": "Enabled tasks in this category"
         }
       }
     },
