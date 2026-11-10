@@ -107,18 +107,18 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
 
 class EquipmentSensor(CoordinatorEntity, SensorEntity):
     CATEGORY_ICONS = {
-        "hvac": "mdi:hvac",
-        "plumbing": "mdi:water-pump",
-        "electrical": "mdi:lightning-bolt",
-        "appliances": "mdi:washing-machine",
-        "water_heating": "mdi:water-boiler",
-        "safety_security": "mdi:shield-home",
-        "roofing": "mdi:home-roof",
-        "windows_doors": "mdi:door",
-        "structure": "mdi:home-variant",
-        "outdoor": "mdi:tree",
-        "pool_spa": "mdi:pool",
-        "other": "mdi:tools",
+        "HVAC": "mdi:hvac",
+        "Plumbing": "mdi:water-pump",
+        "Electrical": "mdi:lightning-bolt",
+        "Appliances": "mdi:washing-machine",
+        "Water heating": "mdi:water-boiler",
+        "Safety and security": "mdi:shield-home",
+        "Roofing": "mdi:home-roof",
+        "Windows and doors": "mdi:door",
+        "Structure": "mdi:home-variant",
+        "Outdoor": "mdi:tree",
+        "Pool and spa": "mdi:pool",
+        "Other": "mdi:tools",
     }
 
     def __init__(self, coordinator, equipment_id, name):
