@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.5
+
+### Equipment
+- Use the native Home Assistant icon selector so any available Home Assistant icon can be selected for custom equipment categories.
+- Preserve saved custom category icons when adding additional equipment that uses the same category.
+- Apply category icons consistently to equipment entities and refresh icons when equipment categories change.
+
 ## 0.9.4
 
 ### Equipment
