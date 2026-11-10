@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.6
+
+### Configuration
+- Add a guided initial setup flow with categorized maintenance task selection, including Select All and Clear All.
+- Split notification setup into notification choices and a focused delivery/timing step.
+- Configure spring, summer, fall, and winter maintenance windows in separate steps, with calendar-date validation.
+- Guide equipment registration and editing through identity, installation/lifespan details, and linked maintenance tasks.
+- Guide custom maintenance task creation and editing through category, schedule, and inspection guidance steps.
+- Organize recurring maintenance interval settings by task category.
+
+### Improvements
+- Run maintenance task library reads outside Home Assistant's event loop to avoid blocking calls.
+- Improve custom task category creation and reuse.
+- Preserve existing equipment details, task associations, custom task identity, and completion history while editing.
+- Add regression coverage and translations for the guided configuration flows.
+
 ## 0.9.5
 
 ### Equipment
