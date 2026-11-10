@@ -31,11 +31,11 @@
       },
       "configure_notifications": {
         "title": "Maintenance notifications",
-        "description": "Enable individual reminders and a daily summary. Enter a notify entity ID such as notify.mobile_app_your_phone to send mobile notifications. Leave it blank to use Home Assistant persistent notifications.",
+        "description": "Enable individual reminders and a daily summary. Enter a notify service such as notify.mobile_app_your_phone to send mobile notifications. Leave it blank to use Home Assistant persistent notifications.",
         "data": {
           "individual_notifications_enabled": "Send individual task reminders",
           "daily_summary_enabled": "Send a daily maintenance summary",
-          "notification_target": "Notification target (notify entity ID)",
+          "notification_target": "Notification service (for example notify.mobile_app_your_phone)",
           "notification_lead_days": "Remind this many days before a task is due",
           "daily_summary_time": "Daily summary time (24-hour HH:MM)"
         }
