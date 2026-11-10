@@ -1072,13 +1072,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         """Start the guided equipment registration flow."""
         if user_input is None:
             self._equipment_draft = {}
-            return self.async_show_form(
-                step_id="add_equipment",
-                data_schema=self._equipment_identity_schema(),
-            )
-        if user_input is not None:
-            self._equipment_draft = dict(user_input)
-            return await self.async_step_add_equipment_details()
+            return self.async_show_form(step_id="add_equipment", data_schema=self._equipment_identity_schema())
+        self._equipment_draft = dict(user_input)
         return await self.async_step_add_equipment_details()
 
     async def async_step_add_equipment_details(self, user_input=None):
@@ -1086,23 +1081,17 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             self._equipment_draft.update(user_input)
             try:
-                _validate_optional_iso_date(
-                    self._equipment_draft.get("installed_date", "").strip()
-                )
+                _validate_optional_iso_date(self._equipment_draft.get("installed_date", "").strip())
             except vol.Invalid:
                 return self.async_show_form(
                     step_id="add_equipment_details",
-                    data_schema=self._equipment_details_schema(
-                        self._equipment_draft, await self._async_equipment_task_options()
-                    ),
+                    data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
                     errors={"base": "invalid_date"},
                 )
             return await self.async_step_add_equipment_tasks()
         return self.async_show_form(
             step_id="add_equipment_details",
-            data_schema=self._equipment_details_schema(
-                self._equipment_draft, await self._async_equipment_task_options()
-            ),
+            data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
         )
 
     async def async_step_add_equipment_tasks(self, user_input=None):
@@ -1111,10 +1100,111 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             self._equipment_draft.update(user_input)
             return await self._async_save_equipment(editing=False)
+        return self.async_show_form(step_id="add_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
+
+    async def async_step_manage_equipment(self, user_input=None):
+        equipment = self.config_entry.options.get("equipment_records", [])
+        if not equipment:
+            return self.async_abort(reason="no_equipment")
+        if user_input is not None:
+            self._selected_equipment_id = user_input["equipment_id"]
+            return self.async_show_menu(step_id="equipment_actions", menu_options=["edit_equipment", "remove_equipment"])
+        options = [(item["equipment_id"], item["name"]) for item in equipment]
+        return self.async_show_form(step_id="manage_equipment", data_schema=vol.Schema({
+            vol.Required("equipment_id"): vol.In(dict(options)),
+        }))
+
+    async def async_step_equipment_actions(self, user_input=None):
+        return self.async_show_menu(step_id="equipment_actions", menu_options=["edit_equipment", "remove_equipment"])
+
+    async def async_step_edit_equipment(self, user_input=None):
+        """Start the guided equipment editing flow."""
+        current = self._get_selected_equipment()
+        if current is None:
+            return self.async_abort(reason="equipment_not_found")
+        if user_input is None:
+            self._equipment_draft = dict(current)
+            return self.async_show_form(step_id="edit_equipment", data_schema=self._equipment_identity_schema(current))
+        self._equipment_draft.update(user_input)
+        return await self.async_step_edit_equipment_details()
+
+    async def async_step_edit_equipment_details(self, user_input=None):
+        """Collect updated installation and lifespan details."""
+        if user_input is not None:
+            self._equipment_draft.update(user_input)
+            try:
+                _validate_optional_iso_date(self._equipment_draft.get("installed_date", "").strip())
+            except vol.Invalid:
+                return self.async_show_form(
+                    step_id="edit_equipment_details",
+                    data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
+                    errors={"base": "invalid_date"},
+                )
+            return await self.async_step_edit_equipment_tasks()
         return self.async_show_form(
-            step_id="add_equipment_tasks",
-            data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft),
+            step_id="edit_equipment_details",
+            data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
         )
+
+    async def async_step_edit_equipment_tasks(self, user_input=None):
+        """Update the maintenance tasks associated with this equipment."""
+        task_options = await self._async_equipment_task_options()
+        if user_input is not None:
+            self._equipment_draft.update(user_input)
+            return await self._async_save_equipment(editing=True)
+        return self.async_show_form(step_id="edit_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
+
+    def _get_selected_equipment(self):
+        """Return the equipment record selected in the management flow."""
+        return next((item for item in self.config_entry.options.get("equipment_records", [])
+                     if item.get("equipment_id") == getattr(self, "_selected_equipment_id", None)), None)
+
+    async def _async_equipment_task_options(self):
+        """Return enabled built-in and custom maintenance tasks."""
+        library = await self.hass.async_add_executor_job(load_library)
+        library.update({item["task_id"]: item for item in self.config_entry.options.get("custom_tasks", [])})
+        enabled = self.config_entry.options.get(CONF_ENABLED_TASK_IDS, self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []))
+        return [(task_id, library[task_id]["name"]) for task_id in enabled if task_id in library]
+
+    async def _async_save_equipment(self, editing):
+        """Validate and persist the completed equipment wizard."""
+        draft = self._equipment_draft
+        equipment = list(self.config_entry.options.get("equipment_records", []))
+        current = self._get_selected_equipment() if editing else None
+        category, equipment_categories, category_icon = _resolve_equipment_category(self.config_entry.options, draft)
+        task_options = await self._async_equipment_task_options()
+        identity_step = "edit_equipment" if editing else "add_equipment"
+        task_step = "edit_equipment_tasks" if editing else "add_equipment_tasks"
+        if category is None:
+            return self.async_show_form(step_id=identity_step, data_schema=self._equipment_identity_schema(draft), errors={"base": "invalid_custom_category"})
+        name = draft.get("name", "").strip()
+        slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
+        equipment_id = current["equipment_id"] if current else f"equipment_{slug}"
+        if not slug or any(item.get("equipment_id") == equipment_id and (current is None or item.get("equipment_id") != current["equipment_id"]) for item in equipment):
+            return self.async_show_form(step_id=identity_step, data_schema=self._equipment_identity_schema(draft), errors={"base": "duplicate_equipment"})
+        replacement_task_id = draft.get("replacement_task_id") or ""
+        lifespan_months = int(draft.get("lifespan_months", 0) or 0)
+        if (lifespan_months or replacement_task_id) and not (lifespan_months and replacement_task_id and draft.get("installed_date", "").strip()):
+            return self.async_show_form(step_id="edit_equipment_details" if editing else "add_equipment_details", data_schema=self._equipment_details_schema(draft, task_options), errors={"base": "incomplete_lifespan"})
+        if replacement_task_id and any(item.get("equipment_id") != (current or {}).get("equipment_id") and item.get("replacement_task_id") == replacement_task_id for item in equipment):
+            return self.async_show_form(step_id=task_step, data_schema=self._equipment_tasks_schema(task_options, draft), errors={"base": "duplicate_replacement_task"})
+        task_ids = list(draft.get("task_ids", []))
+        if replacement_task_id and replacement_task_id not in task_ids:
+            task_ids.append(replacement_task_id)
+        updated = {
+            **(current or {}), "equipment_id": equipment_id, "name": name, "category": category,
+            "category_icon": category_icon, "area_id": draft.get("area_id") or None,
+            "manufacturer": draft.get("manufacturer", "").strip(), "model": draft.get("model", "").strip(),
+            "installed_date": draft.get("installed_date", "").strip(), "lifespan_months": lifespan_months,
+            "replacement_task_id": replacement_task_id or None, "notes": draft.get("notes", "").strip(),
+            "task_ids": task_ids,
+        }
+        if editing:
+            equipment = [updated if item.get("equipment_id") == current["equipment_id"] else item for item in equipment]
+        else:
+            equipment.append(updated)
+        equipment = [{**item, "category_icon": category_icon} if item.get("category") == category else item for item in equipment]
+        return self.async_create_entry(title="", data={**self.config_entry.options, "equipment_records": equipment, "equipment_categories": equipment_categories})
 
     async def async_step_remove_equipment(self, user_input=None):
         equipment = list(self.config_entry.options.get("equipment_records", []))
@@ -1212,134 +1302,45 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
 
     def _equipment_identity_schema(self, current=None):
-        """Build the first equipment wizard step: identity, category, and area."""
+        """Build the identity, category, and area step."""
         current = current or {}
-        area_options = {
-            "": "No area",
-            **{
-                area.id: area.name
-                for area in ar.async_get(self.hass).async_list_areas()
-            },
-        }
+        area_options = {"": "No area", **{area.id: area.name for area in ar.async_get(self.hass).async_list_areas()}}
         current_area_id = current.get("area_id") or ""
         if current_area_id and current_area_id not in area_options:
             area_options[current_area_id] = "Previously assigned area (unavailable)"
         custom_categories = self.config_entry.options.get("equipment_categories", [])
         category_options = {name: name for name in EQUIPMENT_CATEGORY_ICONS}
-        category_options.update({
-            item["name"]: item["name"] for item in custom_categories
-            if isinstance(item, dict) and item.get("name")
-        })
+        category_options.update({item["name"]: item["name"] for item in custom_categories if isinstance(item, dict) and item.get("name")})
         current_category = current.get("category", "HVAC")
         if current_category and current_category not in category_options:
             category_options[current_category] = f"Legacy category: {current_category}"
-        saved_custom_category = next(
-            (item for item in custom_categories
-             if item.get("name", "").casefold() == current_category.casefold()),
-            None,
-        )
-        default_icon = (
-            current.get("category_icon")
-            or (saved_custom_category.get("icon") if saved_custom_category else None)
-            or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
-        )
+        saved = next((item for item in custom_categories if item.get("name", "").casefold() == current_category.casefold()), None)
+        default_icon = current.get("category_icon") or (saved.get("icon") if saved else None) or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
         return vol.Schema({
-            vol.Required("name", default=current.get("name", "")): vol.All(
-                str, vol.Length(min=1, max=80)
-            ),
+            vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
             vol.Required("category", default=current_category): vol.In(category_options),
-            vol.Optional("custom_category_name", default=""): vol.All(
-                str, vol.Length(max=40)
-            ),
-            vol.Optional(
-                "custom_category_icon", default=default_icon
-            ): selector.IconSelector(selector.IconSelectorConfig()),
+            vol.Optional("custom_category_name", default=""): vol.All(str, vol.Length(max=40)),
+            vol.Optional("custom_category_icon", default=default_icon): selector.IconSelector(selector.IconSelectorConfig()),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
         })
 
     @staticmethod
     def _equipment_details_schema(current=None, task_options=()):
-        """Build the installation and lifespan wizard step."""
+        """Build the installation and lifespan step."""
         current = current or {}
         return vol.Schema({
-            vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
-                str, vol.Length(max=80)
-            ),
-            vol.Optional("model", default=current.get("model", "")): vol.All(
-                str, vol.Length(max=80)
-            ),
-            vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
-                str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
-            ),
-            vol.Optional("lifespan_months", default=current.get("lifespan_months", 0)): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=1200)
-            ),
-            vol.Optional(
-                "replacement_task_id",
-                default=current.get("replacement_task_id") or "",
-            ): vol.In({"": "None", **dict(task_options)}),
-            vol.Optional("notes", default=current.get("notes", "")): vol.All(
-                str, vol.Length(max=500)
-            ),
+            vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(str, vol.Length(max=80)),
+            vol.Optional("model", default=current.get("model", "")): vol.All(str, vol.Length(max=80)),
+            vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")),
+            vol.Optional("lifespan_months", default=current.get("lifespan_months", 0)): vol.All(vol.Coerce(int), vol.Range(min=0, max=1200)),
+            vol.Optional("replacement_task_id", default=current.get("replacement_task_id") or ""): vol.In({"": "None", **dict(task_options)}),
+            vol.Optional("notes", default=current.get("notes", "")): vol.All(str, vol.Length(max=500)),
         })
 
     @staticmethod
     def _equipment_tasks_schema(task_options, current=None):
-        """Build the final equipment wizard step for linked maintenance tasks."""
+        """Build the linked maintenance tasks step."""
         current = current or {}
         return vol.Schema({
-            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(
-                dict(task_options)
-            ),
-        })
-
-        current_category = current.get("category", "HVAC")
-        if current_category and current_category not in category_options:
-            category_options[current_category] = f"Legacy category: {current_category}"
-        saved_custom_category = next(
-            (
-                item for item in custom_categories
-                if item.get("name", "").casefold() == current_category.casefold()
-            ),
-            None,
-        )
-        default_icon = (
-            current.get("category_icon")
-            or (saved_custom_category.get("icon") if saved_custom_category else None)
-            or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
-        )
-        return vol.Schema({
-            vol.Required("name", default=current.get("name", "")): vol.All(
-                str, vol.Length(min=1, max=80)
-            ),
-            vol.Required("category", default=current_category): vol.In(category_options),
-            vol.Optional("custom_category_name", default=""): vol.All(
-                str, vol.Length(max=40)
-            ),
-            vol.Optional(
-                "custom_category_icon", default=default_icon
-            ): selector.IconSelector(selector.IconSelectorConfig()),
-            vol.Optional("area_id", default=current_area_id): vol.In(area_options),
-            vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
-                str, vol.Length(max=80)
-            ),
-            vol.Optional("model", default=current.get("model", "")): vol.All(
-                str, vol.Length(max=80)
-            ),
-            vol.Optional("installed_date", default=current.get("installed_date", "")): vol.All(
-                str, vol.Length(max=10), vol.Match(r"^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
-            ),
-            vol.Optional("lifespan_months", default=current.get("lifespan_months", 0)): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=1200)
-            ),
-            vol.Optional(
-                "replacement_task_id",
-                default=current.get("replacement_task_id") or "",
-            ): vol.In({"": "None", **dict(task_options)}),
-            vol.Optional("notes", default=current.get("notes", "")): vol.All(
-                str, vol.Length(max=500)
-            ),
-            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(
-                dict(task_options)
-            ),
+            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(dict(task_options)),
         })
