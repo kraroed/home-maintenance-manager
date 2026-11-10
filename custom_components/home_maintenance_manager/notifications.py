@@ -44,15 +44,18 @@ async def async_setup_notifications(hass, entry, manager, coordinator=None):
 
     async def send_message(title, message, notification_id=None, data=None):
         if notify_target:
+            # The configured value is the notify service name, such as
+            # notify.mobile_app_your_phone. Call that service directly so
+            # mobile-app action payloads are delivered to the intended device.
+            notify_service = notify_target.removeprefix("notify.")
             service_data = {
                 "message": message,
                 "title": title,
-                "target": {"entity_id": notify_target},
             }
             if data:
                 service_data["data"] = data
             await hass.services.async_call(
-                "notify", "send_message", service_data, blocking=True
+                "notify", notify_service, service_data, blocking=True
             )
         else:
             persistent_notification.async_create(
