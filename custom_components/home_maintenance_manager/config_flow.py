@@ -12,7 +12,12 @@ from homeassistant.helpers import selector
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
 
-TASK_SELECTION_CATEGORIES = (\n    "hvac", "safety", "appliances", "exterior", "landscape",\n    "plumbing", "electrical", "interior", "seasonal", "systems",\n)\n\nEQUIPMENT_CATEGORY_ICONS = {
+TASK_SELECTION_CATEGORIES = (
+    "hvac", "safety", "appliances", "exterior", "landscape",
+    "plumbing", "electrical", "interior", "seasonal", "systems",
+)
+
+EQUIPMENT_CATEGORY_ICONS = {
     "HVAC": "mdi:hvac", "Plumbing": "mdi:water-pump",
     "Electrical": "mdi:lightning-bolt", "Appliances": "mdi:washing-machine",
     "Water heating": "mdi:water-boiler", "Safety and security": "mdi:shield-home",
