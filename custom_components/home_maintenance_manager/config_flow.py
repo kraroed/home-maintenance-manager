@@ -11,6 +11,54 @@ from homeassistant.helpers import config_validation as cv
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
 
+EQUIPMENT_CATEGORY_ICONS = {
+    "HVAC": "mdi:hvac", "Plumbing": "mdi:water-pump",
+    "Electrical": "mdi:lightning-bolt", "Appliances": "mdi:washing-machine",
+    "Water heating": "mdi:water-boiler", "Safety and security": "mdi:shield-home",
+    "Roofing": "mdi:home-roof", "Windows and doors": "mdi:door",
+    "Structure": "mdi:home-variant", "Outdoor": "mdi:tree",
+    "Pool and spa": "mdi:pool", "Other": "mdi:tools",
+}
+EQUIPMENT_ICON_OPTIONS = {
+    "mdi:tools": "Tools", "mdi:generator-portable": "Generator",
+    "mdi:water-pump": "Water pump", "mdi:water-boiler": "Water heater",
+    "mdi:hvac": "HVAC", "mdi:lightning-bolt": "Electrical",
+    "mdi:solar-power": "Solar power", "mdi:fan": "Fan",
+    "mdi:engine": "Engine", "mdi:garage": "Garage",
+    "mdi:pool": "Pool", "mdi:shield-home": "Safety",
+    "mdi:camera": "Camera", "mdi:car": "Vehicle",
+    "mdi:home": "Home", "mdi:tree": "Outdoor",
+}
+
+def _resolve_equipment_category(options, user_input):
+    """Resolve a built-in or reusable custom equipment category and icon."""
+    custom_categories = [
+        dict(item) for item in options.get("equipment_categories", [])
+        if isinstance(item, dict) and item.get("name")
+    ]
+    category = user_input["category"]
+    custom_name = user_input.get("custom_category_name", "").strip()
+    if category == "Other" and custom_name:
+        category = custom_name
+    if category in EQUIPMENT_CATEGORY_ICONS:
+        return category, custom_categories, EQUIPMENT_CATEGORY_ICONS[category]
+    if not category or len(category) > 40 or category.casefold() in {
+        name.casefold() for name in EQUIPMENT_CATEGORY_ICONS
+    }:
+        return None, custom_categories, None
+    icon = user_input.get("custom_category_icon") or "mdi:tools"
+    existing = next(
+        (item for item in custom_categories
+         if item["name"].casefold() == category.casefold()),
+        None,
+    )
+    if existing:
+        existing["name"], existing["icon"] = category, icon
+    else:
+        custom_categories.append({"name": category, "icon": icon})
+    return category, custom_categories, icon
+
+
 
 def _is_valid_month_day(value):
     """Return whether value is a real canonical MM-DD date (leap day allowed)."""
@@ -278,6 +326,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_add_custom_task(self, user_input=None):
         if user_input is not None:
+            category, equipment_categories, category_icon = _resolve_equipment_category(
+                self.config_entry.options, user_input
+            )
+            if category is None:
+                return self.async_show_form(
+                    step_id="add_equipment",
+                    data_schema=self._equipment_schema(task_options),
+                    errors={"base": "invalid_custom_category"},
+                )
             name = user_input["name"].strip()
             slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
             task_id = f"custom_{slug}"
@@ -634,7 +691,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             equipment.append({
                 "equipment_id": equipment_id,
                 "name": name,
-                "category": user_input["category"],
+                "category": category,
+                "category_icon": category_icon,
                 "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
@@ -644,9 +702,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "notes": user_input.get("notes", "").strip(),
                 "task_ids": task_ids,
             })
+            equipment = [
+                {**item, "category_icon": category_icon}
+                if item.get("category") == category else item
+                for item in equipment
+            ]
             return self.async_create_entry(
                 title="",
-                data={**self.config_entry.options, "equipment_records": equipment},
+                data={
+                    **self.config_entry.options,
+                    "equipment_records": equipment,
+                    "equipment_categories": equipment_categories,
+                },
             )
 
         return self.async_show_form(
@@ -710,6 +777,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_schema(task_options, current),
                     errors={"installed_date": "invalid_date"},
                 )
+            category, equipment_categories, category_icon = _resolve_equipment_category(
+                self.config_entry.options, user_input
+            )
+            if category is None:
+                return self.async_show_form(
+                    step_id="edit_equipment",
+                    data_schema=self._equipment_schema(task_options, current),
+                    errors={"base": "invalid_custom_category"},
+                )
             replacement_task_id = user_input.get("replacement_task_id") or ""
             lifespan_months = int(user_input.get("lifespan_months", 0) or 0)
             if (lifespan_months or replacement_task_id) and not (
@@ -737,7 +813,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             updated = {
                 **current,
                 "name": user_input["name"].strip(),
-                "category": user_input["category"],
+                "category": category,
+                "category_icon": category_icon,
                 "area_id": user_input.get("area_id") or None,
                 "manufacturer": user_input.get("manufacturer", "").strip(),
                 "model": user_input.get("model", "").strip(),
@@ -751,9 +828,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 updated if item["equipment_id"] == current["equipment_id"] else item
                 for item in equipment
             ]
+            equipment = [
+                {**item, "category_icon": category_icon}
+                if item.get("category") == category else item
+                for item in equipment
+            ]
             return self.async_create_entry(
                 title="",
-                data={**self.config_entry.options, "equipment_records": equipment},
+                data={
+                    **self.config_entry.options,
+                    "equipment_records": equipment,
+                    "equipment_categories": equipment_categories,
+                },
             )
 
         schema = self._equipment_schema(task_options, current)
@@ -866,34 +952,31 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_area_id = current.get("area_id") or ""
         if current_area_id and current_area_id not in area_options:
             area_options[current_area_id] = "Previously assigned area (unavailable)"
+        custom_categories = self.config_entry.options.get("equipment_categories", [])
+        category_options = {name: name for name in EQUIPMENT_CATEGORY_ICONS}
+        category_options.update({
+            item["name"]: item["name"] for item in custom_categories
+            if isinstance(item, dict) and item.get("name")
+        })
+        current_category = current.get("category", "HVAC")
+        if current_category and current_category not in category_options:
+            category_options[current_category] = f"Legacy category: {current_category}"
+        current_custom = next(
+            (item for item in custom_categories
+             if item.get("name") == current_category), {},
+        )
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
             ),
-            vol.Required(
-                "category",
-                default=current.get("category", "HVAC"),
-            ): vol.In({
-                "HVAC": "HVAC",
-                "Plumbing": "Plumbing",
-                "Electrical": "Electrical",
-                "Appliances": "Appliances",
-                "Water heating": "Water heating",
-                "Safety and security": "Safety and security",
-                "Roofing": "Roofing",
-                "Windows and doors": "Windows and doors",
-                "Structure": "Structure",
-                "Outdoor": "Outdoor",
-                "Pool and spa": "Pool and spa",
-                "Other": "Other",
-                **({
-                    current.get("category"): f"Legacy category: {current.get('category')}"
-                } if current.get("category") and current.get("category") not in {
-                    "HVAC", "Plumbing", "Electrical", "Appliances",
-                    "Water heating", "Safety and security", "Roofing",
-                    "Windows and doors", "Structure", "Outdoor", "Pool and spa", "Other"
-                } else {}),
-            }),
+            vol.Required("category", default=current_category): vol.In(category_options),
+            vol.Optional("custom_category_name", default=""): vol.All(
+                str, vol.Length(max=40)
+            ),
+            vol.Optional(
+                "custom_category_icon",
+                default=current.get("category_icon", current_custom.get("icon", "mdi:tools")),
+            ): vol.In(EQUIPMENT_ICON_OPTIONS),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
