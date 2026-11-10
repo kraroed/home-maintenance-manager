@@ -208,6 +208,15 @@ class TaskManager:
                     task.get("monthly_week"),
                     task.get("monthly_weekday"),
                 )
+                previous_schedule_details = {
+                    "schedule_type": task.get("schedule_type"),
+                    "interval_days": task.get("configured_interval_days"),
+                    "annual_month": task.get("annual_month"),
+                    "annual_day": task.get("annual_day"),
+                    "monthly_week": task.get("monthly_week"),
+                    "monthly_weekday": task.get("monthly_weekday"),
+                }
+                previous_due = task.get("next_due")
                 for key, value in definition.items():
                     if task.get("is_custom") and key in {
                         "name", "category", "description",
@@ -257,6 +266,24 @@ class TaskManager:
                         anchor_dt + timedelta(days=configured_interval)
                     ).isoformat()
                     task["next_due"] = task["schedule_next_due"]
+
+                if schedule_changed or interval_changed:
+                    task.setdefault("schedule_history", []).append({
+                        "adjusted_at": now.isoformat(),
+                        "previous_due": previous_due,
+                        "next_due": task.get("next_due"),
+                        "reason": "Schedule configuration changed",
+                        "change_type": "configuration",
+                        "previous_schedule": previous_schedule_details,
+                        "new_schedule": {
+                            "schedule_type": task.get("schedule_type"),
+                            "interval_days": task.get("configured_interval_days"),
+                            "annual_month": task.get("annual_month"),
+                            "annual_day": task.get("annual_day"),
+                            "monthly_week": task.get("monthly_week"),
+                            "monthly_weekday": task.get("monthly_weekday"),
+                        },
+                    })
 
                 if (
                     task.get("schedule_type") == "seasonal"
