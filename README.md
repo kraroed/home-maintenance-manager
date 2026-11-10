@@ -53,7 +53,7 @@ Open **Configure → Configure maintenance notifications** to enable individual 
 
 ## Maintenance history export
 
-Call **`home_maintenance_manager.export_history`** from Developer Tools → Actions, or use it in an automation. Choose `csv`, `json`, or `both` (the default). The integration writes the files under `/config/www/home_maintenance_manager/<entry_id>/` and creates a persistent notification with links to open each export through Home Assistant. CSV includes one row per completion; JSON includes the full completion records and property name. Export files are overwritten by the next export in the same format.
+Call **`home_maintenance_manager.export_history`** from Developer Tools → Actions, or use it in an automation. Choose `csv`, `json`, or `both` (the default). The integration writes completion-history files (`maintenance_history.csv` and/or `maintenance_history.json`) and separate schedule-change audit files (`maintenance_schedule_history.csv` and/or `maintenance_schedule_history.json`) under `/config/www/home_maintenance_manager/<entry_id>/`. A persistent notification provides links to each file. Schedule-change exports include the task ID and name, change timestamp and type, reason, previous and new due dates, and previous and new schedule definitions. JSON exports include the property name and record count. Export files are overwritten by the next export in the same format.
 
 ## JSON backup and restore
 
