@@ -963,10 +963,6 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_category = current.get("category", "HVAC")
         if current_category and current_category not in category_options:
             category_options[current_category] = f"Legacy category: {current_category}"
-        current_custom = next(
-            (item for item in custom_categories
-             if item.get("name") == current_category), {},
-        )
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
