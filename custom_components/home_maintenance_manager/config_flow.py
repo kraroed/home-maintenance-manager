@@ -872,26 +872,26 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             ),
             vol.Required(
                 "category",
-                default=current.get("category", "hvac"),
+                default=current.get("category", "HVAC"),
             ): vol.In({
-                "hvac": "HVAC",
-                "plumbing": "Plumbing",
-                "electrical": "Electrical",
-                "appliances": "Appliances",
-                "water_heating": "Water heating",
-                "safety_security": "Safety and security",
-                "roofing": "Roofing",
-                "windows_doors": "Windows and doors",
-                "structure": "Structure",
-                "outdoor": "Outdoor",
-                "pool_spa": "Pool and spa",
-                "other": "Other",
+                "HVAC": "HVAC",
+                "Plumbing": "Plumbing",
+                "Electrical": "Electrical",
+                "Appliances": "Appliances",
+                "Water heating": "Water heating",
+                "Safety and security": "Safety and security",
+                "Roofing": "Roofing",
+                "Windows and doors": "Windows and doors",
+                "Structure": "Structure",
+                "Outdoor": "Outdoor",
+                "Pool and spa": "Pool and spa",
+                "Other": "Other",
                 **({
                     current.get("category"): f"Legacy category: {current.get('category')}"
                 } if current.get("category") and current.get("category") not in {
-                    "hvac", "plumbing", "electrical", "appliances",
-                    "water_heating", "safety_security", "roofing",
-                    "windows_doors", "structure", "outdoor", "pool_spa", "other"
+                    "HVAC", "Plumbing", "Electrical", "Appliances",
+                    "Water heating", "Safety and security", "Roofing",
+                    "Windows and doors", "Structure", "Outdoor", "Pool and spa", "Other"
                 } else {}),
             }),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
