@@ -100,6 +100,30 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             )
 
         options = self.config_entry.options
+        # Discover Home Assistant mobile-app notification services on this
+        # installation. These are services (notify.mobile_app_*), not entities.
+        notify_services = self.hass.services.async_services().get("notify", {})
+        mobile_app_services = sorted(
+            f"notify.{service}"
+            for service in notify_services
+            if service.startswith("mobile_app_")
+        )
+        current_target = options.get("notification_target", "")
+        if current_target and current_target not in mobile_app_services:
+            # Keep an existing setting selectable if its service is temporarily
+            # unavailable or has been renamed; users can still clear/change it.
+            mobile_app_services.append(current_target)
+
+        if mobile_app_services:
+            notification_target_schema = vol.In({
+                "": "Home Assistant persistent notifications",
+                **{service: service for service in mobile_app_services},
+            })
+        else:
+            # Some installations may not have the Companion App integration.
+            # Preserve manual configuration as a fallback in that case.
+            notification_target_schema = vol.All(str, vol.Length(max=255))
+
         schema = vol.Schema({
             vol.Optional(
                 "individual_notifications_enabled",
@@ -111,8 +135,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             ): bool,
             vol.Optional(
                 "notification_target",
-                default=options.get("notification_target", ""),
-            ): vol.All(str, vol.Length(max=255)),
+                default=current_target,
+            ): notification_target_schema,
             vol.Required(
                 "notification_lead_days",
                 default=options.get("notification_lead_days", 7),

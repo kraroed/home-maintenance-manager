@@ -703,3 +703,38 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
     )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {"base": "incomplete_lifespan"}
+
+
+@pytest.mark.asyncio
+async def test_notification_options_discover_mobile_app_services(
+    hass, enable_custom_integrations
+):
+    """Notification options offer mobile-app services registered on this HA instance."""
+    hass.services.async_register("notify", "mobile_app_test_phone", lambda call: None)
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "configure_notifications"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "configure_notifications"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": True,
+            "notification_target": "notify.mobile_app_test_phone",
+            "notification_lead_days": 7,
+            "daily_summary_time": "08:00",
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["notification_target"] == "notify.mobile_app_test_phone"
