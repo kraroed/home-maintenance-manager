@@ -860,3 +860,110 @@ async def test_notification_options_discover_mobile_app_services(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["notification_target"] == "notify.mobile_app_test_phone"
+
+
+@pytest.mark.asyncio
+async def test_manage_tasks_supports_bulk_actions_and_category_selection(
+    hass, enable_custom_integrations
+):
+    """Bulk actions and category edits preserve selections from other categories."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_tasks"}
+    )
+    assert result["type"] == FlowResultType.MENU
+    assert result["menu_options"][:2] == ["select_all_tasks", "clear_all_tasks"]
+    assert "task_category_hvac" in result["menu_options"]
+    assert "finish_task_selection" in result["menu_options"]
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "clear_all_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "task_category_hvac"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "task_category_hvac"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={CONF_ENABLED_TASK_IDS: ["inspect_hvac_air_filter"]},
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "task_category_safety"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={CONF_ENABLED_TASK_IDS: ["test_smoke_alarms"]},
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_task_selection"}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "intervals"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            "interval_inspect_hvac_air_filter": 30,
+            "interval_test_smoke_alarms": 30,
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_ENABLED_TASK_IDS] == [
+        "inspect_hvac_air_filter", "test_smoke_alarms"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_manage_tasks_clear_all_removes_every_enabled_task(
+    hass, enable_custom_integrations
+):
+    """Clear all removes built-in and custom tasks before saving."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+        options={
+            "custom_tasks": [{
+                "task_id": "custom_test_task",
+                "name": "Custom test task",
+                "category": "testing",
+                "schedule_type": "annual",
+                "recommended_interval_days": 365,
+                "is_custom": True,
+            }]
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "select_all_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "clear_all_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_task_selection"}
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_ENABLED_TASK_IDS] == []
