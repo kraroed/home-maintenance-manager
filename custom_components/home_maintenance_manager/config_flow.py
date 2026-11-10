@@ -112,36 +112,127 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        """Collect the property name before choosing tasks by category."""
         if user_input is not None:
             property_name = user_input[CONF_PROPERTY_NAME].strip()
             if not property_name:
-                library = await self.hass.async_add_executor_job(load_library)
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=self._schema(library),
+                    data_schema=self._property_schema(property_name),
                     errors={"base": "invalid_name"},
                 )
-            await self.async_set_unique_id(property_name.casefold())
-            self._abort_if_unique_id_configured()
-            return self.async_create_entry(
-                title=property_name,
-                data={
-                    CONF_PROPERTY_NAME: property_name,
-                    CONF_ENABLED_TASK_IDS: user_input.get(CONF_ENABLED_TASK_IDS, []),
-                },
-            )
-        library = await self.hass.async_add_executor_job(load_library)
+            self._setup_property_name = property_name
+            self._setup_selected_task_ids = []
+            return await self._async_show_setup_task_menu()
         return self.async_show_form(
-            step_id="user", data_schema=self._schema(library)
+            step_id="user", data_schema=self._property_schema("My Home")
         )
 
     @staticmethod
-    def _schema(library):
-        options = [(task_id, item["name"]) for task_id, item in library.items()]
+    def _property_schema(default="My Home"):
         return vol.Schema({
-            vol.Required(CONF_PROPERTY_NAME, default="My Home"): str,
-            vol.Optional(CONF_ENABLED_TASK_IDS, default=[]): cv.multi_select(dict(options)),
+            vol.Required(CONF_PROPERTY_NAME, default=default): vol.All(
+                str, vol.Length(min=1, max=80)
+            ),
         })
+
+    async def _async_show_setup_task_menu(self):
+        """Show task categories for initial setup."""
+        library = await self.hass.async_add_executor_job(load_library)
+        categories = sorted({
+            item.get("category", "").casefold()
+            for item in library.values() if item.get("category")
+        })
+        menu_options = ["select_all_setup_tasks", "clear_all_setup_tasks"]
+        menu_options.extend(
+            f"setup_category_{category}" for category in categories
+        )
+        menu_options.append("finish_setup")
+        return self.async_show_menu(
+            step_id="setup_tasks", menu_options=menu_options
+        )
+
+    async def async_step_select_all_setup_tasks(self, user_input=None):
+        library = await self.hass.async_add_executor_job(load_library)
+        self._setup_selected_task_ids = list(library)
+        return await self._async_show_setup_task_menu()
+
+    async def async_step_clear_all_setup_tasks(self, user_input=None):
+        self._setup_selected_task_ids = []
+        return await self._async_show_setup_task_menu()
+
+    async def _async_step_setup_category(self, category, user_input=None):
+        library = await self.hass.async_add_executor_job(load_library)
+        tasks = {
+            task_id: item for task_id, item in library.items()
+            if item.get("category", "").casefold() == category
+        }
+        if user_input is not None:
+            selected = set(self._setup_selected_task_ids) - set(tasks)
+            selected.update(user_input.get(CONF_ENABLED_TASK_IDS, []))
+            self._setup_selected_task_ids = [
+                task_id for task_id in library if task_id in selected
+            ]
+            return await self._async_show_setup_task_menu()
+        options = {
+            task_id: item["name"] for task_id, item in sorted(
+                tasks.items(), key=lambda pair: pair[1]["name"].casefold()
+            )
+        }
+        return self.async_show_form(
+            step_id=f"setup_category_{category}",
+            data_schema=vol.Schema({
+                vol.Optional(
+                    CONF_ENABLED_TASK_IDS,
+                    default=[
+                        task_id for task_id in tasks
+                        if task_id in self._setup_selected_task_ids
+                    ],
+                ): cv.multi_select(options),
+            }),
+        )
+
+    async def async_step_setup_category_hvac(self, user_input=None):
+        return await self._async_step_setup_category("hvac", user_input)
+
+    async def async_step_setup_category_safety(self, user_input=None):
+        return await self._async_step_setup_category("safety", user_input)
+
+    async def async_step_setup_category_appliances(self, user_input=None):
+        return await self._async_step_setup_category("appliances", user_input)
+
+    async def async_step_setup_category_exterior(self, user_input=None):
+        return await self._async_step_setup_category("exterior", user_input)
+
+    async def async_step_setup_category_landscape(self, user_input=None):
+        return await self._async_step_setup_category("landscape", user_input)
+
+    async def async_step_setup_category_plumbing(self, user_input=None):
+        return await self._async_step_setup_category("plumbing", user_input)
+
+    async def async_step_setup_category_electrical(self, user_input=None):
+        return await self._async_step_setup_category("electrical", user_input)
+
+    async def async_step_setup_category_interior(self, user_input=None):
+        return await self._async_step_setup_category("interior", user_input)
+
+    async def async_step_setup_category_seasonal(self, user_input=None):
+        return await self._async_step_setup_category("seasonal", user_input)
+
+    async def async_step_setup_category_systems(self, user_input=None):
+        return await self._async_step_setup_category("systems", user_input)
+
+    async def async_step_finish_setup(self, user_input=None):
+        property_name = self._setup_property_name
+        await self.async_set_unique_id(property_name.casefold())
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(
+            title=property_name,
+            data={
+                CONF_PROPERTY_NAME: property_name,
+                CONF_ENABLED_TASK_IDS: self._setup_selected_task_ids,
+            },
+        )
 
     @staticmethod
     @callback
