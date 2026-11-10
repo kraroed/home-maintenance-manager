@@ -207,6 +207,13 @@ async def test_custom_task_edit_updates_interval_and_preserves_history(hass):
     ).isoformat()
     assert edited_task["next_due"] == expected_next_due
     assert edited_task["next_due"] != original_next_due
+    schedule_change = edited_task["schedule_history"][-1]
+    assert schedule_change["previous_due"] == original_next_due
+    assert schedule_change["next_due"] == expected_next_due
+    assert schedule_change["reason"] == "Schedule configuration changed"
+    assert schedule_change["previous_schedule"]["interval_days"] == 90
+    assert schedule_change["new_schedule"]["interval_days"] == 120
+    assert schedule_change["change_type"] == "configuration"
     assert reloaded_manager.data["history"][-1] == original_history
     assert edited_task["equipment_ids"] == ["hvac-upstairs"]
 
@@ -752,6 +759,10 @@ async def test_custom_task_schedule_change_recalculates_due_date_and_preserves_h
     assert task["annual_month"] == 10
     assert task["annual_day"] == 15
     assert due.date() == date(2026, 10, 15)
+    schedule_change = task["schedule_history"][-1]
+    assert schedule_change["reason"] == "Schedule configuration changed"
+    assert schedule_change["previous_schedule"]["schedule_type"] == "interval"
+    assert schedule_change["new_schedule"]["schedule_type"] == "annual"
     assert updated_manager.data["history"] == history_before
 
 @pytest.mark.parametrize(
@@ -859,6 +870,10 @@ async def test_custom_monthly_schedule_change_recalculates_due_date_and_keeps_hi
     assert task["monthly_week"] == "first"
     assert task["monthly_weekday"] == 5
     assert due.date() == date(2026, 12, 5)
+    schedule_change = task["schedule_history"][-1]
+    assert schedule_change["reason"] == "Schedule configuration changed"
+    assert schedule_change["previous_schedule"]["schedule_type"] == "interval"
+    assert schedule_change["new_schedule"]["schedule_type"] == "monthly"
     assert updated_manager.data["history"] == history_before
 
 def test_add_months_clamps_to_last_day_of_target_month():
