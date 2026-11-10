@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration for planning, tracking, and recording recurring home maintenance.
 
-> **Development status: early development.** This repository is being built incrementally. It is not yet ready for installation or production use.
+> **Release status:** The integration is published through GitHub releases and can be installed with HACS as a custom repository.
 
 ## Current capabilities
 
@@ -79,7 +79,13 @@ For card features, configuration, and installation instructions, see the standal
 
 ## Installation
 
-Installation instructions will be added after the integration passes Home Assistant and HACS validation and has a tested release.
+1. In Home Assistant, open **HACS → Integrations**.
+2. Open the three-dot menu and choose **Custom repositories**.
+3. Add `https://github.com/kraroed/home-maintenance-manager` and select **Integration** as the category.
+4. Find **Home Maintenance Manager** in HACS and select **Download**.
+5. Restart Home Assistant, then go to **Settings → Devices & services → Add integration** and search for **Home Maintenance Manager**.
+
+For updates, use HACS and restart Home Assistant when prompted. Back up your Home Assistant configuration before installing updates.
 
 ## Recommendations and safety
 
