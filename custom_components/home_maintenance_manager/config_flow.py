@@ -11,17 +11,36 @@ from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
 
 
-def _validate_month_day(value):
-    """Validate a canonical MM-DD date, including leap day."""
-    if not isinstance(value, str) or len(value) != 5:
-        raise vol.Invalid("Enter a valid date as MM-DD.")
+def _is_valid_month_day(value):
+    """Return whether value is a real canonical MM-DD date (leap day allowed)."""
+    if not isinstance(value, str):
+        return False
     try:
         parsed = date(2000, int(value[:2]), int(value[3:]))
-    except ValueError as err:
-        raise vol.Invalid("Enter a valid date as MM-DD.") from err
-    if parsed.strftime("%m-%d") != value:
-        raise vol.Invalid("Enter a valid date as MM-DD.")
-    return value
+    except (TypeError, ValueError):
+        return False
+    return len(value) == 5 and parsed.strftime("%m-%d") == value
+
+
+def _season_window_schema(configured):
+    """Build a frontend-serializable schema for the eight season dates."""
+    defaults = {
+        "spring": {"start": "03-15", "end": "05-31"},
+        "summer": {"start": "06-01", "end": "08-31"},
+        "fall": {"start": "09-01", "end": "11-15"},
+        "winter": {"start": "11-16", "end": "03-14"},
+    }
+    fields = {}
+    for season, window in defaults.items():
+        current = configured.get(season, window)
+        for edge in ("start", "end"):
+            key = f"{season}_{edge}"
+            fields[vol.Required(
+                key, default=current.get(edge, window[edge])
+            )] = vol.Match(
+                r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+            )
+    return vol.Schema(fields)
 
 
 def _validate_optional_iso_date(value):
@@ -152,7 +171,20 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_configure_season_windows(self, user_input=None):
+        configured = self.config_entry.options.get("season_windows", {})
         if user_input is not None:
+            invalid_fields = [
+                f"{season}_{edge}"
+                for season in ("spring", "summer", "fall", "winter")
+                for edge in ("start", "end")
+                if not _is_valid_month_day(user_input[f"{season}_{edge}"])
+            ]
+            if invalid_fields:
+                return self.async_show_form(
+                    step_id="configure_season_windows",
+                    data_schema=_season_window_schema(user_input),
+                    errors={"base": "invalid_season_date"},
+                )
             return self.async_create_entry(
                 title="",
                 data={
@@ -167,25 +199,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 },
             )
 
-        defaults = {
-            "spring": {"start": "03-15", "end": "05-31"},
-            "summer": {"start": "06-01", "end": "08-31"},
-            "fall": {"start": "09-01", "end": "11-15"},
-            "winter": {"start": "11-16", "end": "03-14"},
-        }
-        configured = self.config_entry.options.get("season_windows", {})
-        fields = {}
-        for season, window in defaults.items():
-            current = configured.get(season, window)
-            fields[vol.Required(
-                f"{season}_start", default=current.get("start", window["start"])
-            )] = vol.All(str, _validate_month_day)
-            fields[vol.Required(
-                f"{season}_end", default=current.get("end", window["end"])
-            )] = vol.All(str, _validate_month_day)
         return self.async_show_form(
             step_id="configure_season_windows",
-            data_schema=vol.Schema(fields),
+            data_schema=_season_window_schema(configured),
         )
 
     async def async_step_manage_tasks(self, user_input=None):

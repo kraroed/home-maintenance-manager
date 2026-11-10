@@ -140,8 +140,8 @@ class TaskManager:
         self.hass = hass
         self.entry_id = entry_id
         self.storage = MaintenanceStorage(hass, entry_id)
-        self.library = load_library()
-        self.library.update({item["task_id"]: deepcopy(item) for item in (custom_tasks or [])})
+        self.library = {}
+        self.custom_tasks = [deepcopy(item) for item in (custom_tasks or [])]
         self.equipment_records = equipment_records or []
         self.data = None
         self.enabled_ids = set(enabled_ids)
@@ -161,6 +161,9 @@ class TaskManager:
         return (now + timedelta(days=interval)).isoformat() if interval else None
 
     async def async_load(self):
+        # Read the bundled task library off the event loop to avoid blocking I/O.
+        self.library = await self.hass.async_add_executor_job(load_library)
+        self.library.update({item["task_id"]: deepcopy(item) for item in self.custom_tasks})
         self.data = await self.storage.async_load()
         for season, window in self.season_windows.items():
             if season in self.data["settings"]["season_windows"]:
