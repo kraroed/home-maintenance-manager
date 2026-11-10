@@ -194,7 +194,8 @@
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
       "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank.",
       "incomplete_lifespan": "For automatic replacement scheduling, enter an installation date, lifespan, and replacement task together, or leave all three unset.",
-      "duplicate_replacement_task": "Each equipment record must have its own designated replacement task."
+      "duplicate_replacement_task": "Each equipment record must have its own designated replacement task.",
+      "invalid_season_date": "Enter real calendar dates in MM-DD format. February 29 is allowed."
     },
     "abort": {
       "no_equipment": "No equipment records have been added yet.",
