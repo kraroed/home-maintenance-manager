@@ -24,6 +24,7 @@
           "add_custom_task": "Add a custom maintenance task",
           "add_equipment": "Add household equipment",
           "manage_equipment": "Manage household equipment",
+          "create_area": "Create a Home Assistant area",
           "manage_custom_tasks": "Manage custom maintenance tasks",
           "configure_notifications": "Configure maintenance notifications",
           "configure_season_windows": "Configure seasonal scheduling windows"
@@ -86,6 +87,7 @@
         "data": {
           "name": "Equipment name",
           "category": "Category",
+          "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
           "installed_date": "Installation date (YYYY-MM-DD)",
@@ -93,6 +95,13 @@
           "task_ids": "Maintenance tasks associated with this equipment",
           "lifespan_months": "Expected lifespan (months; 0 disables)",
           "replacement_task_id": "Task to make due when replacement is needed"
+        }
+      },
+      "create_area": {
+        "title": "Create a Home Assistant area",
+        "description": "Create an area that can be assigned to household equipment.",
+        "data": {
+          "name": "New area name"
         }
       },
       "manage_equipment": {
@@ -116,6 +125,7 @@
         "data": {
           "name": "Equipment name",
           "category": "Category",
+          "area_id": "Home Assistant area",
           "manufacturer": "Manufacturer",
           "model": "Model",
           "installed_date": "Installation date (YYYY-MM-DD)",
@@ -192,6 +202,7 @@
       "duplicate_task": "A task with this name already exists. Choose a different name.",
       "invalid_annual_date": "Enter a valid calendar date. February 29 is allowed.",
       "duplicate_equipment": "Equipment with this name already exists. Choose a different name.",
+      "area_exists": "An area with this name already exists. Choose it when configuring equipment.",
       "invalid_date": "Enter a real date as YYYY-MM-DD, or leave the field blank.",
       "incomplete_lifespan": "For automatic replacement scheduling, enter an installation date, lifespan, and replacement task together, or leave all three unset.",
       "duplicate_replacement_task": "Each equipment record must have its own designated replacement task.",
