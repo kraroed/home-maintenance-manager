@@ -900,15 +900,24 @@ async def test_manage_tasks_supports_bulk_actions_and_category_selection(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "finish_task_selection"}
     )
-    assert result["type"] == FlowResultType.FORM
+    assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "intervals"
-
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            "interval_inspect_hvac_air_filter": 30,
-            "interval_test_smoke_alarms": 30,
-        },
+        result["flow_id"], user_input={"next_step_id": "interval_category_hvac"}
+    )
+    assert result["step_id"] == "interval_category_hvac"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_inspect_hvac_air_filter": 30}
+    )
+    assert result["type"] == FlowResultType.MENU
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "interval_category_safety"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"interval_test_smoke_alarms": 30}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "finish_intervals"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_ENABLED_TASK_IDS] == [
