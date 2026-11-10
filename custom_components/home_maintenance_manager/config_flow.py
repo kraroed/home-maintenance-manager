@@ -7,6 +7,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import selector
 
 from .const import CONF_ENABLED_TASK_IDS, CONF_PROPERTY_NAME, DOMAIN
 from .task_manager import load_library
@@ -963,6 +964,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current_category = current.get("category", "HVAC")
         if current_category and current_category not in category_options:
             category_options[current_category] = f"Legacy category: {current_category}"
+        saved_custom_category = next(
+            (
+                item for item in custom_categories
+                if item.get("name", "").casefold() == current_category.casefold()
+            ),
+            None,
+        )
+        default_icon = (
+            current.get("category_icon")
+            or (saved_custom_category.get("icon") if saved_custom_category else None)
+            or EQUIPMENT_CATEGORY_ICONS.get(current_category, "mdi:tools")
+        )
         return vol.Schema({
             vol.Required("name", default=current.get("name", "")): vol.All(
                 str, vol.Length(min=1, max=80)
@@ -971,7 +984,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("custom_category_name", default=""): vol.All(
                 str, vol.Length(max=40)
             ),
-            vol.Optional("custom_category_icon"): vol.In(EQUIPMENT_ICON_OPTIONS),
+            vol.Optional(
+                "custom_category_icon", default=default_icon
+            ): selector.IconSelector(selector.IconSelectorConfig()),
             vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             vol.Optional("manufacturer", default=current.get("manufacturer", "")): vol.All(
                 str, vol.Length(max=80)
