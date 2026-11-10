@@ -32,13 +32,10 @@
       },
       "configure_notifications": {
         "title": "Maintenance notifications",
-        "description": "Enable individual reminders and a daily summary. Select an available Home Assistant mobile app notify service to send mobile notifications. If no mobile app services are available, you can enter a service name manually. Leave it blank to use Home Assistant persistent notifications.",
+        "description": "Choose whether to receive individual task reminders, a daily maintenance summary, or both. The next step will show only the settings needed for your choices.",
         "data": {
           "individual_notifications_enabled": "Send individual task reminders",
-          "daily_summary_enabled": "Send a daily maintenance summary",
-          "notification_target": "Mobile app notification service",
-          "notification_lead_days": "Remind this many days before a task is due",
-          "daily_summary_time": "Daily summary time (24-hour HH:MM)"
+          "daily_summary_enabled": "Send a daily maintenance summary"
         }
       },
       "manage_tasks": {
@@ -192,17 +189,7 @@
       },
       "configure_season_windows": {
         "title": "Seasonal scheduling windows",
-        "description": "Set the start and end dates for each season. Enter dates in MM-DD format. Winter can span the end of the year.",
-        "data": {
-          "spring_start": "Spring start (MM-DD)",
-          "spring_end": "Spring end (MM-DD)",
-          "summer_start": "Summer start (MM-DD)",
-          "summer_end": "Summer end (MM-DD)",
-          "fall_start": "Fall start (MM-DD)",
-          "fall_end": "Fall end (MM-DD)",
-          "winter_start": "Winter start (MM-DD)",
-          "winter_end": "Winter end (MM-DD)"
-        }
+        "description": "Configure each season separately. Winter can span the end of the year."
       },
       "task_category_hvac": {
         "title": "HVAC maintenance tasks",
@@ -314,6 +301,47 @@
           "what_to_look_for": "What to look for (one item per line)",
           "what_to_do_if_issue": "What to do if something is wrong",
           "safety_notes": "Safety precautions"
+        }
+      },
+      "notification_delivery": {
+        "title": "Notification delivery and timing",
+        "description": "Choose where enabled notifications are sent and set their timing.",
+        "data": {
+          "notification_target": "Mobile app notification service",
+          "notification_lead_days": "Remind this many days before a task is due",
+          "daily_summary_time": "Daily summary time (24-hour HH:MM)"
+        }
+      },
+      "season_window_spring": {
+        "title": "Spring scheduling window",
+        "description": "Set the start and end dates for spring. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Spring start (MM-DD)",
+          "end": "Spring end (MM-DD)"
+        }
+      },
+      "season_window_summer": {
+        "title": "Summer scheduling window",
+        "description": "Set the start and end dates for summer. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Summer start (MM-DD)",
+          "end": "Summer end (MM-DD)"
+        }
+      },
+      "season_window_fall": {
+        "title": "Fall scheduling window",
+        "description": "Set the start and end dates for fall. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Fall start (MM-DD)",
+          "end": "Fall end (MM-DD)"
+        }
+      },
+      "season_window_winter": {
+        "title": "Winter scheduling window",
+        "description": "Set the start and end dates for winter. Enter dates in MM-DD format.",
+        "data": {
+          "start": "Winter start (MM-DD)",
+          "end": "Winter end (MM-DD)"
         }
       }
     },
