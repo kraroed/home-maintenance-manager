@@ -157,8 +157,10 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
     def icon(self):
         """Return an icon representing the equipment category."""
         item = self._equipment()
-        return self.CATEGORY_ICONS.get(
-            item.get("category") if item else None, "mdi:tools"
+        if item is None:
+            return "mdi:tools"
+        return item.get("category_icon") or self.CATEGORY_ICONS.get(
+            item.get("category"), "mdi:tools"
         )
 
     @property
@@ -175,7 +177,9 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "equipment_id": self.equipment_id,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
-            "category_icon": self.CATEGORY_ICONS.get(item.get("category"), "mdi:tools"),
+            "category_icon": item.get("category_icon") or self.CATEGORY_ICONS.get(
+                item.get("category"), "mdi:tools"
+            ),
             **{
                 key: item.get(key)
                 for key in (
