@@ -296,6 +296,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_configure_notifications(self, user_input=None):
         """Choose which maintenance notifications should be sent."""
         options = self.config_entry.options
+        draft = getattr(self, "_notification_draft", options)
         if user_input is not None:
             self._notification_draft = {
                 "individual_notifications_enabled": user_input["individual_notifications_enabled"],
@@ -309,11 +310,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             data_schema=vol.Schema({
                 vol.Optional(
                     "individual_notifications_enabled",
-                    default=options.get("individual_notifications_enabled", True),
+                    default=draft.get("individual_notifications_enabled", True),
                 ): bool,
                 vol.Optional(
                     "daily_summary_enabled",
-                    default=options.get("daily_summary_enabled", True),
+                    default=draft.get("daily_summary_enabled", True),
                 ): bool,
             }),
         )
@@ -339,7 +340,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             f"notify.{service}" for service in notify_services
             if service.startswith("mobile_app_")
         )
-        current_target = options.get("notification_target", "")
+        current_target = draft.get("notification_target", options.get("notification_target", ""))
         if current_target and current_target not in mobile_app_services:
             mobile_app_services.append(current_target)
         if mobile_app_services:
@@ -358,12 +359,12 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if draft["individual_notifications_enabled"]:
             fields[vol.Required(
                 "notification_lead_days",
-                default=options.get("notification_lead_days", 7),
+                default=draft.get("notification_lead_days", options.get("notification_lead_days", 7)),
             )] = vol.All(vol.Coerce(int), vol.Range(min=0, max=90))
         if draft["daily_summary_enabled"]:
             fields[vol.Required(
                 "daily_summary_time",
-                default=options.get("daily_summary_time", "08:00"),
+                default=draft.get("daily_summary_time", options.get("daily_summary_time", "08:00")),
             )] = vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
         if not fields:
             self._notification_draft = draft
