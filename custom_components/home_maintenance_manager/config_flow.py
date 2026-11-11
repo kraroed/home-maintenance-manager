@@ -26,6 +26,19 @@ EQUIPMENT_CATEGORY_ICONS = {
     "Pool and spa": "mdi:pool", "Other": "mdi:tools",
 }
 
+
+def _multi_select_checklist(options):
+    """Render multi-select choices as an always-visible checklist."""
+    items = options.items() if isinstance(options, dict) else options
+    return selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[{"value": value, "label": label} for value, label in items],
+            multiple=True,
+            mode=selector.SelectSelectorMode.LIST,
+        )
+    )
+
+
 def _resolve_equipment_category(options, user_input):
     """Resolve a built-in or reusable custom equipment category and icon."""
     custom_categories = [
@@ -192,7 +205,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         task_id for task_id in tasks
                         if task_id in self._setup_selected_task_ids
                     ],
-                ): cv.multi_select(options),
+                ): _multi_select_checklist(options),
             }),
         )
 
@@ -503,7 +516,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     task_id for task_id in tasks
                     if task_id in self._selected_task_ids
                 ],
-            ): cv.multi_select(dict(options)),
+            ): _multi_select_checklist(options),
         })
         return self.async_show_form(
             step_id=f"task_category_{category}",
@@ -1354,5 +1367,5 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         """Build the linked maintenance tasks step."""
         current = current or {}
         return vol.Schema({
-            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(dict(task_options)),
+            vol.Optional("task_ids", default=current.get("task_ids", [])): _multi_select_checklist(task_options),
         })
