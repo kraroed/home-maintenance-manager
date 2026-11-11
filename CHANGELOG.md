@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
 
 ### Improvements
 - Add configurable automatic JSON backups with daily, weekly, or monthly scheduling.
