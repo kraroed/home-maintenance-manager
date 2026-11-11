@@ -42,7 +42,8 @@ def test_workload_metrics_keeps_overdue_and_due_today_separate():
     assert result["due_today"] == 1
     assert result["next_7_days"] == 1
     assert result["next_30_days"] == 1
-    assert result["next_90_days"] == 1
+    # January 1 is 51 days after November 11, so it is inside the 90-day window.
+    assert result["next_90_days"] == 2
 
 
 def test_backlog_snapshot_records_enabled_task_statuses():
