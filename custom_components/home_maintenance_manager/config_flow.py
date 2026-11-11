@@ -845,7 +845,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     errors={"base": "invalid_category"},
                 )
             self._custom_task_draft["category_name"] = category
-            self._custom_task_draft["category"] = category.casefold()
+            # Keep the original "Other" choice in the basic form draft; resolve
+            # the entered category name only when the task is saved.
             return self._async_show_custom_task_wizard_navigation(
                 self._custom_task_base_step, "custom_task_schedule"
             )
@@ -992,7 +993,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             **existing_record,
             "task_id": task_id,
             "name": name,
-            "category": draft["category"].strip().casefold() or "custom",
+            "category": (draft.get("category_name") if draft.get("category") == "other" else draft["category"]).strip().casefold() or "custom",
             "description": draft.get("description", "").strip(),
             "schedule_type": schedule_type,
             "recommended_interval_days": interval,
