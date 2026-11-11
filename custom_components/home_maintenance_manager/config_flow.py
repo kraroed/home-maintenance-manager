@@ -301,7 +301,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "individual_notifications_enabled": user_input["individual_notifications_enabled"],
                 "daily_summary_enabled": user_input["daily_summary_enabled"],
             }
-            return await self.async_step_notification_delivery()
+            return self._async_show_notification_wizard_navigation(
+                previous=None, next_step="notification_delivery"
+            )
         return self.async_show_form(
             step_id="configure_notifications",
             data_schema=vol.Schema({
@@ -325,15 +327,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
         if user_input is not None:
             draft.update(user_input)
-            return self.async_create_entry(
-                title="",
-                data={
-                    **options,
-                    **draft,
-                    "notification_target": user_input.get("notification_target", "").strip(),
-                    "notification_lead_days": user_input.get("notification_lead_days", options.get("notification_lead_days", 7)),
-                    "daily_summary_time": user_input.get("daily_summary_time", options.get("daily_summary_time", "08:00")),
-                },
+            if "notification_target" in draft:
+                draft["notification_target"] = draft["notification_target"].strip()
+            self._notification_draft = draft
+            return self._async_show_notification_wizard_navigation(
+                previous="configure_notifications", next_step="save"
             )
 
         notify_services = self.hass.services.async_services().get("notify", {})
@@ -368,11 +366,52 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 default=options.get("daily_summary_time", "08:00"),
             )] = vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
         if not fields:
-            return self.async_create_entry(
-                title="", data={**options, **draft}
+            self._notification_draft = draft
+            return self._async_show_notification_wizard_navigation(
+                previous="configure_notifications", next_step="save"
             )
         return self.async_show_form(
             step_id="notification_delivery", data_schema=vol.Schema(fields)
+        )
+
+    def _async_show_notification_wizard_navigation(self, previous, next_step):
+        """Offer Back and Continue actions between notification settings."""
+        self._notification_wizard_previous = previous
+        self._notification_wizard_next = next_step
+        menu_options = ["notification_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "notification_wizard_back")
+        return self.async_show_menu(
+            step_id="notification_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_notification_wizard_back(self, user_input=None):
+        """Return to notification type selection with choices preserved."""
+        return await self.async_step_configure_notifications()
+
+    async def async_step_notification_wizard_continue(self, user_input=None):
+        """Continue to delivery settings or save notification preferences."""
+        next_step = self._notification_wizard_next
+        if next_step != "save":
+            return await self.async_step_notification_delivery()
+        options = self.config_entry.options
+        draft = self._notification_draft
+        return self.async_create_entry(
+            title="",
+            data={
+                **options,
+                **draft,
+                "notification_target": draft.get(
+                    "notification_target", options.get("notification_target", "")
+                ),
+                "notification_lead_days": draft.get(
+                    "notification_lead_days", options.get("notification_lead_days", 7)
+                ),
+                "daily_summary_time": draft.get(
+                    "daily_summary_time", options.get("daily_summary_time", "08:00")
+                ),
+            },
         )
 
     async def async_step_configure_season_windows(self, user_input=None):
