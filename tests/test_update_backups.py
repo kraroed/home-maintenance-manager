@@ -182,8 +182,11 @@ async def test_update_backup_listener_respects_selected_entities(hass, monkeypat
     """When entity IDs are selected, other update entities are ignored."""
     callbacks = {}
     monkeypatch.setattr(
-        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
-        lambda hass, entity_ids, action: callbacks.update(action=action) or (lambda: None),
+        hass.bus,
+        "async_listen",
+        lambda event_type, action: callbacks.update(
+            event_type=event_type, action=action
+        ) or (lambda: None),
     )
     entry_data = _entry_data()
     entry = entry_data["config_entry"]
