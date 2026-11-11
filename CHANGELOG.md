@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.11.1
+
+### Fixes
+- Fix update backup monitoring setup by registering a supported Home Assistant state-change event listener.
+- Prevent the integration config entry from failing to load when update backup or installation tracking is enabled.
+
+### Testing
+- Add regression coverage for listener registration, update availability, duplicate prevention, installation tracking, and entity filtering.
+
 ## 0.11.0
 
 ### Improvements
