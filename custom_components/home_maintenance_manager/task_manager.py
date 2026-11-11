@@ -7,6 +7,7 @@ from pathlib import Path
 from homeassistant.util import dt as dt_util
 
 from .storage import MaintenanceStorage
+from .insights import backlog_snapshot, completion_metrics, workload_metrics
 
 
 def load_library():
@@ -469,6 +470,19 @@ class TaskManager:
         task["next_due"] = next_due
         await self.async_save()
 
+    async def async_record_backlog_snapshot(self):
+        """Persist at most one backlog snapshot per local calendar day."""
+        today = dt_util.now().date().isoformat()
+        snapshots = self.data.setdefault("backlog_snapshots", [])
+        if snapshots and snapshots[-1].get("date") == today:
+            return False
+        snapshots.append(backlog_snapshot(
+            list(self.data.get("tasks", {}).values()), dt_util.now().date()
+        ))
+        del snapshots[:-365]
+        await self.async_save()
+        return True
+
     def snapshot(self):
         tasks = []
         for stored_task in self.data.get("tasks", {}).values():
@@ -483,7 +497,16 @@ class TaskManager:
                 for key, value in record.items()
                 if key not in {"attachments", "labor_cost", "parts_cost", "total_cost", "currency"}
             })
+        today = dt_util.now().date()
+        insights = completion_metrics(
+            self.data.get("history", []), tasks, today
+        )
+        insights["workload"] = workload_metrics(tasks, today)
+        insights["backlog_history"] = deepcopy(
+            self.data.get("backlog_snapshots", [])[-365:]
+        )
         return {
+            "insights": insights,
             "tasks": tasks,
             "history_by_task": {
                 task_id: records[-10:]
