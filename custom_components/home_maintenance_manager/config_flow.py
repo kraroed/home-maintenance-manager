@@ -1121,10 +1121,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_add_equipment(self, user_input=None):
         """Start the guided equipment registration flow."""
         if user_input is None:
-            self._equipment_draft = {}
-            return self.async_show_form(step_id="add_equipment", data_schema=self._equipment_identity_schema())
-        self._equipment_draft = dict(user_input)
-        return await self.async_step_add_equipment_details()
+            if not hasattr(self, "_equipment_draft"):
+                self._equipment_draft = {}
+            return self.async_show_form(
+                step_id="add_equipment",
+                data_schema=self._equipment_identity_schema(self._equipment_draft),
+            )
+        self._equipment_draft.update(user_input)
+        return self._async_show_equipment_wizard_navigation(
+            previous=None, next_step="add_equipment_details", editing=False
+        )
 
     async def async_step_add_equipment_details(self, user_input=None):
         """Collect installation and lifespan details."""
@@ -1138,7 +1144,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
                     errors={"base": "invalid_date"},
                 )
-            return await self.async_step_add_equipment_tasks()
+            return self._async_show_equipment_wizard_navigation(
+                previous="add_equipment", next_step="add_equipment_tasks", editing=False
+            )
         return self.async_show_form(
             step_id="add_equipment_details",
             data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
@@ -1149,7 +1157,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         task_options = await self._async_equipment_task_options()
         if user_input is not None:
             self._equipment_draft.update(user_input)
-            return await self._async_save_equipment(editing=False)
+            return self._async_show_equipment_wizard_navigation(
+                previous="add_equipment_details", next_step="save", editing=False
+            )
         return self.async_show_form(step_id="add_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
 
     async def async_step_manage_equipment(self, user_input=None):
@@ -1173,10 +1183,13 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if current is None:
             return self.async_abort(reason="equipment_not_found")
         if user_input is None:
-            self._equipment_draft = dict(current)
-            return self.async_show_form(step_id="edit_equipment", data_schema=self._equipment_identity_schema(current))
+            if not hasattr(self, "_equipment_draft"):
+                self._equipment_draft = dict(current)
+            return self.async_show_form(step_id="edit_equipment", data_schema=self._equipment_identity_schema(self._equipment_draft))
         self._equipment_draft.update(user_input)
-        return await self.async_step_edit_equipment_details()
+        return self._async_show_equipment_wizard_navigation(
+            previous=None, next_step="edit_equipment_details", editing=True
+        )
 
     async def async_step_edit_equipment_details(self, user_input=None):
         """Collect updated installation and lifespan details."""
@@ -1190,7 +1203,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
                     errors={"base": "invalid_date"},
                 )
-            return await self.async_step_edit_equipment_tasks()
+            return self._async_show_equipment_wizard_navigation(
+                previous="edit_equipment", next_step="edit_equipment_tasks", editing=True
+            )
         return self.async_show_form(
             step_id="edit_equipment_details",
             data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
@@ -1201,8 +1216,38 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         task_options = await self._async_equipment_task_options()
         if user_input is not None:
             self._equipment_draft.update(user_input)
-            return await self._async_save_equipment(editing=True)
+            return self._async_show_equipment_wizard_navigation(
+                previous="edit_equipment_details", next_step="save", editing=True
+            )
         return self.async_show_form(step_id="edit_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
+
+    def _async_show_equipment_wizard_navigation(self, previous, next_step, editing):
+        """Offer explicit Back and Continue actions between equipment forms."""
+        self._equipment_wizard_previous = previous
+        self._equipment_wizard_next = next_step
+        self._equipment_wizard_editing = editing
+        menu_options = ["equipment_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "equipment_wizard_back")
+        return self.async_show_menu(
+            step_id="equipment_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_equipment_wizard_back(self, user_input=None):
+        """Return to the previous equipment step with its draft intact."""
+        return await getattr(
+            self, f"async_step_{self._equipment_wizard_previous}"
+        )()
+
+    async def async_step_equipment_wizard_continue(self, user_input=None):
+        """Continue the equipment wizard or save its completed draft."""
+        next_step = self._equipment_wizard_next
+        if next_step == "save":
+            return await self._async_save_equipment(
+                editing=self._equipment_wizard_editing
+            )
+        return await getattr(self, f"async_step_{next_step}")()
 
     def _get_selected_equipment(self):
         """Return the equipment record selected in the management flow."""
