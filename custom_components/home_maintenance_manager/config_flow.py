@@ -890,8 +890,6 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         })
 
-    @staticmethod
-
     async def async_step_custom_task_schedule(self, user_input=None):
         """Choose the recurrence pattern before showing its relevant fields."""
         if user_input is not None:
