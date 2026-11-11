@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.11.3
+
+### Configuration
+- Add clear field-level explanations across 19 configuration forms, covering notifications, custom schedules, equipment, seasonal windows, and backup settings.
+- Clarify update monitoring behavior, including what an empty entity selection means and the limitations of installation tracking.
+- Return to the complete options menu after creating a Home Assistant area.
+
+### Testing
+- Add regression coverage for configuration translation completeness, backup-setting guidance, and options-menu navigation.
+
 ## 0.11.2
 
 ### Fixes
