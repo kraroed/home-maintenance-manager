@@ -90,14 +90,18 @@ class InsightsSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         insights = self.coordinator.data.get("insights", {})
-        return {
+        attributes = {
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
-            "completion_windows": insights.get("windows", {}),
-            "completion_by_category": insights.get("by_category", {}),
-            "upcoming_workload": insights.get("workload", {}),
-            "overdue_backlog_history": insights.get("backlog_history", []),
         }
+        if self.path[0] == "windows":
+            attributes["completion_windows"] = insights.get("windows", {})
+            attributes["completion_by_category"] = insights.get("by_category", {})
+        elif self.path[0] == "backlog_history":
+            attributes["overdue_backlog_history"] = insights.get("backlog_history", [])
+        else:
+            attributes["upcoming_workload"] = insights.get("workload", {})
+        return attributes
 
 
 class TaskStatusSensor(CoordinatorEntity, SensorEntity):
