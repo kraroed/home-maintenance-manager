@@ -12,6 +12,7 @@ from .coordinator import MaintenanceCoordinator
 from .history_export import async_setup_history_export, async_unload_history_export
 from .notifications import async_setup_notifications
 from .task_manager import TaskManager
+from homeassistant.helpers.event import async_track_time_change
 from .update_backups import async_setup_update_backups
 
 
@@ -38,9 +39,18 @@ async def async_setup_entry(hass, entry):
         entry.options.get("season_windows"),
     )
     await manager.async_load()
+    await manager.async_record_backlog_snapshot()
 
     coordinator = MaintenanceCoordinator(hass, manager)
     await coordinator.async_config_entry_first_refresh()
+
+    async def record_daily_backlog(now):
+        await manager.async_record_backlog_snapshot()
+        await coordinator.async_request_refresh()
+
+    cancel_backlog_snapshots = async_track_time_change(
+        hass, record_daily_backlog, hour=0, minute=5, second=0
+    )
 
     cancel_notifications = await async_setup_notifications(
         hass, entry, manager, coordinator
@@ -65,6 +75,7 @@ async def async_setup_entry(hass, entry):
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     entry.async_on_unload(cancel_notifications)
+    entry.async_on_unload(cancel_backlog_snapshots)
     entry.async_on_unload(cancel_automatic_backup)
     entry.async_on_unload(cancel_update_backup_listener)
     return True
