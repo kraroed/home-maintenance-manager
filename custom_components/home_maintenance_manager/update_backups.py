@@ -88,7 +88,7 @@ def async_setup_update_backups(hass, entry, entry_data):
                     ),
                 }
                 await manager.async_save()
-                entity_name = new_state.name or entity_id
+                entity_name = new_state.attributes.get("friendly_name", entity_id)
                 if matching_backup:
                     message = (
                         f"{entity_name} ({version}) has started installing. "
