@@ -572,7 +572,12 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["custom_tasks"] == [{
-        **custom_task,
+        **{
+            key: value for key, value in custom_task.items()
+            if key not in {
+                "annual_month", "annual_day", "monthly_week", "monthly_weekday"
+            }
+        },
         "name": "Replace upstairs HVAC filter",
         "category": "heating and cooling",
         "description": "Updated description",
