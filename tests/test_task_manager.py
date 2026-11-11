@@ -29,7 +29,13 @@ async def test_seasonal_reschedule_survives_manager_reload(hass):
 
     task = reloaded_manager.data["tasks"]["clean_gutters"]
     assert dt_util.as_local(dt_util.parse_datetime(task["next_due"])).date() == selected_day
-    assert task["schedule_history"][-1]["reason"] == "Avoid bad weather"
+    record = task["schedule_history"][-1]
+    assert record["reason"] == "Avoid bad weather"
+    assert record["change_type"] == "reschedule"
+    assert record["previous_due"] is not None
+    assert dt_util.as_local(dt_util.parse_datetime(record["next_due"])).date() == selected_day
+    assert record["previous_schedule"] == record["new_schedule"]
+    assert record["new_schedule"]["schedule_type"] == "seasonal"
 
 @pytest.mark.asyncio
 async def test_completion_resets_interval_and_preserves_history(hass):
