@@ -757,28 +757,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             },
         )
 
-    async def async_step_add_custom_task(self, user_input=None):
-        """Collect the basic details for a new custom maintenance task."""
-        if user_input is not None:
-            self._custom_task_draft = {
-                "name": user_input["name"].strip(),
-                "category": user_input["category"],
-                "description": user_input.get("description", "").strip(),
-            }
-            if user_input["category"] == "other":
-                return self.async_show_form(
-                    step_id="custom_task_category",
-                    data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(
-                            str, vol.Length(min=1, max=40)
-                        ),
-                    }),
-                )
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
-            )
-
+    async def _async_custom_task_basic_form(self, step_id):
+        """Render the basic custom-task page with draft values."""
         library = await self.hass.async_add_executor_job(load_library)
         categories = {
             item.get("category", "").strip().casefold(): item.get("category", "").strip()
@@ -788,76 +768,103 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             category = item.get("category", "").strip()
             if category:
                 categories[category.casefold()] = category
-        options = {
-            key: value for key, value in sorted(categories.items())
-        }
+        options = {key: value for key, value in sorted(categories.items())}
         options["other"] = "Other / Create a new category"
+        current = self._custom_task_draft
+        category = current.get("category", "hvac")
+        options.setdefault(category, category.title())
         return self.async_show_form(
-            step_id="add_custom_task",
+            step_id=step_id,
             data_schema=vol.Schema({
-                vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
-                vol.Required("category", default="hvac"): vol.In(options),
-                vol.Optional("description", default=""): vol.All(
-                    str, vol.Length(max=300)
-                ),
+                vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
+                vol.Required("category", default=category): vol.In(options),
+                vol.Optional("description", default=current.get("description", "")): vol.All(str, vol.Length(max=300)),
             }),
         )
 
+    def _async_show_custom_task_wizard_navigation(self, previous, next_step):
+        """Show Back and Continue between custom-task wizard pages."""
+        self._custom_task_wizard_previous = previous
+        self._custom_task_wizard_next = next_step
+        return self.async_show_menu(
+            step_id="custom_task_wizard_navigation",
+            menu_options=["custom_task_wizard_back", "custom_task_wizard_continue"],
+        )
+
+    async def async_step_custom_task_wizard_navigation(self, user_input=None):
+        return self.async_show_menu(
+            step_id="custom_task_wizard_navigation",
+            menu_options=["custom_task_wizard_back", "custom_task_wizard_continue"],
+        )
+
+    async def async_step_custom_task_wizard_back(self, user_input=None):
+        previous = self._custom_task_wizard_previous
+        if previous in ("add_custom_task", "edit_custom_task"):
+            return await self._async_custom_task_basic_form(previous)
+        return await getattr(self, f"async_step_{previous}")()
+
+    async def async_step_custom_task_wizard_continue(self, user_input=None):
+        next_step = self._custom_task_wizard_next
+        if next_step == "save":
+            return await self.async_step_custom_task_save()
+        return await getattr(self, f"async_step_{next_step}")()
+
+    async def async_step_add_custom_task(self, user_input=None):
+        """Collect basic details and preserve them through Back navigation."""
+        if not hasattr(self, "_custom_task_draft") or getattr(self, "_custom_task_editing", False):
+            self._custom_task_draft = {}
+        self._custom_task_editing = False
+        if user_input is not None:
+            self._custom_task_draft.update({
+                "name": user_input["name"].strip(),
+                "category": user_input["category"],
+                "description": user_input.get("description", "").strip(),
+            })
+            self._custom_task_base_step = "add_custom_task"
+            next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
+            return self._async_show_custom_task_wizard_navigation("add_custom_task", next_step)
+        return await self._async_custom_task_basic_form("add_custom_task")
+
     async def async_step_custom_task_category(self, user_input=None):
-        """Collect a reusable category name for a custom task."""
+        """Collect a reusable category name while retaining the draft."""
         if user_input is not None:
             category = user_input["category_name"].strip()
             if not category:
                 return self.async_show_form(
                     step_id="custom_task_category",
                     data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(
-                            str, vol.Length(min=1, max=40)
-                        ),
+                        vol.Required("category_name", default=self._custom_task_draft.get("category_name", "")): vol.All(str, vol.Length(min=1, max=40)),
                     }),
                     errors={"base": "invalid_category"},
                 )
+            self._custom_task_draft["category_name"] = category
             self._custom_task_draft["category"] = category.casefold()
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_category", "custom_task_schedule"
             )
         return self.async_show_form(
             step_id="custom_task_category",
             data_schema=vol.Schema({
-                vol.Required("category_name"): vol.All(
-                    str, vol.Length(min=1, max=40)
-                ),
+                vol.Required("category_name", default=self._custom_task_draft.get("category_name", "")): vol.All(str, vol.Length(min=1, max=40)),
             }),
         )
-
-    @staticmethod
-    def _custom_task_schedule_type_schema(default="interval"):
-        return vol.Schema({
-            vol.Required("schedule_type", default=default): vol.In({
-                "interval": "Repeat by interval",
-                "annual": "Repeat annually on a calendar date",
-                "monthly": "Repeat monthly on a weekday pattern",
-            }),
-        })
 
     async def async_step_custom_task_schedule(self, user_input=None):
         """Choose the recurrence pattern before showing its relevant fields."""
         if user_input is not None:
             self._custom_task_draft["schedule_type"] = user_input["schedule_type"]
-            return self.async_show_form(
-                step_id="custom_task_schedule_details",
-                data_schema=self._custom_task_schedule_details_schema(
-                    user_input["schedule_type"], self._custom_task_draft
-                ),
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_schedule", "custom_task_schedule_details"
             )
         return self.async_show_form(
             step_id="custom_task_schedule",
-            data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
+            data_schema=self._custom_task_schedule_type_schema(
+                self._custom_task_draft.get("schedule_type", "interval")
+            ),
         )
 
     async def async_step_custom_task_schedule_details(self, user_input=None):
-        """Collect only the schedule fields relevant to the chosen recurrence."""
+        """Collect schedule fields and preserve them for the previous step."""
         schedule_type = self._custom_task_draft["schedule_type"]
         if user_input is not None:
             self._custom_task_draft.update(user_input)
@@ -870,62 +877,28 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                         data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
                         errors={"base": "invalid_annual_date"},
                     )
-            return self.async_show_form(
-                step_id="custom_task_instructions",
-                data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_schedule_details", "custom_task_instructions"
             )
         return self.async_show_form(
             step_id="custom_task_schedule_details",
             data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
         )
 
-    @staticmethod
-    def _custom_task_schedule_details_schema(schedule_type, current=None):
-        current = current or {}
-        if schedule_type == "interval":
-            return vol.Schema({
-                vol.Required("interval_days", default=current.get("interval_days", current.get("recommended_interval_days", 90))): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=3650)
-                ),
-            })
-        if schedule_type == "annual":
-            return vol.Schema({
-                vol.Required("annual_month", default=current.get("annual_month", 1)): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=12)
-                ),
-                vol.Required("annual_day", default=current.get("annual_day", 1)): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=31)
-                ),
-            })
-        return vol.Schema({
-            vol.Required("monthly_week", default=current.get("monthly_week", "first")): vol.In({
-                "first": "First", "second": "Second", "third": "Third",
-                "fourth": "Fourth", "last": "Last",
-            }),
-            vol.Required("monthly_weekday", default=current.get("monthly_weekday", 5)): vol.In({
-                0: "Monday", 1: "Tuesday", 2: "Wednesday",
-                3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday",
-            }),
-        })
-
-    @staticmethod
-    def _custom_task_instructions_schema(current=None):
-        current = current or {}
-        return vol.Schema({
-            vol.Optional("how_to_inspect", default=current.get("how_to_inspect", "")): vol.All(str, vol.Length(max=1200)),
-            vol.Optional("what_to_look_for", default=current.get("what_to_look_for", "")): vol.All(str, vol.Length(max=1200)),
-            vol.Optional("what_to_do_if_issue", default=current.get("what_to_do_if_issue", "")): vol.All(str, vol.Length(max=600)),
-            vol.Optional("safety_notes", default=current.get("safety_notes", "")): vol.All(str, vol.Length(max=600)),
-        })
-
     async def async_step_custom_task_instructions(self, user_input=None):
-        """Collect optional inspection guidance and save the completed task."""
-        if user_input is None:
-            return self.async_show_form(
-                step_id="custom_task_instructions",
-                data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
+        """Collect inspection guidance and offer a final Back/Save choice."""
+        if user_input is not None:
+            self._custom_task_draft.update(user_input)
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_instructions", "save"
             )
-        draft = {**self._custom_task_draft, **user_input}
+        return self.async_show_form(
+            step_id="custom_task_instructions",
+            data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
+        )
+
+    async def async_step_custom_task_save(self, user_input=None):
+        """Validate and save the completed custom task."""
         name = draft["name"].strip()
         slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
         task_id = f"custom_{slug}"
@@ -1071,11 +1044,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_edit_custom_task(self, user_input=None):
-        """Start editing a custom task with the same guided steps as creation."""
+        """Start or resume editing a custom task with the guided wizard."""
         custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
         current = next(
-            (item for item in custom_tasks
-             if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
+            (item for item in custom_tasks if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
             None,
         )
         if current is None:
@@ -1086,45 +1058,17 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "category": user_input["category"],
                 "description": user_input.get("description", "").strip(),
             })
-            if user_input["category"] == "other":
-                return self.async_show_form(
-                    step_id="custom_task_category",
-                    data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(str, vol.Length(min=1, max=40)),
-                    }),
-                )
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(
-                    self._custom_task_draft.get("schedule_type", "interval")
-                ),
-            )
-        self._custom_task_editing = True
-        self._custom_task_original_id = current["task_id"]
-        self._custom_task_draft = dict(current)
-        self._custom_task_draft["how_to_inspect"] = "\n".join(current.get("how_to_inspect", []))
-        self._custom_task_draft["what_to_look_for"] = "\n".join(current.get("what_to_look_for", []))
-        library = await self.hass.async_add_executor_job(load_library)
-        categories = {
-            item.get("category", "").strip().casefold(): item.get("category", "").strip()
-            for item in library.values() if item.get("category", "").strip()
-        }
-        for item in custom_tasks:
-            category = item.get("category", "").strip()
-            if category:
-                categories[category.casefold()] = category
-        category_options = {key: value for key, value in sorted(categories.items())}
-        category_options["other"] = "Other / Create a new category"
-        if current.get("category", "").casefold() not in category_options:
-            category_options[current["category"].casefold()] = current["category"]
-        return self.async_show_form(
-            step_id="edit_custom_task",
-            data_schema=vol.Schema({
-                vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
-                vol.Required("category", default=current.get("category", "general").casefold()): vol.In(category_options),
-                vol.Optional("description", default=current.get("description", "")): vol.All(str, vol.Length(max=300)),
-            }),
-        )
+            self._custom_task_base_step = "edit_custom_task"
+            next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
+            return self._async_show_custom_task_wizard_navigation("edit_custom_task", next_step)
+        if not getattr(self, "_custom_task_editing", False) or not getattr(self, "_custom_task_draft", None):
+            self._custom_task_editing = True
+            self._custom_task_original_id = current["task_id"]
+            self._custom_task_draft = dict(current)
+            self._custom_task_draft["how_to_inspect"] = "\n".join(current.get("how_to_inspect", []))
+            self._custom_task_draft["what_to_look_for"] = "\n".join(current.get("what_to_look_for", []))
+        self._custom_task_base_step = "edit_custom_task"
+        return await self._async_custom_task_basic_form("edit_custom_task")
 
     async def async_step_remove_custom_task(self, user_input=None):
         custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
