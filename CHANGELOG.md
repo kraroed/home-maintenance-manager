@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.9
+
+### Fixes
+- Complete manual reschedule audit records with an explicit change type and previous/new recurrence definitions.
+- Preserve the unchanged recurrence definition in schedule history when only the next due date is manually adjusted.
+- Clarify that history export includes both completion records and schedule-change audit history.
+
+### Testing
+- Add regression coverage for manual reschedule audit details, including seasonal schedules and persistence after reload.
+
 ## 0.9.8
 
 ### Improvements
