@@ -76,7 +76,7 @@ async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_int
     )
     assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "review_setup"
-    assert "Exterior: Clean rain gutters" in result["description_placeholders"]["selected_tasks_summary"]
+    assert result["description_placeholders"]["selected_tasks_summary"] == "Exterior:\n  • Clean rain gutters"
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "back_to_setup_tasks"}
     )
@@ -91,9 +91,8 @@ async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_int
         result["flow_id"], user_input={"next_step_id": "finish_setup"}
     )
     summary = result["description_placeholders"]["selected_tasks_summary"]
-    assert "Exterior: Clean rain gutters" in summary
-    assert "Safety: Test smoke alarms" in summary
-    assert "\n" in summary
+    assert summary == "Exterior:\n  • Clean rain gutters\nSafety:\n  • Test smoke alarms"
+    assert "  • " in summary
     assert result["step_id"] == "review_setup"
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "confirm_setup"}
