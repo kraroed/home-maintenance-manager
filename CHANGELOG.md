@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.7
+
+### Configuration
+- Show multi-select maintenance task choices as visible checklists instead of collapsed dropdowns.
+- Add a grouped review of selected maintenance tasks before completing initial setup, with a way to return to selection.
+- Add Back and Continue navigation throughout equipment, seasonal scheduling, notification, and custom-task configuration wizards.
+- Preserve entered values and selections when navigating backward and forward through guided configuration.
+
+### Fixes
+- Preserve notification delivery settings when changing notification choices in the guided flow.
+- Remove obsolete annual or monthly schedule fields when changing a custom task's recurrence type.
+
+### Testing
+- Add regression tests for wizard navigation, draft preservation, setup review, and custom task schedule changes.
+
 ## 0.9.6
 
 ### Configuration
