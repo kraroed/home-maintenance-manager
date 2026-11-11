@@ -927,6 +927,17 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
         )
 
+    @staticmethod
+    def _custom_task_instructions_schema(current=None):
+        """Build the inspection and safety guidance form with preserved defaults."""
+        current = current or {}
+        return vol.Schema({
+            vol.Optional("how_to_inspect", default=current.get("how_to_inspect", "")): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("what_to_look_for", default=current.get("what_to_look_for", "")): vol.All(str, vol.Length(max=1200)),
+            vol.Optional("what_to_do_if_issue", default=current.get("what_to_do_if_issue", "")): vol.All(str, vol.Length(max=600)),
+            vol.Optional("safety_notes", default=current.get("safety_notes", "")): vol.All(str, vol.Length(max=600)),
+        })
+
     async def async_step_custom_task_instructions(self, user_input=None):
         """Collect inspection guidance and offer a final Back/Save choice."""
         if user_input is not None:
