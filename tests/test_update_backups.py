@@ -57,7 +57,7 @@ async def test_update_available_creates_one_backup_per_version(
     )
     callbacks = {}
     monkeypatch.setattr(
-        "homeassistant.helpers.event.async_track_state_change_event",
+        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
         lambda hass, entity_ids, action: callbacks.update(
             entity_ids=entity_ids, action=action
         ) or (lambda: None),
@@ -138,7 +138,7 @@ async def test_installation_start_without_earlier_backup_is_reported(
     """An in-progress event never creates a late backup and warns if none exists."""
     callbacks = {}
     monkeypatch.setattr(
-        "homeassistant.helpers.event.async_track_state_change_event",
+        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
         lambda hass, entity_ids, action: callbacks.update(action=action) or (lambda: None),
     )
     notifications = []
@@ -178,7 +178,7 @@ async def test_update_backup_listener_respects_selected_entities(hass, monkeypat
     """When entity IDs are selected, other update entities are ignored."""
     callbacks = {}
     monkeypatch.setattr(
-        "homeassistant.helpers.event.async_track_state_change_event",
+        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
         lambda hass, entity_ids, action: callbacks.update(action=action) or (lambda: None),
     )
     entry_data = _entry_data()
