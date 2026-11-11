@@ -35,6 +35,10 @@ def default_data():
             "individual": {},
             "summary_date": None,
         },
+        "update_backup_state": {
+            "available": {},
+            "installations": {},
+        },
         "settings": {
             "due_soon_days": 7,
             "daily_summary_enabled": True,
@@ -96,6 +100,18 @@ class MaintenanceStorage:
             summary_date = stored_notifications.get("summary_date")
             if summary_date is None or _valid_iso_date(summary_date):
                 notifications["summary_date"] = summary_date
+
+        stored_update_state = stored.get("update_backup_state")
+        if isinstance(stored_update_state, dict):
+            update_state = data["update_backup_state"]
+            for key in ("available", "installations"):
+                records = stored_update_state.get(key)
+                if isinstance(records, dict):
+                    update_state[key] = {
+                        entity_id: record
+                        for entity_id, record in records.items()
+                        if isinstance(entity_id, str) and isinstance(record, dict)
+                    }
 
         stored_settings = stored.get("settings")
         if isinstance(stored_settings, dict):
