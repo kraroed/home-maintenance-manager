@@ -27,6 +27,11 @@ def _state_bucket(manager):
     return state
 
 
+def _entity_slug(entity_id):
+    """Return a safe, bounded filename and notification identifier fragment."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "_", entity_id)[:60]
+
+
 def _version(state):
     """Return the update version represented by a Home Assistant update entity."""
     return str(
@@ -109,7 +114,7 @@ def async_setup_update_backups(hass, entry, entry_data):
                         "may already be underway; this notification does not mean a "
                         "backup was completed before it started."
                     )
-                slug = re.sub(r"[^A-Za-z0-9_.-]", "_", entity_id)
+                slug = _entity_slug(entity_id)
                 persistent_notification.async_create(
                     hass,
                     message,
@@ -140,7 +145,7 @@ def async_setup_update_backups(hass, entry, entry_data):
             return
 
         filename = (
-            f"home_maintenance_update_{re.sub(r'[^A-Za-z0-9_.-]', '_', entity_id)}_"
+            f"home_maintenance_update_{_entity_slug(entity_id)}_"
             f"{_timestamp()}.json"
         )
         path = _backup_directory(hass, entry.entry_id) / filename
