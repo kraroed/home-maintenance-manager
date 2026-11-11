@@ -877,7 +877,7 @@ async def test_custom_task_wizard_back_preserves_draft_values(
         flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
     )
     assert result["step_id"] == "add_custom_task"
-    defaults = {str(key): getattr(key, "default", None) for key in result["data_schema"].schema}
+    defaults = {str(key): (key.default() if callable(key.default) else key.default) for key in result["data_schema"].schema}
     assert defaults["name"] == "Inspect Water Shutoff"
     assert defaults["category"] == "plumbing"
     assert defaults["description"] == "Locate and test the main shutoff."
@@ -909,7 +909,7 @@ async def test_custom_task_wizard_back_preserves_draft_values(
     )
     assert result["step_id"] == "custom_task_schedule"
     schedule_defaults = {
-        str(key): getattr(key, "default", None)
+        str(key): (key.default() if callable(key.default) else key.default)
         for key in result["data_schema"].schema
     }
     assert schedule_defaults["schedule_type"] == "annual"
