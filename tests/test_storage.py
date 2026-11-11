@@ -185,6 +185,7 @@ async def test_storage_save_and_reload_round_trip(hass, monkeypatch):
                 "attachments": ["/local/maintenance/photo.jpg"],
             }
         ],
+        "backlog_snapshots": [],
         "notification_state": {
             "individual": {
                 "clean_gutters:2026-11-20T00:00:00+00:00":
