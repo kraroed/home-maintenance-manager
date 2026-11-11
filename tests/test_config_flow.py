@@ -438,6 +438,12 @@ async def test_remove_custom_task_clears_active_links_and_preserves_other_option
         "description": "A custom maintenance task.",
         "schedule_type": "interval",
         "recommended_interval_days": 90,
+        # Legacy values from a previous recurrence type should be discarded
+        # when the task is saved with its current interval schedule.
+        "annual_month": 10,
+        "annual_day": 15,
+        "monthly_week": "last",
+        "monthly_weekday": 4,
         "is_custom": True,
     }
     entry = MockConfigEntry(
@@ -1243,6 +1249,25 @@ async def test_notification_wizard_back_preserves_notification_choices(
     assert defaults["individual_notifications_enabled"] is False
     assert defaults["daily_summary_enabled"] is True
 
+    # Change the notification choices after returning Back, then verify the
+    # delivery values entered on the previous page are still present.
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "individual_notifications_enabled": True,
+            "daily_summary_enabled": True,
+        }
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "notification_wizard_continue"}
+    )
+    assert result["step_id"] == "notification_delivery"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["notification_target"] == "notify.mobile_app_phone"
+    assert defaults["daily_summary_time"] == "07:30"
+    assert defaults["notification_lead_days"] == 7
 
 
 @pytest.mark.asyncio
