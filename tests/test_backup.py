@@ -96,6 +96,40 @@ def test_backup_payload_accepts_complete_backup():
     assert _validate_payload(_payload())["property_name"] == "My Home"
 
 
+@pytest.mark.parametrize("snapshot_date", ["2026-99-99", "2026-02-30", "2026-1-01", "not-a-date"])
+def test_backup_rejects_invalid_backlog_snapshot_dates(snapshot_date):
+    """Backlog snapshot dates must be real canonical ISO calendar dates."""
+    payload = _payload()
+    payload["data"]["backlog_snapshots"] = [{
+        "date": snapshot_date,
+        "overdue": 0,
+        "due_today": 0,
+        "due_soon": 0,
+        "scheduled": 0,
+        "not_scheduled": 0,
+        "total": 0,
+    }]
+
+    with pytest.raises(HomeAssistantError, match="invalid backlog trend snapshots"):
+        _validate_payload(payload)
+
+
+def test_backup_accepts_valid_backlog_snapshot_date():
+    """A canonical calendar date is accepted for a backlog snapshot."""
+    payload = _payload()
+    payload["data"]["backlog_snapshots"] = [{
+        "date": "2026-11-11",
+        "overdue": 1,
+        "due_today": 0,
+        "due_soon": 2,
+        "scheduled": 3,
+        "not_scheduled": 0,
+        "total": 6,
+    }]
+
+    assert _validate_payload(payload)["data"]["backlog_snapshots"][0]["date"] == "2026-11-11"
+
+
 def test_backup_payload_rejects_wrong_format_and_malformed_history():
     """Wrong formats and malformed history are rejected before restore."""
     with pytest.raises(HomeAssistantError, match="not a Home Maintenance Manager backup"):
