@@ -104,6 +104,43 @@ def _validate_payload(payload):
             raise HomeAssistantError("Backup contains an invalid notification setting.")
     if not isinstance(settings.get("season_windows", {}), dict):
         raise HomeAssistantError("Backup contains invalid seasonal settings.")
+    update_backup_state = data.get(
+        "update_backup_state", {"available": {}, "installations": {}}
+    )
+    if not isinstance(update_backup_state, dict):
+        raise HomeAssistantError("Backup contains invalid update backup state.")
+    for state_key in ("available", "installations"):
+        records = update_backup_state.get(state_key, {})
+        if not isinstance(records, dict) or not all(
+            isinstance(entity_id, str)
+            and entity_id.startswith("update.")
+            and isinstance(record, dict)
+            for entity_id, record in records.items()
+        ):
+            raise HomeAssistantError("Backup contains invalid update backup tracking records.")
+    for record in update_backup_state.get("available", {}).values():
+        filename = record.get("filename")
+        if (
+            not isinstance(record.get("version"), str)
+            or not isinstance(filename, str)
+            or not _FILENAME_RE.fullmatch(filename)
+            or not isinstance(record.get("created_at"), str)
+        ):
+            raise HomeAssistantError("Backup contains an invalid update backup reference.")
+    for record in update_backup_state.get("installations", {}).values():
+        if (
+            not isinstance(record.get("version"), str)
+            or not isinstance(record.get("started_at"), str)
+            or (
+                record.get("backup_file") is not None
+                and (
+                    not isinstance(record.get("backup_file"), str)
+                    or not _FILENAME_RE.fullmatch(record["backup_file"])
+                )
+            )
+        ):
+            raise HomeAssistantError("Backup contains an invalid update installation record.")
+
     notification_state = data.get("notification_state", {})
     if not isinstance(notification_state, dict):
         raise HomeAssistantError("Backup contains invalid notification state.")
