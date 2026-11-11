@@ -198,3 +198,42 @@ async def test_update_backup_listener_respects_selected_entities(hass, monkeypat
     await callbacks["action"](_state_event("update.some_addon_update", None, state))
 
     assert entry_data["manager"].data["update_backup_state"]["available"] == {}
+
+
+@pytest.mark.asyncio
+async def test_existing_available_update_is_backed_up_when_monitoring_starts(
+    hass, tmp_path, monkeypatch
+):
+    """Enabling monitoring also handles update entities already available."""
+    monkeypatch.setattr(
+        hass.config, "path",
+        lambda *parts: str(tmp_path.joinpath(*parts)),
+    )
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
+        lambda hass, entity_ids, action: (lambda: None),
+    )
+    monkeypatch.setattr(
+        update_backups.persistent_notification,
+        "async_create",
+        lambda *args, **kwargs: None,
+    )
+    await hass.states.async_set(
+        "update.home_assistant_core_update",
+        "on",
+        {"latest_version": "2026.11.1", "in_progress": False},
+    )
+    entry_data = _entry_data()
+    entry = entry_data["config_entry"]
+    entry.options = {"update_backup_on_available": True}
+
+    update_backups.async_setup_update_backups(hass, entry, entry_data)
+    await hass.async_block_till_done()
+
+    backups = list(
+        (tmp_path / "home_maintenance_manager_backups" / "property-one").glob(
+            "home_maintenance_update_*.json"
+        )
+    )
+    assert len(backups) == 1
+    assert entry_data["manager"].async_save.await_count == 1
