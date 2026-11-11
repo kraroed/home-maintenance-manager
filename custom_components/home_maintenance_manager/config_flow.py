@@ -302,10 +302,14 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         options = self.config_entry.options
         draft = getattr(self, "_notification_draft", options)
         if user_input is not None:
-            self._notification_draft = {
+            # Preserve delivery settings already entered if the user navigates
+            # Back and changes only the notification types.
+            draft = dict(getattr(self, "_notification_draft", options))
+            draft.update({
                 "individual_notifications_enabled": user_input["individual_notifications_enabled"],
                 "daily_summary_enabled": user_input["daily_summary_enabled"],
-            }
+            })
+            self._notification_draft = draft
             return self._async_show_notification_wizard_navigation(
                 previous=None, next_step="notification_delivery"
             )
@@ -1022,6 +1026,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             "safety_notes": draft.get("safety_notes", "").strip(),
             "is_custom": True,
         }
+        # Remove schedule fields that no longer apply when an existing task's
+        # recurrence type changes (for example, annual to interval).
+        if schedule_type != "annual":
+            custom_task.pop("annual_month", None)
+            custom_task.pop("annual_day", None)
+        if schedule_type != "monthly":
+            custom_task.pop("monthly_week", None)
+            custom_task.pop("monthly_weekday", None)
+
         if getattr(self, "_custom_task_editing", False):
             original_id = self._custom_task_original_id
             if task_id != original_id and (
