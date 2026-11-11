@@ -1,7 +1,6 @@
 """Back up maintenance data when Home Assistant updates become available."""
 
 from datetime import datetime, timezone
-from pathlib import Path
 import re
 
 from homeassistant.components import persistent_notification
