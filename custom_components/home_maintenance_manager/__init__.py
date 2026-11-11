@@ -1,4 +1,8 @@
-from .backup import (\n    async_setup_automatic_backup,\n    async_setup_backup_services,\n    async_unload_backup_services,\n)
+from .backup import (
+    async_setup_automatic_backup,
+    async_setup_backup_services,
+    async_unload_backup_services,
+)
 from .completion_service import (
     async_setup_completion_service,
     async_unload_completion_service,
