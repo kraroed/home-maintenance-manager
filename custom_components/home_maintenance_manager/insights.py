@@ -15,7 +15,7 @@ def _local_date(value):
     return dt_util.as_local(parsed).date() if parsed else None
 
 
-def completion_metrics(history, today=None):
+def completion_metrics(history, tasks=None, today=None):
     """Summarize completion activity and late completions over rolling windows."""
     today = today or dt_util.now().date()
     windows = {"30_days": 30, "90_days": 90, "365_days": 365}
@@ -39,7 +39,21 @@ def completion_metrics(history, today=None):
             "completed_on_time": len(records) - len(late),
             "late_rate": round(len(late) / len(records) * 100, 1) if records else 0,
         }
+    task_categories = {
+        task.get("task_id"): task.get("category", "Other")
+        for task in (tasks or [])
+    }
     by_category = {}
+    for record in history:
+        category = task_categories.get(record.get("task_id"), "Other")
+        bucket = by_category.setdefault(category, {"completed": 0, "completed_late": 0})
+        bucket["completed"] += 1
+        due = _local_date(record.get("previous_due"))
+        completed = _local_date(record.get("completed_at"))
+        if due is not None and completed is not None and completed > due:
+            bucket["completed_late"] += 1
+    for bucket in by_category.values():
+        bucket["completed_on_time"] = bucket["completed"] - bucket["completed_late"]
     return {"windows": result, "by_category": by_category}
 
 
