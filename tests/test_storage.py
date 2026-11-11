@@ -47,6 +47,7 @@ async def test_storage_merges_new_defaults_into_existing_settings(hass, monkeypa
         "clean_gutters": "overdue"
     }
     assert data["notification_state"]["summary_date"] is None
+    assert data["update_backup_state"] == {"available": {}, "installations": {}}
     assert data["tasks"]["clean_gutters"]["task_id"] == "clean_gutters"
 
 
@@ -190,6 +191,16 @@ async def test_storage_save_and_reload_round_trip(hass, monkeypatch):
                     "2026-11-09T08:00:00+00:00"
             },
             "summary_date": "2026-11-09",
+        },
+        "update_backup_state": {
+            "available": {
+                "update.home_assistant_core_update": {
+                    "version": "2026.11.1",
+                    "filename": "home_maintenance_update_core.json",
+                    "created_at": "2026-11-09T08:00:00+00:00",
+                }
+            },
+            "installations": {},
         },
         "settings": {
             "due_soon_days": 14,
