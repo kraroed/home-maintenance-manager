@@ -1218,10 +1218,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     errors={"base": "area_exists"},
                 )
             registry.async_create(name)
-            return self.async_show_menu(
-                step_id="init",
-                menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows"],
-            )
+            return await self.async_step_init()
         return self.async_show_form(
             step_id="create_area",
             data_schema=vol.Schema({
