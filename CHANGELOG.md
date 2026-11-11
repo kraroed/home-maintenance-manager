@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+- Add configurable automatic JSON backups with daily, weekly, or monthly scheduling.
+- Allow backup time and automatic-backup retention to be configured per property.
+- Prune only older automatic backups; preserve manual backups and pre-restore safety backups.
+- Keep automatic backup scheduling tied to the config entry lifecycle.
+
+### Testing
+- Add regression coverage for backup scheduling, retention, and disabling automatic backups.
+
 ## 0.9.9
 
 ### Fixes
