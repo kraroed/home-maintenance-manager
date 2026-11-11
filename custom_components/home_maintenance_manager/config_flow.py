@@ -240,6 +240,31 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self._async_step_setup_category("systems", user_input)
 
     async def async_step_finish_setup(self, user_input=None):
+        """Show a grouped review of selected tasks before completing setup."""
+        library = await self.hass.async_add_executor_job(load_library)
+        grouped = {}
+        for task_id in self._setup_selected_task_ids:
+            item = library.get(task_id)
+            if item:
+                grouped.setdefault(item.get("category", "Other").title(), []).append(
+                    item.get("name", task_id)
+                )
+        summary = "\\n".join(
+            f"{category}: " + ", ".join(sorted(names, key=str.casefold))
+            for category, names in sorted(grouped.items())
+        ) or "No maintenance tasks selected."
+        return self.async_show_menu(
+            step_id="review_setup",
+            menu_options=["back_to_setup_tasks", "confirm_setup"],
+            description_placeholders={"selected_tasks_summary": summary},
+        )
+
+    async def async_step_back_to_setup_tasks(self, user_input=None):
+        """Return to task selection without losing selected tasks."""
+        return await self._async_show_setup_task_menu()
+
+    async def async_step_confirm_setup(self, user_input=None):
+        """Create the config entry after the task selection review."""
         property_name = self._setup_property_name
         await self.async_set_unique_id(property_name.casefold())
         self._abort_if_unique_id_configured()
