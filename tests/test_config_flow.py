@@ -243,17 +243,30 @@ async def test_season_window_options_use_one_step_per_season(
     result = await hass.config_entries.options.async_configure(
         invalid["flow_id"], user_input={"start": "03-10", "end": "05-25"}
     )
+    assert result["step_id"] == "season_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "season_wizard_continue"}
+    )
     assert result["step_id"] == "season_window_summer"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"start": "06-01", "end": "08-31"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "season_wizard_continue"}
     )
     assert result["step_id"] == "season_window_fall"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"start": "09-01", "end": "11-15"}
     )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "season_wizard_continue"}
+    )
     assert result["step_id"] == "season_window_winter"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"start": "11-16", "end": "03-14"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "season_wizard_continue"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["season_windows"] == {
@@ -904,6 +917,10 @@ async def test_notification_options_use_guided_steps(hass, enable_custom_integra
             "daily_summary_enabled": True,
         },
     )
+    assert result["step_id"] == "notification_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "notification_wizard_continue"}
+    )
     assert result["step_id"] == "notification_delivery"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
@@ -912,6 +929,10 @@ async def test_notification_options_use_guided_steps(hass, enable_custom_integra
             "notification_lead_days": 7,
             "daily_summary_time": "08:00",
         },
+    )
+    assert result["step_id"] == "notification_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "notification_wizard_continue"}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["notification_target"] == "notify.mobile_app_test_phone"
