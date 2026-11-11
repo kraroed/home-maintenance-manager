@@ -51,9 +51,13 @@ async def async_setup_entry(hass, entry):
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_setup_completion_service(hass)
     await async_setup_backup_services(hass)
+    cancel_automatic_backup = async_setup_automatic_backup(
+        hass, entry, hass.data[DOMAIN][entry.entry_id]
+    )
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     entry.async_on_unload(cancel_notifications)
+    entry.async_on_unload(cancel_automatic_backup)
     return True
 
 
