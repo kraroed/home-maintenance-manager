@@ -639,6 +639,14 @@
           "season_wizard_back": "Back",
           "season_wizard_continue": "Continue"
         }
+      },
+      "notification_wizard_navigation": {
+        "title": "Notification setup",
+        "description": "Continue to delivery settings, or go back to change which notifications are enabled.",
+        "menu_options": {
+          "notification_wizard_back": "Back",
+          "notification_wizard_continue": "Continue"
+        }
       }
     },
     "error": {
