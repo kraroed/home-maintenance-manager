@@ -54,7 +54,7 @@ reschedule_task:
 
 export_history:
   name: Export maintenance history
-  description: Export the completion history to CSV, JSON, or both formats.
+  description: Export completion history and schedule-change audit history to CSV, JSON, or both formats.
   fields:
     format:
       name: Export format
