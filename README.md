@@ -100,3 +100,15 @@ Built-in intervals are starting suggestions, not professional or manufacturer in
 ## Development
 
 The integration lives in `custom_components/home_maintenance_manager/`. CI workflows run HACS and Home Assistant validation on pushes and pull requests.
+
+
+## Maintenance insights and reporting
+
+The integration exposes additional summary sensors for maintenance activity:
+
+- Completion totals and late-completion counts over the previous 30, 90, and 365 days.
+- Completion breakdowns by maintenance category, including on-time and late totals.
+- Upcoming workload counts for the next 7, 30, and 90 days. Overdue and due-today tasks are reported separately.
+- An overdue-backlog trend based on one local-calendar-day snapshot.
+
+Backlog snapshots are recorded after startup and shortly after local midnight, with at most one snapshot per day. The integration retains the most recent 365 daily snapshots in its storage and includes them in JSON backups. Existing completion history remains the source for late-completion trends; no duplicate completion archive is created. The first snapshot establishes a baseline, so historical backlog values are not fabricated.
