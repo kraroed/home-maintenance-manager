@@ -11,8 +11,9 @@ from .const import CONF_ENABLED_TASK_IDS, DOMAIN, PLATFORMS
 from .coordinator import MaintenanceCoordinator
 from .history_export import async_setup_history_export, async_unload_history_export
 from .notifications import async_setup_notifications
-from .task_manager import TaskManager
 from homeassistant.helpers.event import async_track_time_change
+
+from .task_manager import TaskManager
 from .update_backups import async_setup_update_backups
 
 
