@@ -75,7 +75,7 @@ class InsightsSensor(CoordinatorEntity, SensorEntity):
         insights = self.coordinator.data.get("insights", {})
         if self.path[0] == "backlog_history":
             history = insights.get("backlog_history", [])
-            return history[-1].get(self.path[2]) if history else 0
+            return history[-1].get(self.path[2]) if history else None
         value = insights
         for key in self.path:
             if not isinstance(value, dict):
