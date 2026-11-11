@@ -299,7 +299,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups"],
         )
 
     async def async_step_configure_notifications(self, user_input=None):
@@ -1560,3 +1560,44 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         return vol.Schema({
             vol.Optional("task_ids", default=current.get("task_ids", [])): _multi_select_checklist(task_options),
         })
+
+
+    async def async_step_configure_automatic_backups(self, user_input=None):
+        """Configure automatic JSON backup frequency, time, and retention."""
+        options = self.config_entry.options
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data={
+                    **options,
+                    "automatic_backups_enabled": user_input["automatic_backups_enabled"],
+                    "automatic_backup_frequency": user_input["automatic_backup_frequency"],
+                    "automatic_backup_time": user_input["automatic_backup_time"],
+                    "automatic_backup_retention": user_input["automatic_backup_retention"],
+                },
+            )
+        return self.async_show_form(
+            step_id="configure_automatic_backups",
+            data_schema=vol.Schema({
+                vol.Required(
+                    "automatic_backups_enabled",
+                    default=options.get("automatic_backups_enabled", True),
+                ): bool,
+                vol.Required(
+                    "automatic_backup_frequency",
+                    default=options.get("automatic_backup_frequency", "weekly"),
+                ): vol.In({
+                    "daily": "Daily",
+                    "weekly": "Weekly (Sunday)",
+                    "monthly": "Monthly (first day)",
+                }),
+                vol.Required(
+                    "automatic_backup_time",
+                    default=options.get("automatic_backup_time", "03:00"),
+                ): vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$"),
+                vol.Required(
+                    "automatic_backup_retention",
+                    default=options.get("automatic_backup_retention", 8),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=100)),
+            }),
+        )
