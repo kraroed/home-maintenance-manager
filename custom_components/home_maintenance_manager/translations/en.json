@@ -623,6 +623,14 @@
           "interval_inspect_crawlspace": "Inspect accessible crawlspace conditions (days)",
           "interval_inspect_solar_system": "Review residential solar system condition (days)"
         }
+      },
+      "equipment_wizard_navigation": {
+        "title": "Equipment setup",
+        "description": "Continue to the next step, or go back to review and change the information you entered.",
+        "menu_options": {
+          "equipment_wizard_back": "Back",
+          "equipment_wizard_continue": "Continue"
+        }
       }
     },
     "error": {
