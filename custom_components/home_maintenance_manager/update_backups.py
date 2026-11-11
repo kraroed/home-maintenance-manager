@@ -5,7 +5,6 @@ import re
 
 from homeassistant.components import persistent_notification
 from homeassistant.core import Event
-from homeassistant.helpers.event import async_track_state_change_event
 
 from .backup import _backup_directory, _build_payload, _timestamp, _write_json_file
 from .const import DOMAIN
@@ -177,8 +176,11 @@ def async_setup_update_backups(hass, entry, entry_data):
             notification_id=f"{DOMAIN}_update_backup_{slug}",
         )
 
-    cancel_listener = async_track_state_change_event(
-        hass, None, handle_state_change
+    # Listen to state_changed globally, then filter to update entities in the
+    # handler. async_track_state_change_event requires an iterable of entity IDs
+    # and does not accept None to mean all entities.
+    cancel_listener = hass.bus.async_listen(
+        "state_changed", handle_state_change
     )
 
     # The update entities may already be available or installing before this
