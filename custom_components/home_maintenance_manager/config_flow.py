@@ -899,6 +899,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_custom_task_save(self, user_input=None):
         """Validate and save the completed custom task."""
+        draft = self._custom_task_draft
         name = draft["name"].strip()
         slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
         task_id = f"custom_{slug}"
