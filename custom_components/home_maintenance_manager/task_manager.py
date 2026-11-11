@@ -448,11 +448,22 @@ class TaskManager:
         local_due = datetime.combine(selected_day, time.min, tzinfo=local_now.tzinfo)
         next_due = dt_util.as_utc(local_due).isoformat()
         now = dt_util.utcnow()
+        schedule_details = {
+            "schedule_type": task.get("schedule_type", "interval"),
+            "interval_days": task.get("configured_interval_days"),
+            "annual_month": task.get("annual_month"),
+            "annual_day": task.get("annual_day"),
+            "monthly_week": task.get("monthly_week"),
+            "monthly_weekday": task.get("monthly_weekday"),
+        }
         task.setdefault("schedule_history", []).append({
             "adjusted_at": now.isoformat(),
+            "change_type": "reschedule",
             "previous_due": previous_due,
             "next_due": next_due,
             "reason": reason.strip(),
+            "previous_schedule": deepcopy(schedule_details),
+            "new_schedule": deepcopy(schedule_details),
         })
         task["schedule_next_due"] = next_due
         task["next_due"] = next_due
