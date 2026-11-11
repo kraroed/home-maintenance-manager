@@ -508,12 +508,24 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "manage_custom_tasks"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_id": "custom_replace_filter"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "edit_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "edit_custom_task"
 
@@ -525,22 +537,42 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
             "description": "Updated description",
         },
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_category"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"category_name": "Heating and Cooling"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_schedule"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"schedule_type": "interval"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_schedule_details"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"interval_days": 120}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_instructions"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["custom_tasks"] == [{
@@ -584,11 +616,19 @@ async def test_equipment_can_create_and_assign_home_assistant_area(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "create_area"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "create_area"
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"name": "Basement"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["type"] == FlowResultType.MENU
     area = next(
         area for area in ar.async_get(hass).async_list_areas()
@@ -598,6 +638,10 @@ async def test_equipment_can_create_and_assign_home_assistant_area(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_equipment"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await _submit_equipment_wizard(
         hass, result["flow_id"], {"name": "Water Heater", "category": "Plumbing", "area_id": area.id}
     )
@@ -619,19 +663,39 @@ async def test_add_custom_annual_task_saves_calendar_schedule(
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"next_step_id": "add_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Winterize Sprinklers", "category": "landscape",
                              "description": "Prepare irrigation for winter."}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"schedule_type": "annual"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"annual_month": 10, "annual_day": 15}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     task = result["data"]["custom_tasks"][0]
     assert task["task_id"] == "custom_winterize_sprinklers"
@@ -655,20 +719,40 @@ async def test_add_custom_annual_task_rejects_invalid_calendar_date(
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"next_step_id": "add_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Annual Inspection", "category": "safety"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"schedule_type": "annual"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     invalid = await hass.config_entries.options.async_configure(
         flow_id, user_input={"annual_month": 2, "annual_day": 30}
     )
+    if invalid.get("step_id") == "custom_task_wizard_navigation":
+        invalid = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert invalid["type"] == FlowResultType.FORM
     assert invalid["errors"] == {"base": "invalid_annual_date"}
     valid = await hass.config_entries.options.async_configure(
         flow_id, user_input={"annual_month": 2, "annual_day": 29}
     )
+    if valid.get("step_id") == "custom_task_wizard_navigation":
+        valid = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     valid = await hass.config_entries.options.async_configure(flow_id, user_input={})
     assert valid["type"] == FlowResultType.CREATE_ENTRY
     assert valid["data"]["custom_tasks"][0]["annual_month"] == 2
@@ -683,25 +767,49 @@ async def test_add_custom_task_can_create_reusable_category(
         domain=DOMAIN, title="Primary Residence",
         data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
     )
+    if valid.get("step_id") == "custom_task_wizard_navigation":
+        valid = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"next_step_id": "add_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Inspect Pool Cover", "category": "other"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_category"
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"category_name": "Pool Care"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"schedule_type": "interval"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"interval_days": 60}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={
             "how_to_inspect": "Check for cracks",
@@ -710,6 +818,10 @@ async def test_add_custom_task_can_create_reusable_category(
             "safety_notes": "Keep clear of the pool when working alone",
         }
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     task = result["data"]["custom_tasks"][0]
     assert task["category"] == "pool care"
@@ -754,12 +866,24 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "manage_custom_tasks"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_id": "custom_sprinkler_check"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "edit_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
@@ -768,18 +892,34 @@ async def test_edit_custom_task_can_switch_to_annual_schedule_and_keep_id_histor
             "description": "Prepare irrigation for winter.",
         },
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_schedule"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"schedule_type": "annual"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_schedule_details"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"annual_month": 10, "annual_day": 15}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     assert result["step_id"] == "custom_task_instructions"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["custom_tasks"][0]["task_id"] == "custom_sprinkler_check"
@@ -804,16 +944,32 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"next_step_id": "add_custom_task"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Monthly Alarm Test", "category": "safety",
                              "description": "Test household alarms monthly."}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"schedule_type": "monthly"}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"monthly_week": "second", "monthly_weekday": 1}
     )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
     result = await hass.config_entries.options.async_configure(flow_id, user_input={})
     assert result["type"] == FlowResultType.CREATE_ENTRY
     task = result["data"]["custom_tasks"][0]
