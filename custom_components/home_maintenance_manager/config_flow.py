@@ -249,7 +249,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 grouped.setdefault(item.get("category", "Other").title(), []).append(
                     item.get("name", task_id)
                 )
-        summary = "\\n".join(
+        summary = "\n".join(
             f"{category}: " + ", ".join(sorted(names, key=str.casefold))
             for category, names in sorted(grouped.items())
         ) or "No maintenance tasks selected."
@@ -786,15 +786,21 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         """Show Back and Continue between custom-task wizard pages."""
         self._custom_task_wizard_previous = previous
         self._custom_task_wizard_next = next_step
+        menu_options = ["custom_task_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "custom_task_wizard_back")
         return self.async_show_menu(
             step_id="custom_task_wizard_navigation",
-            menu_options=["custom_task_wizard_back", "custom_task_wizard_continue"],
+            menu_options=menu_options,
         )
 
     async def async_step_custom_task_wizard_navigation(self, user_input=None):
+        menu_options = ["custom_task_wizard_continue"]
+        if self._custom_task_wizard_previous:
+            menu_options.insert(0, "custom_task_wizard_back")
         return self.async_show_menu(
             step_id="custom_task_wizard_navigation",
-            menu_options=["custom_task_wizard_back", "custom_task_wizard_continue"],
+            menu_options=menu_options,
         )
 
     async def async_step_custom_task_wizard_back(self, user_input=None):
@@ -823,7 +829,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             self._custom_task_base_step = "add_custom_task"
             self._custom_task_category_is_custom = user_input["category"] == "other"
             next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
-            return self._async_show_custom_task_wizard_navigation("add_custom_task", next_step)
+            return self._async_show_custom_task_wizard_navigation(None, next_step)
         return await self._async_custom_task_basic_form("add_custom_task")
 
     async def async_step_custom_task_category(self, user_input=None):
@@ -1115,7 +1121,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             self._custom_task_base_step = "edit_custom_task"
             self._custom_task_category_is_custom = user_input["category"] == "other"
             next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
-            return self._async_show_custom_task_wizard_navigation("edit_custom_task", next_step)
+            return self._async_show_custom_task_wizard_navigation(None, next_step)
         if not getattr(self, "_custom_task_editing", False) or not getattr(self, "_custom_task_draft", None):
             self._custom_task_editing = True
             self._custom_task_original_id = current["task_id"]
