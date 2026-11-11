@@ -631,6 +631,14 @@
           "equipment_wizard_back": "Back",
           "equipment_wizard_continue": "Continue"
         }
+      },
+      "season_wizard_navigation": {
+        "title": "Seasonal scheduling",
+        "description": "Continue to the next season, or go back to review and change the dates you entered.",
+        "menu_options": {
+          "season_wizard_back": "Back",
+          "season_wizard_continue": "Continue"
+        }
       }
     },
     "error": {
