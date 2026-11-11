@@ -1,8 +1,5 @@
 """Tests for update-triggered JSON backups and installation tracking."""
 
-from copy import deepcopy
-from datetime import datetime, timezone
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -14,11 +11,6 @@ from custom_components.home_maintenance_manager import update_backups
 
 
 def _entry_data():
-    from custom_components.home_maintenance_manager.backup import (
-        BACKUP_FORMAT,
-        BACKUP_SCHEMA_VERSION,
-    )
-
     manager = SimpleNamespace(
         data={
             "tasks": {},
