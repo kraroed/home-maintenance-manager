@@ -315,3 +315,61 @@ async def async_unload_backup_services(hass):
     ):
         if hass.services.has_service(DOMAIN, service):
             hass.services.async_remove(DOMAIN, service)
+
+
+async def async_setup_automatic_backup(hass, entry, entry_data):
+    """Schedule automatic backups for one property and enforce retention."""
+    from datetime import datetime
+    from homeassistant.helpers.event import async_track_time_change
+
+    options = entry.options
+    if not options.get("automatic_backups_enabled", True):
+        return lambda: None
+
+    frequency = options.get("automatic_backup_frequency", "weekly")
+    backup_time = options.get("automatic_backup_time", "03:00")
+    try:
+        hour, minute = (int(part) for part in backup_time.split(":"))
+    except (TypeError, ValueError):
+        hour, minute = 3, 0
+    retention = options.get("automatic_backup_retention", 8)
+    if type(retention) is not int or not 1 <= retention <= 100:
+        retention = 8
+
+    async def create_scheduled_backup(now):
+        if frequency == "weekly" and now.weekday() != 6:
+            return
+        if frequency == "monthly" and now.day != 1:
+            return
+        directory = _backup_directory(hass, entry.entry_id)
+        filename = f"home_maintenance_auto_{_timestamp()}.json"
+        path = directory / filename
+        try:
+            payload = _build_payload(entry_data)
+            await hass.async_add_executor_job(_write_json_file, path, payload)
+            automatic_files = await hass.async_add_executor_job(
+                lambda: sorted(
+                    directory.glob("home_maintenance_auto_*.json"),
+                    key=lambda item: item.stat().st_mtime,
+                    reverse=True,
+                )
+            )
+            for old_file in automatic_files[retention:]:
+                await hass.async_add_executor_job(old_file.unlink)
+            persistent_notification.async_create(
+                hass,
+                f"Automatic backup created: {filename}. Retention is set to {retention} backups.",
+                "Home Maintenance Manager automatic backup",
+                notification_id=f"{DOMAIN}_auto_backup_{entry.entry_id}",
+            )
+        except (OSError, HomeAssistantError) as err:
+            persistent_notification.async_create(
+                hass,
+                f"Automatic backup failed: {err}",
+                "Home Maintenance Manager backup error",
+                notification_id=f"{DOMAIN}_auto_backup_error_{entry.entry_id}",
+            )
+
+    return async_track_time_change(
+        hass, create_scheduled_backup, hour=hour, minute=minute, second=0
+    )
