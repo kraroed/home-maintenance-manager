@@ -34,11 +34,7 @@ def _entity_slug(entity_id):
 
 def _version(state):
     """Return the update version represented by a Home Assistant update entity."""
-    return str(
-        state.attributes.get("latest_version")
-        or state.attributes.get("installed_version")
-        or "unknown"
-    )
+    return str(state.attributes.get("latest_version") or "unknown")
 
 
 def async_setup_update_backups(hass, entry, entry_data):
@@ -49,7 +45,8 @@ def async_setup_update_backups(hass, entry, entry_data):
     if not backup_on_available and not track_installations:
         return lambda: None
 
-    selected_entities = set(options.get("update_backup_entities", []))
+    configured_entities = options.get("update_backup_entities") or []
+    selected_entities = set(configured_entities) if isinstance(configured_entities, list) else set()
 
     async def handle_state_change(event: Event):
         entity_id = event.data.get("entity_id", "")
@@ -153,7 +150,7 @@ def async_setup_update_backups(hass, entry, entry_data):
             payload = _build_payload(entry_data)
             await hass.async_add_executor_job(_write_json_file, path, payload)
         except OSError as err:
-            slug = re.sub(r"[^A-Za-z0-9_.-]", "_", entity_id)
+            slug = _entity_slug(entity_id)
             persistent_notification.async_create(
                 hass,
                 f"Could not create an update-available backup for {entity_id}: {err}",
