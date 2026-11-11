@@ -1,6 +1,7 @@
 """Back up maintenance data when Home Assistant updates become available."""
 
 from datetime import datetime, timezone
+from pathlib import Path
 import re
 
 from homeassistant.components import persistent_notification
@@ -76,6 +77,10 @@ def async_setup_update_backups(hass, entry, entry_data):
                     marker
                     if isinstance(marker, dict)
                     and marker.get("version") == version
+                    and isinstance(marker.get("filename"), str)
+                    and await hass.async_add_executor_job(
+                        (_backup_directory(hass, entry.entry_id) / marker["filename"]).is_file
+                    )
                     else None
                 )
                 started_at = datetime.now(timezone.utc).isoformat()
@@ -121,7 +126,14 @@ def async_setup_update_backups(hass, entry, entry_data):
         # A repeated state refresh for the same version must not create another
         # backup. A newly offered version replaces the previous marker.
         existing = available.get(entity_id)
-        if isinstance(existing, dict) and existing.get("version") == version:
+        if (
+            isinstance(existing, dict)
+            and existing.get("version") == version
+            and isinstance(existing.get("filename"), str)
+            and await hass.async_add_executor_job(
+                (_backup_directory(hass, entry.entry_id) / existing["filename"]).is_file
+            )
+        ):
             return
 
         filename = (
@@ -160,6 +172,27 @@ def async_setup_update_backups(hass, entry, entry_data):
             notification_id=f"{DOMAIN}_update_backup_{slug}",
         )
 
-    return async_track_state_change_event(
+    cancel_listener = async_track_state_change_event(
         hass, None, handle_state_change
     )
+
+    # The update entities may already be available or installing before this
+    # config entry finishes loading. Process their current states once so the
+    # first startup after enabling the feature does not miss them.
+    for current_state in hass.states.async_all("update"):
+        if selected_entities and current_state.entity_id not in selected_entities:
+            continue
+        hass.async_create_task(
+            handle_state_change(
+                Event(
+                    "state_changed",
+                    {
+                        "entity_id": current_state.entity_id,
+                        "old_state": None,
+                        "new_state": current_state,
+                    },
+                )
+            )
+        )
+
+    return cancel_listener
