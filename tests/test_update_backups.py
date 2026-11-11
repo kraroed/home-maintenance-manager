@@ -57,9 +57,10 @@ async def test_update_available_creates_one_backup_per_version(
     )
     callbacks = {}
     monkeypatch.setattr(
-        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
-        lambda hass, entity_ids, action: callbacks.update(
-            entity_ids=entity_ids, action=action
+        hass.bus,
+        "async_listen",
+        lambda event_type, action: callbacks.update(
+            event_type=event_type, action=action
         ) or (lambda: None),
     )
     notifications = []
@@ -80,7 +81,7 @@ async def test_update_available_creates_one_backup_per_version(
 
     cancel = update_backups.async_setup_update_backups(hass, entry, entry_data)
     assert callable(cancel)
-    assert callbacks["entity_ids"] is None
+    assert callbacks["event_type"] == "state_changed"
 
     old = State("update.home_assistant_core_update", "off", {})
     available = State(
@@ -138,8 +139,11 @@ async def test_installation_start_without_earlier_backup_is_reported(
     """An in-progress event never creates a late backup and warns if none exists."""
     callbacks = {}
     monkeypatch.setattr(
-        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
-        lambda hass, entity_ids, action: callbacks.update(action=action) or (lambda: None),
+        hass.bus,
+        "async_listen",
+        lambda event_type, action: callbacks.update(
+            event_type=event_type, action=action
+        ) or (lambda: None),
     )
     notifications = []
     monkeypatch.setattr(
@@ -210,8 +214,7 @@ async def test_existing_available_update_is_backed_up_when_monitoring_starts(
         lambda *parts: str(tmp_path.joinpath(*parts)),
     )
     monkeypatch.setattr(
-        "custom_components.home_maintenance_manager.update_backups.async_track_state_change_event",
-        lambda hass, entity_ids, action: (lambda: None),
+        hass.bus, "async_listen", lambda event_type, action: (lambda: None)
     )
     monkeypatch.setattr(
         update_backups.persistent_notification,
