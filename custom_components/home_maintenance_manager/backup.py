@@ -317,7 +317,7 @@ async def async_unload_backup_services(hass):
             hass.services.async_remove(DOMAIN, service)
 
 
-async def async_setup_automatic_backup(hass, entry, entry_data):
+def async_setup_automatic_backup(hass, entry, entry_data):
     """Schedule automatic backups for one property and enforce retention."""
     from datetime import datetime
     from homeassistant.helpers.event import async_track_time_change
