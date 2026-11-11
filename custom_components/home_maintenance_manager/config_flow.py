@@ -250,7 +250,12 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     item.get("name", task_id)
                 )
         summary = "\n".join(
-            f"{category}: " + ", ".join(sorted(names, key=str.casefold))
+            "\n".join(
+                [f"{category}:"] + [
+                    f"  • {name}"
+                    for name in sorted(names, key=str.casefold)
+                ]
+            )
             for category, names in sorted(grouped.items())
         ) or "No maintenance tasks selected."
         return self.async_show_menu(
