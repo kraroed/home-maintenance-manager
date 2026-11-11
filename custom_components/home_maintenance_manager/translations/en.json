@@ -134,6 +134,10 @@
         "data": {
           "individual_notifications_enabled": "Send individual task reminders",
           "daily_summary_enabled": "Send a daily maintenance summary"
+        },
+        "data_description": {
+          "individual_notifications_enabled": "Send reminders for individual tasks as they approach their due dates or become overdue.",
+          "daily_summary_enabled": "Send one daily message summarizing maintenance that is due soon or overdue."
         }
       },
       "manage_tasks": {
@@ -180,6 +184,10 @@
           "name": "Task name",
           "category": "Category",
           "description": "Description"
+        },
+        "data_description": {
+          "category": "Choose a built-in category or select Other to create a reusable custom category.",
+          "description": "A short explanation shown with this task in Home Maintenance Manager."
         }
       },
       "add_equipment": {
@@ -191,6 +199,12 @@
           "custom_category_name": "Custom category name (when category is Other)",
           "custom_category_icon": "Category icon",
           "area_id": "Home Assistant area"
+        },
+        "data_description": {
+          "category": "Choose a built-in equipment category, or select Other to create a reusable category.",
+          "custom_category_name": "Name the reusable category. This is only needed when creating a new category.",
+          "custom_category_icon": "Choose the icon used for this custom equipment category.",
+          "area_id": "Optional Home Assistant area where this equipment is located. Create an area first if it is not listed."
         }
       },
       "create_area": {
@@ -198,6 +212,9 @@
         "description": "Create an area that can be assigned to household equipment.",
         "data": {
           "name": "New area name"
+        },
+        "data_description": {
+          "name": "This creates a Home Assistant area that can be assigned to equipment records."
         }
       },
       "manage_equipment": {
@@ -224,6 +241,12 @@
           "custom_category_name": "Custom category name (when category is Other)",
           "custom_category_icon": "Category icon",
           "area_id": "Home Assistant area"
+        },
+        "data_description": {
+          "category": "Choose a built-in equipment category or one of your saved custom categories.",
+          "custom_category_name": "Enter a name only when creating a new custom category.",
+          "custom_category_icon": "Choose the icon for a new custom category. Existing saved category icons are preserved when reusing a category.",
+          "area_id": "Optional Home Assistant area where this equipment is located."
         }
       },
       "remove_equipment": {
@@ -357,6 +380,9 @@
         "description": "Choose how often this task repeats. The next step will show only the fields needed for that schedule.",
         "data": {
           "schedule_type": "Schedule type"
+        },
+        "data_description": {
+          "schedule_type": "Choose a repeating interval, a date each year, or a pattern such as the first Monday of each month."
         }
       },
       "custom_task_schedule_details": {
@@ -368,6 +394,13 @@
           "annual_day": "Annual day (1–31)",
           "monthly_week": "Week of the month",
           "monthly_weekday": "Day of the week"
+        },
+        "data_description": {
+          "interval_days": "Number of days between completions. The next due date is calculated from the completion date.",
+          "annual_month": "Month when this task is due each year.",
+          "annual_day": "Day of the selected month when this task is due. February 29 is supported.",
+          "monthly_week": "Which occurrence of the selected weekday is used (for example, first or last).",
+          "monthly_weekday": "Day of the week when this task is due each month."
         }
       },
       "custom_task_instructions": {
@@ -378,6 +411,12 @@
           "what_to_look_for": "What to look for (one item per line)",
           "what_to_do_if_issue": "What to do if something is wrong",
           "safety_notes": "Safety precautions"
+        },
+        "data_description": {
+          "how_to_inspect": "Optional step-by-step guidance for carrying out the inspection.",
+          "what_to_look_for": "Optional signs of wear, damage, or other problems to check for.",
+          "what_to_do_if_issue": "Optional next steps when an issue is found.",
+          "safety_notes": "Optional precautions, hazards, or situations that require a qualified professional."
         }
       },
       "notification_delivery": {
@@ -387,6 +426,11 @@
           "notification_target": "Mobile app notification service",
           "notification_lead_days": "Remind this many days before a task is due",
           "daily_summary_time": "Daily summary time (24-hour HH:MM)"
+        },
+        "data_description": {
+          "notification_target": "Choose a Companion App notify service, or leave this blank to use Home Assistant persistent notifications.",
+          "notification_lead_days": "How many days before a task is due to send its individual reminder. Use 0 for reminders on the due date.",
+          "daily_summary_time": "Local Home Assistant time when the daily maintenance summary is sent."
         }
       },
       "season_window_spring": {
@@ -395,6 +439,10 @@
         "data": {
           "start": "Spring start (MM-DD)",
           "end": "Spring end (MM-DD)"
+        },
+        "data_description": {
+          "start": "First day of the spring scheduling window, in MM-DD format.",
+          "end": "Last day of the spring scheduling window, in MM-DD format."
         }
       },
       "season_window_summer": {
@@ -403,6 +451,10 @@
         "data": {
           "start": "Summer start (MM-DD)",
           "end": "Summer end (MM-DD)"
+        },
+        "data_description": {
+          "start": "First day of the summer scheduling window, in MM-DD format.",
+          "end": "Last day of the summer scheduling window, in MM-DD format."
         }
       },
       "season_window_fall": {
@@ -411,6 +463,10 @@
         "data": {
           "start": "Fall start (MM-DD)",
           "end": "Fall end (MM-DD)"
+        },
+        "data_description": {
+          "start": "First day of the fall scheduling window, in MM-DD format.",
+          "end": "Last day of the fall scheduling window, in MM-DD format."
         }
       },
       "season_window_winter": {
@@ -419,6 +475,10 @@
         "data": {
           "start": "Winter start (MM-DD)",
           "end": "Winter end (MM-DD)"
+        },
+        "data_description": {
+          "start": "First day of the winter scheduling window, in MM-DD format.",
+          "end": "Last day of the winter scheduling window, in MM-DD format. Winter may cross into the next calendar year."
         }
       },
       "add_equipment_details": {
@@ -431,6 +491,12 @@
           "lifespan_months": "Expected lifespan (months; 0 disables)",
           "replacement_task_id": "Task to make due when replacement is needed",
           "notes": "Notes"
+        },
+        "data_description": {
+          "installed_date": "Date the equipment was installed, in YYYY-MM-DD format. Leave blank if unknown.",
+          "lifespan_months": "Expected service life in months. Set to 0 to disable automatic replacement scheduling.",
+          "replacement_task_id": "Optional task to become due when the equipment reaches the end of its expected lifespan. Requires an installation date and lifespan.",
+          "notes": "Optional identifying or location notes. Do not enter passwords or other sensitive information."
         }
       },
       "add_equipment_tasks": {
@@ -438,6 +504,9 @@
         "description": "Choose the maintenance tasks that apply to this equipment. A designated replacement task is included automatically.",
         "data": {
           "task_ids": "Maintenance tasks associated with this equipment"
+        },
+        "data_description": {
+          "task_ids": "Select the maintenance tasks that apply to this equipment. The designated replacement task is added automatically."
         }
       },
       "edit_equipment_details": {
@@ -450,6 +519,12 @@
           "lifespan_months": "Expected lifespan (months; 0 disables)",
           "replacement_task_id": "Task to make due when replacement is needed",
           "notes": "Notes"
+        },
+        "data_description": {
+          "installed_date": "Date the equipment was installed, in YYYY-MM-DD format. Leave blank if unknown.",
+          "lifespan_months": "Expected service life in months. Set to 0 to disable automatic replacement scheduling.",
+          "replacement_task_id": "Optional task to become due when the equipment reaches the end of its expected lifespan. Requires an installation date and lifespan.",
+          "notes": "Optional identifying or location notes."
         }
       },
       "edit_equipment_tasks": {
@@ -457,6 +532,9 @@
         "description": "Choose the maintenance tasks associated with this equipment.",
         "data": {
           "task_ids": "Maintenance tasks associated with this equipment"
+        },
+        "data_description": {
+          "task_ids": "Select the maintenance tasks associated with this equipment. Existing selections are shown."
         }
       },
       "interval_category_hvac": {
@@ -666,6 +744,12 @@
           "automatic_backup_frequency": "Backup frequency",
           "automatic_backup_time": "Backup time (24-hour HH:MM)",
           "automatic_backup_retention": "Number of automatic backups to keep (1–100)"
+        },
+        "data_description": {
+          "automatic_backups_enabled": "Turn scheduled JSON backups on or off. Manual backups remain available when this is disabled.",
+          "automatic_backup_frequency": "Choose daily, weekly on Sunday, or monthly on the first day of the month.",
+          "automatic_backup_time": "Local Home Assistant time when the scheduled backup starts, using 24-hour HH:MM format.",
+          "automatic_backup_retention": "Maximum number of automatic backups to keep. Older automatic backups are deleted; manual and pre-restore safety backups are not."
         }
       },
       "configure_update_backups": {
@@ -675,6 +759,11 @@
           "update_backup_on_available": "Create a JSON backup when an update becomes available",
           "update_install_tracking_enabled": "Notify when a monitored update starts installing",
           "update_backup_entities": "Update entities to monitor (empty means all update entities)"
+        },
+        "data_description": {
+          "update_backup_on_available": "Create a Home Maintenance Manager JSON backup when a monitored update entity reports that an update is available. This may happen well before installation.",
+          "update_install_tracking_enabled": "Record when a monitored update starts installing and send a persistent notification. This does not pause the update or guarantee a backup completes first.",
+          "update_backup_entities": "Choose the Home Assistant update entities to monitor. Leave the selection empty to monitor all update entities."
         }
       }
     },
