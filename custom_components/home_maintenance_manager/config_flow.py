@@ -250,7 +250,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     item.get("name", task_id)
                 )
         summary = "\n".join(
-            "\\n".join(
+            "\n".join(
                 [f"{category}:"] + [
                     f"  • {name}"
                     for name in sorted(names, key=str.casefold)
