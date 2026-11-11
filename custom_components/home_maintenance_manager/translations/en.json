@@ -96,6 +96,14 @@
         "data": {
           "enabled_task_ids": "Enabled tasks in this category"
         }
+      },
+      "review_setup": {
+        "title": "Review your maintenance setup",
+        "description": "Review the tasks selected for this property. You can go back to change selections before completing setup.\n\n{selected_tasks_summary}",
+        "menu_options": {
+          "back_to_setup_tasks": "Back to task selection",
+          "confirm_setup": "Confirm and finish setup"
+        }
       }
     },
     "error": {
