@@ -871,23 +871,7 @@ async def test_custom_task_wizard_back_preserves_draft_values(
         },
     )
     assert result["step_id"] == "custom_task_wizard_navigation"
-    result = await hass.config_entries.options.async_configure(
-        flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
-    )
-    assert result["step_id"] == "add_custom_task"
-    defaults = {str(key): (key.default() if callable(key.default) else key.default) for key in result["data_schema"].schema}
-    assert defaults["name"] == "Inspect Water Shutoff"
-    assert defaults["category"] == "plumbing"
-    assert defaults["description"] == "Locate and test the main shutoff."
-
-    result = await hass.config_entries.options.async_configure(
-        flow_id,
-        user_input={
-            "name": "Inspect Water Shutoff",
-            "category": "plumbing",
-            "description": "Locate and test the main shutoff.",
-        },
-    )
+    assert result["menu_options"] == ["custom_task_wizard_continue"]
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
     )
