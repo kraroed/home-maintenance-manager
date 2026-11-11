@@ -107,7 +107,7 @@ The integration lives in `custom_components/home_maintenance_manager/`. CI workf
 The integration exposes additional summary sensors for maintenance activity:
 
 - Completion totals and late-completion counts over the previous 30, 90, and 365 days.
-- Completion breakdowns by maintenance category, including on-time and late totals.
+- All-time completion breakdowns by maintenance category, including on-time and late totals. These totals cover the full retained completion history, unlike the rolling-window headline metrics.
 - Upcoming workload counts for the next 7, 30, and 90 days. Overdue and due-today tasks are reported separately.
 - An overdue-backlog trend based on one local-calendar-day snapshot.
 
