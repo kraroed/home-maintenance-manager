@@ -6,7 +6,7 @@
 - Display selected maintenance tasks as individual bullet points grouped by category on the initial setup review page.
 
 ### Testing
-- Add regression tests for single-category and multi-category setup review formatting.
+- Cover single-category and multi-category setup review formatting with regression tests.
 
 ## 0.9.7
 
