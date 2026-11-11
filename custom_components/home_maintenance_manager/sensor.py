@@ -18,6 +18,16 @@ async def async_setup_entry(hass, entry, async_add_entities):
         SummarySensor(coordinator, "history_count", "Completion history records", "history_count"),
         SummarySensor(coordinator, "equipment_count", "Equipment records", "equipment_count"),
     ]
+    entities.extend([
+        InsightsSensor(coordinator, "completed_30_days", "Tasks completed in 30 days", ("windows", "30_days", "completed")),
+        InsightsSensor(coordinator, "completed_90_days", "Tasks completed in 90 days", ("windows", "90_days", "completed")),
+        InsightsSensor(coordinator, "completed_365_days", "Tasks completed in 365 days", ("windows", "365_days", "completed")),
+        InsightsSensor(coordinator, "late_completions_90_days", "Late completions in 90 days", ("windows", "90_days", "completed_late")),
+        InsightsSensor(coordinator, "upcoming_7_days", "Upcoming tasks in 7 days", ("workload", "next_7_days")),
+        InsightsSensor(coordinator, "upcoming_30_days", "Upcoming tasks in 30 days", ("workload", "next_30_days")),
+        InsightsSensor(coordinator, "upcoming_90_days", "Upcoming tasks in 90 days", ("workload", "next_90_days")),
+        InsightsSensor(coordinator, "overdue_backlog", "Overdue backlog trend", ("backlog_history", "latest", "overdue")),
+    ])
     entities.extend(
         TaskStatusSensor(coordinator, task["task_id"], task["name"])
         for task in manager.data["tasks"].values()
@@ -48,6 +58,46 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         return self.coordinator.data.get(self.value_key, 0)
+
+
+class InsightsSensor(CoordinatorEntity, SensorEntity):
+    """Expose a single maintenance insight as a Home Assistant sensor."""
+
+    def __init__(self, coordinator, key, name, path):
+        super().__init__(coordinator)
+        self.path = path
+        self._attr_unique_id = f"{coordinator.manager.storage.store.key}_{key}"
+        self._attr_name = name
+        self._attr_icon = "mdi:chart-line"
+        self.integration_instance = coordinator.manager.storage.store.key
+
+    def _value(self):
+        insights = self.coordinator.data.get("insights", {})
+        if self.path[0] == "backlog_history":
+            history = insights.get("backlog_history", [])
+            return history[-1].get(self.path[2]) if history else 0
+        value = insights
+        for key in self.path:
+            if not isinstance(value, dict):
+                return 0
+            value = value.get(key, {})
+        return value if isinstance(value, (int, float)) else 0
+
+    @property
+    def native_value(self):
+        return self._value()
+
+    @property
+    def extra_state_attributes(self):
+        insights = self.coordinator.data.get("insights", {})
+        return {
+            "integration_domain": DOMAIN,
+            "integration_instance": self.integration_instance,
+            "completion_windows": insights.get("windows", {}),
+            "completion_by_category": insights.get("by_category", {}),
+            "upcoming_workload": insights.get("workload", {}),
+            "overdue_backlog_history": insights.get("backlog_history", []),
+        }
 
 
 class TaskStatusSensor(CoordinatorEntity, SensorEntity):
