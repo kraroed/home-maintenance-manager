@@ -14,14 +14,26 @@ from custom_components.home_maintenance_manager.const import (
 )
 
 async def _submit_equipment_wizard(hass, flow_id, identity, details=None, tasks=None, editing=False):
-    """Submit the three guided equipment wizard steps."""
+    """Submit the equipment wizard, following each explicit Continue action."""
     prefix = "edit" if editing else "add"
     result = await hass.config_entries.options.async_configure(flow_id, user_input=identity)
+    assert result["step_id"] == "equipment_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
+    )
     assert result["step_id"] == f"{prefix}_equipment_details"
     result = await hass.config_entries.options.async_configure(flow_id, user_input=details or {})
+    assert result["step_id"] == "equipment_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
+    )
     assert result["step_id"] == f"{prefix}_equipment_tasks"
-    return await hass.config_entries.options.async_configure(
+    result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"task_ids": tasks or []}
+    )
+    assert result["step_id"] == "equipment_wizard_navigation"
+    return await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
     )
 
 
@@ -96,6 +108,9 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"name": "Main HVAC", "category": "HVAC"}
     )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
+    )
     invalid_result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"installed_date": "2024-02-30"}
     )
@@ -107,7 +122,13 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
                                        "installed_date": "2024-05-01", "notes": "Upstairs and downstairs system"}
     )
     result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_ids": ["clean_gutters"]}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
