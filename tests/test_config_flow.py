@@ -49,6 +49,18 @@ async def _configure_custom_task(hass, flow_id, user_input=None):
     return result
 
 
+async def _configure_custom_task(hass, flow_id, user_input=None):
+    """Submit a custom-task wizard step and follow its Continue menu."""
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input=user_input
+    )
+    if result.get("step_id") == "custom_task_wizard_navigation":
+        result = await hass.config_entries.options.async_configure(
+            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+        )
+    return result
+
+
 @pytest.mark.asyncio
 async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_integrations):
     """Initial setup asks for the property, then selects tasks by category."""
