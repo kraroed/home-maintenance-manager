@@ -93,6 +93,20 @@ def _validate_payload(payload):
         isinstance(item, dict) for item in data["history"]
     ):
         raise HomeAssistantError("Backup contains an invalid completion history.")
+
+    backlog_snapshots = data.get("backlog_snapshots", [])
+    if not isinstance(backlog_snapshots, list) or not all(
+        isinstance(item, dict)
+        and isinstance(item.get("date"), str)
+        and len(item["date"]) == 10
+        and all(
+            type(item.get(key, 0)) is int and item.get(key, 0) >= 0
+            for key in ("overdue", "due_today", "due_soon", "scheduled",
+                        "not_scheduled", "total")
+        )
+        for item in backlog_snapshots
+    ):
+        raise HomeAssistantError("Backup contains invalid backlog trend snapshots.")
     settings = data.get("settings")
     if not isinstance(settings, dict):
         raise HomeAssistantError("Backup is missing its settings.")
