@@ -218,7 +218,7 @@ async def test_existing_available_update_is_backed_up_when_monitoring_starts(
         "async_create",
         lambda *args, **kwargs: None,
     )
-    await hass.states.async_set(
+    hass.states.async_set(
         "update.home_assistant_core_update",
         "on",
         {"latest_version": "2026.11.1", "in_progress": False},
