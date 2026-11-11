@@ -510,7 +510,7 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
     )
     if result.get("step_id") == "custom_task_wizard_navigation":
         result = await hass.config_entries.options.async_configure(
-            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+            result["flow_id"], user_input={"next_step_id": "custom_task_wizard_continue"}
         )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_id": "custom_replace_filter"}
