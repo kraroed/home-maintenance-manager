@@ -408,14 +408,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 )
             configured[season] = dict(user_input)
             self._season_window_draft = configured
-            if next_season:
-                return await getattr(self, f"async_step_season_window_{next_season}")()
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    "season_windows": configured,
-                },
+            previous = {
+                "spring": None, "summer": "spring",
+                "fall": "summer", "winter": "fall",
+            }[season]
+            self._season_wizard_previous = previous
+            self._season_wizard_next = next_season
+            menu_options = ["season_wizard_continue"]
+            if previous:
+                menu_options.insert(0, "season_wizard_back")
+            return self.async_show_menu(
+                step_id="season_wizard_navigation",
+                menu_options=menu_options,
             )
         return self.async_show_form(
             step_id=f"season_window_{season}",
@@ -427,6 +431,25 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
                 ),
             }),
+        )
+
+    async def async_step_season_wizard_back(self, user_input=None):
+        """Return to the previous season without losing entered dates."""
+        return await getattr(
+            self, f"async_step_season_window_{self._season_wizard_previous}"
+        )()
+
+    async def async_step_season_wizard_continue(self, user_input=None):
+        """Continue to the next season or save all seasonal windows."""
+        next_season = self._season_wizard_next
+        if next_season:
+            return await getattr(self, f"async_step_season_window_{next_season}")()
+        return self.async_create_entry(
+            title="",
+            data={
+                **self.config_entry.options,
+                "season_windows": self._season_window_draft,
+            },
         )
 
     async def async_step_season_window_spring(self, user_input=None):
