@@ -31,6 +31,7 @@ def default_data():
         "tasks": {},
         "equipment": {},
         "history": [],
+        "backlog_snapshots": [],
         "notification_state": {
             "individual": {},
             "summary_date": None,
@@ -85,6 +86,19 @@ class MaintenanceStorage:
         if isinstance(stored_history, list):
             data["history"] = [
                 record for record in stored_history if isinstance(record, dict)
+            ]
+
+        stored_snapshots = stored.get("backlog_snapshots")
+        if isinstance(stored_snapshots, list):
+            data["backlog_snapshots"] = [
+                item for item in stored_snapshots[-365:]
+                if isinstance(item, dict)
+                and _valid_iso_date(item.get("date"))
+                and all(
+                    type(item.get(key, 0)) is int and item.get(key, 0) >= 0
+                    for key in ("overdue", "due_today", "due_soon", "scheduled",
+                                "not_scheduled", "total")
+                )
             ]
 
         stored_notifications = stored.get("notification_state")
