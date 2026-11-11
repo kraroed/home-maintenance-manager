@@ -123,7 +123,8 @@
           "create_area": "Create a Home Assistant area",
           "manage_custom_tasks": "Manage custom maintenance tasks",
           "configure_notifications": "Configure maintenance notifications",
-          "configure_season_windows": "Configure seasonal scheduling windows"
+          "configure_season_windows": "Configure seasonal scheduling windows",
+          "configure_automatic_backups": "Configure automatic JSON backups"
         }
       },
       "configure_notifications": {
@@ -654,6 +655,16 @@
         "menu_options": {
           "custom_task_wizard_back": "Back",
           "custom_task_wizard_continue": "Continue"
+        }
+      },
+      "configure_automatic_backups": {
+        "title": "Automatic JSON backups",
+        "description": "Choose whether backups run automatically, how often they run, the local time, and how many automatic backups to retain. Manual backups and pre-restore safety backups are never removed by automatic retention.",
+        "data": {
+          "automatic_backups_enabled": "Enable automatic backups",
+          "automatic_backup_frequency": "Backup frequency",
+          "automatic_backup_time": "Backup time (24-hour HH:MM)",
+          "automatic_backup_retention": "Number of automatic backups to keep (1–100)"
         }
       }
     },
