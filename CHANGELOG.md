@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 0.11.1
+## 0.11.2
 
 ### Fixes
 - Fix update backup monitoring setup by registering a supported Home Assistant state-change event listener.
@@ -86,7 +86,7 @@
 ### Equipment
 - Use the native Home Assistant icon selector so any available Home Assistant icon can be selected for custom equipment categories.
 - Preserve saved custom category icons when adding additional equipment that uses the same category.
-- Apply category icons consistently to equipment entities and refresh icons when equipment categories change.
+- Apply category-specific icons to equipment entities and refresh icons when equipment categories change.
 - Add reusable custom equipment categories with user-selectable icons; saved categories can be reused across equipment.
 
 ## 0.9.4
