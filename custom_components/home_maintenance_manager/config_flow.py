@@ -299,7 +299,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups"],
+            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups", "configure_update_backups"],
         )
 
     async def async_step_configure_notifications(self, user_input=None):
@@ -1601,3 +1601,37 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 ): vol.All(vol.Coerce(int), vol.Range(min=1, max=100)),
             }),
         )
+
+    async def async_step_configure_update_backups(self, user_input=None):
+        """Configure update-available backups and installation tracking."""
+        options = self.config_entry.options
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data={
+                    **options,
+                    "update_backup_on_available": user_input["update_backup_on_available"],
+                    "update_install_tracking_enabled": user_input["update_install_tracking_enabled"],
+                    "update_backup_entities": user_input.get("update_backup_entities", []),
+                },
+            )
+        return self.async_show_form(
+            step_id="configure_update_backups",
+            data_schema=vol.Schema({
+                vol.Required(
+                    "update_backup_on_available",
+                    default=options.get("update_backup_on_available", False),
+                ): bool,
+                vol.Required(
+                    "update_install_tracking_enabled",
+                    default=options.get("update_install_tracking_enabled", False),
+                ): bool,
+                vol.Optional(
+                    "update_backup_entities",
+                    default=options.get("update_backup_entities", []),
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="update", multiple=True)
+                ),
+            }),
+        )
+

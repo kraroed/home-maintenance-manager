@@ -124,7 +124,8 @@
           "manage_custom_tasks": "Manage custom maintenance tasks",
           "configure_notifications": "Configure maintenance notifications",
           "configure_season_windows": "Configure seasonal scheduling windows",
-          "configure_automatic_backups": "Configure automatic JSON backups"
+          "configure_automatic_backups": "Configure automatic JSON backups",
+          "configure_update_backups": "Configure update-triggered backups"
         }
       },
       "configure_notifications": {
@@ -665,6 +666,15 @@
           "automatic_backup_frequency": "Backup frequency",
           "automatic_backup_time": "Backup time (24-hour HH:MM)",
           "automatic_backup_retention": "Number of automatic backups to keep (1–100)"
+        }
+      },
+      "configure_update_backups": {
+        "title": "Update-triggered backups",
+        "description": "Optionally create a Home Maintenance Manager JSON backup when selected update entities report an available update, and track when their installation starts. Leave the entity list empty to monitor all update entities. An availability backup may be created well before installation; installation tracking cannot guarantee a backup finishes before an update starts.",
+        "data": {
+          "update_backup_on_available": "Create a JSON backup when an update becomes available",
+          "update_install_tracking_enabled": "Notify when a monitored update starts installing",
+          "update_backup_entities": "Update entities to monitor (empty means all update entities)"
         }
       }
     },

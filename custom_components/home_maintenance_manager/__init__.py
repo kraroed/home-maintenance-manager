@@ -12,6 +12,7 @@ from .coordinator import MaintenanceCoordinator
 from .history_export import async_setup_history_export, async_unload_history_export
 from .notifications import async_setup_notifications
 from .task_manager import TaskManager
+from .update_backups import async_setup_update_backups
 
 
 async def async_setup(hass, config):
@@ -58,10 +59,14 @@ async def async_setup_entry(hass, entry):
     cancel_automatic_backup = async_setup_automatic_backup(
         hass, entry, hass.data[DOMAIN][entry.entry_id]
     )
+    cancel_update_backup_listener = async_setup_update_backups(
+        hass, entry, hass.data[DOMAIN][entry.entry_id]
+    )
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     entry.async_on_unload(cancel_notifications)
     entry.async_on_unload(cancel_automatic_backup)
+    entry.async_on_unload(cancel_update_backup_listener)
     return True
 
 

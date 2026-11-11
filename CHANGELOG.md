@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+- Add optional JSON backups when selected Home Assistant update entities report a new update.
+- Track installation starts and notify whether a matching update-available backup was recorded.
+- Keep update-triggered backups outside scheduled-backup retention cleanup.
+
+### Testing
+- Add regression coverage for update availability, duplicate prevention, installation tracking, and entity filtering.
+
+
 ## 0.10.0
 
 ### Improvements

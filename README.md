@@ -28,6 +28,8 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Home Assistant entities for task status and household maintenance summaries.
 - Individual due-soon and overdue reminders, plus a configurable daily summary.
 - Configurable reminder lead time and notification destination, with persistent notifications as the fallback. Mobile app reminders include actions to mark a task complete or snooze it until tomorrow or one week later.
+- Optional update-triggered JSON backups when selected Home Assistant update entities report a new update, with duplicate prevention by entity and version.
+- Optional installation-start tracking for monitored update entities, including a persistent notification that identifies whether a matching update-available backup was recorded. This is an early backup, not a guaranteed pre-install backup.
 
 ## Built-in maintenance task library
 
@@ -66,6 +68,10 @@ Use **Developer Tools → Actions** to run the backup services:
 5. After reviewing the preview, run `home_maintenance_manager.restore_backup` with the same filename and set `confirm: true`.
 
 A restore first writes an automatic pre-restore backup beside the uploaded file. Tasks, equipment, settings, reminder state, and property options are restored from the selected backup. Completion history is merged by `history_id`: records already on the current system are retained, and missing records from the backup are added without duplicates. A malformed, unsupported, oversized (over 10 MB), or unsafe filename is rejected before live data is changed. Restore is limited to one selected property at a time; when multiple properties are configured, provide `integration_instance` to both preview and restore.
+
+## Update-triggered backups
+
+Open **Configure → Configure update-triggered backups** to optionally create a property JSON backup when an update becomes available and/or receive a notification when an update starts installing. Select specific update entities, or leave the entity list empty to monitor all update entities. Update-triggered backup files are stored in the same protected property backup folder as manual and scheduled backups. They are not included in scheduled-backup retention cleanup. A backup is created when the update first becomes available, which may be hours or days before installation; installation-start tracking cannot pause the update or guarantee that a backup finishes before installation begins. Keep Home Assistant's own backup-before-update option enabled for full-system protection.
 
 ## Lovelace dashboard card
 
