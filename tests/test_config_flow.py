@@ -38,18 +38,6 @@ async def _submit_equipment_wizard(hass, flow_id, identity, details=None, tasks=
 
 
 async def _configure_custom_task(hass, flow_id, user_input=None):
-    """Submit one custom-task wizard step and follow Continue when offered."""
-    result = await hass.config_entries.options.async_configure(
-        flow_id, user_input=user_input
-    )
-    if result.get("step_id") == "custom_task_wizard_navigation":
-        result = await hass.config_entries.options.async_configure(
-            flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
-        )
-    return result
-
-
-async def _configure_custom_task(hass, flow_id, user_input=None):
     """Submit a custom-task wizard step and follow its Continue menu."""
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input=user_input
@@ -94,8 +82,18 @@ async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_int
     )
     assert result["step_id"] == "setup_tasks"
     result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "setup_category_safety"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_ENABLED_TASK_IDS: ["test_smoke_alarms"]}
+    )
+    result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "finish_setup"}
     )
+    summary = result["description_placeholders"]["selected_tasks_summary"]
+    assert "Exterior: Clean rain gutters" in summary
+    assert "Safety: Test smoke alarms" in summary
+    assert "\n" in summary
     assert result["step_id"] == "review_setup"
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "confirm_setup"}
@@ -1147,3 +1145,116 @@ async def test_manage_tasks_clear_all_removes_every_enabled_task(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_ENABLED_TASK_IDS] == []
+
+
+
+@pytest.mark.asyncio
+async def test_equipment_wizard_back_preserves_identity(hass, enable_custom_integrations):
+    """Back from equipment details restores the entered identity and category."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"name": "Hall Smoke Detector", "category": "Safety and security"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"installed_date": "2024-03-12", "manufacturer": "Acme"}
+    )
+    assert result["step_id"] == "equipment_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_back"}
+    )
+    assert result["step_id"] == "add_equipment"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["name"] == "Hall Smoke Detector"
+    assert defaults["category"] == "Safety and security"
+
+
+@pytest.mark.asyncio
+async def test_season_wizard_back_preserves_dates(hass, enable_custom_integrations):
+    """Back from summer returns to spring with the previously entered dates."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "configure_season_windows"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"start": "03-20", "end": "05-25"}
+    )
+    assert result["step_id"] == "season_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "season_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"start": "06-05", "end": "08-25"}
+    )
+    assert result["step_id"] == "season_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "season_wizard_back"}
+    )
+    assert result["step_id"] == "season_window_spring"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["start"] == "03-20"
+    assert defaults["end"] == "05-25"
+
+
+@pytest.mark.asyncio
+async def test_notification_wizard_back_preserves_notification_choices(
+    hass, enable_custom_integrations
+):
+    """Back from delivery settings restores the selected notification types."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+        options={"notification_target": "notify.mobile_app_phone"},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "configure_notifications"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "individual_notifications_enabled": False,
+            "daily_summary_enabled": True,
+        }
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "notification_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"daily_summary_time": "07:30"}
+    )
+    assert result["step_id"] == "notification_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "notification_wizard_back"}
+    )
+    assert result["step_id"] == "configure_notifications"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["individual_notifications_enabled"] is False
+    assert defaults["daily_summary_enabled"] is True
