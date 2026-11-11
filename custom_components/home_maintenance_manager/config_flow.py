@@ -850,6 +850,48 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         )
 
+    @staticmethod
+    def _custom_task_schedule_type_schema(default="interval"):
+        return vol.Schema({
+            vol.Required("schedule_type", default=default): vol.In({
+                "interval": "Repeat by interval",
+                "annual": "Repeat annually on a calendar date",
+                "monthly": "Repeat monthly on a weekday pattern",
+            }),
+        })
+
+
+    @staticmethod
+    def _custom_task_schedule_details_schema(schedule_type, current=None):
+        current = current or {}
+        if schedule_type == "interval":
+            return vol.Schema({
+                vol.Required("interval_days", default=current.get("interval_days", current.get("recommended_interval_days", 90))): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=3650)
+                ),
+            })
+        if schedule_type == "annual":
+            return vol.Schema({
+                vol.Required("annual_month", default=current.get("annual_month", 1)): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=12)
+                ),
+                vol.Required("annual_day", default=current.get("annual_day", 1)): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=31)
+                ),
+            })
+        return vol.Schema({
+            vol.Required("monthly_week", default=current.get("monthly_week", "first")): vol.In({
+                "first": "First", "second": "Second", "third": "Third",
+                "fourth": "Fourth", "last": "Last",
+            }),
+            vol.Required("monthly_weekday", default=current.get("monthly_weekday", 5)): vol.In({
+                0: "Monday", 1: "Tuesday", 2: "Wednesday",
+                3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday",
+            }),
+        })
+
+    @staticmethod
+
     async def async_step_custom_task_schedule(self, user_input=None):
         """Choose the recurrence pattern before showing its relevant fields."""
         if user_input is not None:
