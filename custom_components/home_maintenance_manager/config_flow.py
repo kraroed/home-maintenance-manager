@@ -26,6 +26,19 @@ EQUIPMENT_CATEGORY_ICONS = {
     "Pool and spa": "mdi:pool", "Other": "mdi:tools",
 }
 
+
+def _multi_select_checklist(options):
+    """Render multi-select choices as an always-visible checklist."""
+    items = options.items() if isinstance(options, dict) else options
+    return selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[{"value": value, "label": label} for value, label in items],
+            multiple=True,
+            mode=selector.SelectSelectorMode.LIST,
+        )
+    )
+
+
 def _resolve_equipment_category(options, user_input):
     """Resolve a built-in or reusable custom equipment category and icon."""
     custom_categories = [
@@ -192,7 +205,7 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         task_id for task_id in tasks
                         if task_id in self._setup_selected_task_ids
                     ],
-                ): cv.multi_select(options),
+                ): _multi_select_checklist(options),
             }),
         )
 
@@ -227,6 +240,35 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self._async_step_setup_category("systems", user_input)
 
     async def async_step_finish_setup(self, user_input=None):
+        """Show a grouped review of selected tasks before completing setup."""
+        library = await self.hass.async_add_executor_job(load_library)
+        grouped = {}
+        for task_id in self._setup_selected_task_ids:
+            item = library.get(task_id)
+            if item:
+                grouped.setdefault(item.get("category", "Other").title(), []).append(
+                    item.get("name", task_id)
+                )
+        summary = "\n".join(
+            f"{category}: " + ", ".join(sorted(names, key=str.casefold))
+            for category, names in sorted(grouped.items())
+        ) or "No maintenance tasks selected."
+        return self.async_show_menu(
+            step_id="review_setup",
+            menu_options=["back_to_setup_tasks", "confirm_setup"],
+            description_placeholders={"selected_tasks_summary": summary},
+        )
+
+    async def async_step_review_setup(self, user_input=None):
+        """Re-display the initial setup review menu."""
+        return await self.async_step_finish_setup()
+
+    async def async_step_back_to_setup_tasks(self, user_input=None):
+        """Return to task selection without losing selected tasks."""
+        return await self._async_show_setup_task_menu()
+
+    async def async_step_confirm_setup(self, user_input=None):
+        """Create the config entry after the task selection review."""
         property_name = self._setup_property_name
         await self.async_set_unique_id(property_name.casefold())
         self._abort_if_unique_id_configured()
@@ -258,22 +300,29 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_configure_notifications(self, user_input=None):
         """Choose which maintenance notifications should be sent."""
         options = self.config_entry.options
+        draft = getattr(self, "_notification_draft", options)
         if user_input is not None:
-            self._notification_draft = {
+            # Preserve delivery settings already entered if the user navigates
+            # Back and changes only the notification types.
+            draft = dict(getattr(self, "_notification_draft", options))
+            draft.update({
                 "individual_notifications_enabled": user_input["individual_notifications_enabled"],
                 "daily_summary_enabled": user_input["daily_summary_enabled"],
-            }
-            return await self.async_step_notification_delivery()
+            })
+            self._notification_draft = draft
+            return self._async_show_notification_wizard_navigation(
+                previous=None, next_step="notification_delivery"
+            )
         return self.async_show_form(
             step_id="configure_notifications",
             data_schema=vol.Schema({
                 vol.Optional(
                     "individual_notifications_enabled",
-                    default=options.get("individual_notifications_enabled", True),
+                    default=draft.get("individual_notifications_enabled", True),
                 ): bool,
                 vol.Optional(
                     "daily_summary_enabled",
-                    default=options.get("daily_summary_enabled", True),
+                    default=draft.get("daily_summary_enabled", True),
                 ): bool,
             }),
         )
@@ -287,15 +336,11 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
         if user_input is not None:
             draft.update(user_input)
-            return self.async_create_entry(
-                title="",
-                data={
-                    **options,
-                    **draft,
-                    "notification_target": user_input.get("notification_target", "").strip(),
-                    "notification_lead_days": user_input.get("notification_lead_days", options.get("notification_lead_days", 7)),
-                    "daily_summary_time": user_input.get("daily_summary_time", options.get("daily_summary_time", "08:00")),
-                },
+            if "notification_target" in draft:
+                draft["notification_target"] = draft["notification_target"].strip()
+            self._notification_draft = draft
+            return self._async_show_notification_wizard_navigation(
+                previous="configure_notifications", next_step="save"
             )
 
         notify_services = self.hass.services.async_services().get("notify", {})
@@ -303,7 +348,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             f"notify.{service}" for service in notify_services
             if service.startswith("mobile_app_")
         )
-        current_target = options.get("notification_target", "")
+        current_target = draft.get("notification_target", options.get("notification_target", ""))
         if current_target and current_target not in mobile_app_services:
             mobile_app_services.append(current_target)
         if mobile_app_services:
@@ -322,19 +367,70 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if draft["individual_notifications_enabled"]:
             fields[vol.Required(
                 "notification_lead_days",
-                default=options.get("notification_lead_days", 7),
+                default=draft.get("notification_lead_days", options.get("notification_lead_days", 7)),
             )] = vol.All(vol.Coerce(int), vol.Range(min=0, max=90))
         if draft["daily_summary_enabled"]:
             fields[vol.Required(
                 "daily_summary_time",
-                default=options.get("daily_summary_time", "08:00"),
+                default=draft.get("daily_summary_time", options.get("daily_summary_time", "08:00")),
             )] = vol.Match(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
         if not fields:
-            return self.async_create_entry(
-                title="", data={**options, **draft}
+            self._notification_draft = draft
+            return self._async_show_notification_wizard_navigation(
+                previous="configure_notifications", next_step="save"
             )
         return self.async_show_form(
             step_id="notification_delivery", data_schema=vol.Schema(fields)
+        )
+
+    def _async_show_notification_wizard_navigation(self, previous, next_step):
+        """Offer Back and Continue actions between notification settings."""
+        self._notification_wizard_previous = previous
+        self._notification_wizard_next = next_step
+        menu_options = ["notification_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "notification_wizard_back")
+        return self.async_show_menu(
+            step_id="notification_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_notification_wizard_navigation(self, user_input=None):
+        """Re-display the current notification wizard navigation choices."""
+        menu_options = ["notification_wizard_continue"]
+        if self._notification_wizard_previous:
+            menu_options.insert(0, "notification_wizard_back")
+        return self.async_show_menu(
+            step_id="notification_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_notification_wizard_back(self, user_input=None):
+        """Return to notification type selection with choices preserved."""
+        return await self.async_step_configure_notifications()
+
+    async def async_step_notification_wizard_continue(self, user_input=None):
+        """Continue to delivery settings or save notification preferences."""
+        next_step = self._notification_wizard_next
+        if next_step != "save":
+            return await self.async_step_notification_delivery()
+        options = self.config_entry.options
+        draft = self._notification_draft
+        return self.async_create_entry(
+            title="",
+            data={
+                **options,
+                **draft,
+                "notification_target": draft.get(
+                    "notification_target", options.get("notification_target", "")
+                ),
+                "notification_lead_days": draft.get(
+                    "notification_lead_days", options.get("notification_lead_days", 7)
+                ),
+                "daily_summary_time": draft.get(
+                    "daily_summary_time", options.get("daily_summary_time", "08:00")
+                ),
+            },
         )
 
     async def async_step_configure_season_windows(self, user_input=None):
@@ -370,14 +466,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 )
             configured[season] = dict(user_input)
             self._season_window_draft = configured
-            if next_season:
-                return await getattr(self, f"async_step_season_window_{next_season}")()
-            return self.async_create_entry(
-                title="",
-                data={
-                    **self.config_entry.options,
-                    "season_windows": configured,
-                },
+            previous = {
+                "spring": None, "summer": "spring",
+                "fall": "summer", "winter": "fall",
+            }[season]
+            self._season_wizard_previous = previous
+            self._season_wizard_next = next_season
+            menu_options = ["season_wizard_continue"]
+            if previous:
+                menu_options.insert(0, "season_wizard_back")
+            return self.async_show_menu(
+                step_id="season_wizard_navigation",
+                menu_options=menu_options,
             )
         return self.async_show_form(
             step_id=f"season_window_{season}",
@@ -389,6 +489,35 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
                 ),
             }),
+        )
+
+    async def async_step_season_wizard_navigation(self, user_input=None):
+        """Re-display the current seasonal wizard navigation choices."""
+        menu_options = ["season_wizard_continue"]
+        if self._season_wizard_previous:
+            menu_options.insert(0, "season_wizard_back")
+        return self.async_show_menu(
+            step_id="season_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_season_wizard_back(self, user_input=None):
+        """Return to the previous season without losing entered dates."""
+        return await getattr(
+            self, f"async_step_season_window_{self._season_wizard_previous}"
+        )()
+
+    async def async_step_season_wizard_continue(self, user_input=None):
+        """Continue to the next season or save all seasonal windows."""
+        next_season = self._season_wizard_next
+        if next_season:
+            return await getattr(self, f"async_step_season_window_{next_season}")()
+        return self.async_create_entry(
+            title="",
+            data={
+                **self.config_entry.options,
+                "season_windows": self._season_window_draft,
+            },
         )
 
     async def async_step_season_window_spring(self, user_input=None):
@@ -503,7 +632,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     task_id for task_id in tasks
                     if task_id in self._selected_task_ids
                 ],
-            ): cv.multi_select(dict(options)),
+            ): _multi_select_checklist(options),
         })
         return self.async_show_form(
             step_id=f"task_category_{category}",
@@ -632,28 +761,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             },
         )
 
-    async def async_step_add_custom_task(self, user_input=None):
-        """Collect the basic details for a new custom maintenance task."""
-        if user_input is not None:
-            self._custom_task_draft = {
-                "name": user_input["name"].strip(),
-                "category": user_input["category"],
-                "description": user_input.get("description", "").strip(),
-            }
-            if user_input["category"] == "other":
-                return self.async_show_form(
-                    step_id="custom_task_category",
-                    data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(
-                            str, vol.Length(min=1, max=40)
-                        ),
-                    }),
-                )
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
-            )
-
+    async def _async_custom_task_basic_form(self, step_id):
+        """Render the basic custom-task page with draft values."""
         library = await self.hass.async_add_executor_job(load_library)
         categories = {
             item.get("category", "").strip().casefold(): item.get("category", "").strip()
@@ -663,46 +772,92 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             category = item.get("category", "").strip()
             if category:
                 categories[category.casefold()] = category
-        options = {
-            key: value for key, value in sorted(categories.items())
-        }
+        options = {key: value for key, value in sorted(categories.items())}
         options["other"] = "Other / Create a new category"
+        current = self._custom_task_draft
+        category = current.get("category", "hvac")
+        options.setdefault(category, category.title())
         return self.async_show_form(
-            step_id="add_custom_task",
+            step_id=step_id,
             data_schema=vol.Schema({
-                vol.Required("name"): vol.All(str, vol.Length(min=1, max=80)),
-                vol.Required("category", default="hvac"): vol.In(options),
-                vol.Optional("description", default=""): vol.All(
-                    str, vol.Length(max=300)
-                ),
+                vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
+                vol.Required("category", default=category): vol.In(options),
+                vol.Optional("description", default=current.get("description", "")): vol.All(str, vol.Length(max=300)),
             }),
         )
 
+    def _async_show_custom_task_wizard_navigation(self, previous, next_step):
+        """Show Back and Continue between custom-task wizard pages."""
+        self._custom_task_wizard_previous = previous
+        self._custom_task_wizard_next = next_step
+        menu_options = ["custom_task_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "custom_task_wizard_back")
+        return self.async_show_menu(
+            step_id="custom_task_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_custom_task_wizard_navigation(self, user_input=None):
+        menu_options = ["custom_task_wizard_continue"]
+        if self._custom_task_wizard_previous:
+            menu_options.insert(0, "custom_task_wizard_back")
+        return self.async_show_menu(
+            step_id="custom_task_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_custom_task_wizard_back(self, user_input=None):
+        previous = self._custom_task_wizard_previous
+        if previous in ("add_custom_task", "edit_custom_task"):
+            return await self._async_custom_task_basic_form(previous)
+        return await getattr(self, f"async_step_{previous}")()
+
+    async def async_step_custom_task_wizard_continue(self, user_input=None):
+        next_step = self._custom_task_wizard_next
+        if next_step == "save":
+            return await self.async_step_custom_task_save()
+        return await getattr(self, f"async_step_{next_step}")()
+
+    async def async_step_add_custom_task(self, user_input=None):
+        """Collect basic details and preserve them through Back navigation."""
+        if not hasattr(self, "_custom_task_draft") or getattr(self, "_custom_task_editing", False):
+            self._custom_task_draft = {}
+        self._custom_task_editing = False
+        if user_input is not None:
+            self._custom_task_draft.update({
+                "name": user_input["name"].strip(),
+                "category": user_input["category"],
+                "description": user_input.get("description", "").strip(),
+            })
+            self._custom_task_base_step = "add_custom_task"
+            self._custom_task_category_is_custom = user_input["category"] == "other"
+            next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
+            return self._async_show_custom_task_wizard_navigation(None, next_step)
+        return await self._async_custom_task_basic_form("add_custom_task")
+
     async def async_step_custom_task_category(self, user_input=None):
-        """Collect a reusable category name for a custom task."""
+        """Collect a reusable category name while retaining the draft."""
         if user_input is not None:
             category = user_input["category_name"].strip()
             if not category:
                 return self.async_show_form(
                     step_id="custom_task_category",
                     data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(
-                            str, vol.Length(min=1, max=40)
-                        ),
+                        vol.Required("category_name", default=self._custom_task_draft.get("category_name", "")): vol.All(str, vol.Length(min=1, max=40)),
                     }),
                     errors={"base": "invalid_category"},
                 )
-            self._custom_task_draft["category"] = category.casefold()
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
+            self._custom_task_draft["category_name"] = category
+            # Keep the original "Other" choice in the basic form draft; resolve
+            # the entered category name only when the task is saved.
+            return self._async_show_custom_task_wizard_navigation(
+                self._custom_task_base_step, "custom_task_schedule"
             )
         return self.async_show_form(
             step_id="custom_task_category",
             data_schema=vol.Schema({
-                vol.Required("category_name"): vol.All(
-                    str, vol.Length(min=1, max=40)
-                ),
+                vol.Required("category_name", default=self._custom_task_draft.get("category_name", "")): vol.All(str, vol.Length(min=1, max=40)),
             }),
         )
 
@@ -716,43 +871,6 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         })
 
-    async def async_step_custom_task_schedule(self, user_input=None):
-        """Choose the recurrence pattern before showing its relevant fields."""
-        if user_input is not None:
-            self._custom_task_draft["schedule_type"] = user_input["schedule_type"]
-            return self.async_show_form(
-                step_id="custom_task_schedule_details",
-                data_schema=self._custom_task_schedule_details_schema(
-                    user_input["schedule_type"], self._custom_task_draft
-                ),
-            )
-        return self.async_show_form(
-            step_id="custom_task_schedule",
-            data_schema=self._custom_task_schedule_type_schema(self._custom_task_draft.get("schedule_type", "interval")),
-        )
-
-    async def async_step_custom_task_schedule_details(self, user_input=None):
-        """Collect only the schedule fields relevant to the chosen recurrence."""
-        schedule_type = self._custom_task_draft["schedule_type"]
-        if user_input is not None:
-            self._custom_task_draft.update(user_input)
-            if schedule_type == "annual":
-                try:
-                    date(2000, int(user_input["annual_month"]), int(user_input["annual_day"]))
-                except ValueError:
-                    return self.async_show_form(
-                        step_id="custom_task_schedule_details",
-                        data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
-                        errors={"base": "invalid_annual_date"},
-                    )
-            return self.async_show_form(
-                step_id="custom_task_instructions",
-                data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
-            )
-        return self.async_show_form(
-            step_id="custom_task_schedule_details",
-            data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
-        )
 
     @staticmethod
     def _custom_task_schedule_details_schema(schedule_type, current=None):
@@ -783,8 +901,46 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             }),
         })
 
+    async def async_step_custom_task_schedule(self, user_input=None):
+        """Choose the recurrence pattern before showing its relevant fields."""
+        if user_input is not None:
+            self._custom_task_draft["schedule_type"] = user_input["schedule_type"]
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_category" if getattr(self, "_custom_task_category_is_custom", False) else self._custom_task_base_step,
+                "custom_task_schedule_details",
+            )
+        return self.async_show_form(
+            step_id="custom_task_schedule",
+            data_schema=self._custom_task_schedule_type_schema(
+                self._custom_task_draft.get("schedule_type", "interval")
+            ),
+        )
+
+    async def async_step_custom_task_schedule_details(self, user_input=None):
+        """Collect schedule fields and preserve them for the previous step."""
+        schedule_type = self._custom_task_draft["schedule_type"]
+        if user_input is not None:
+            self._custom_task_draft.update(user_input)
+            if schedule_type == "annual":
+                try:
+                    date(2000, int(user_input["annual_month"]), int(user_input["annual_day"]))
+                except ValueError:
+                    return self.async_show_form(
+                        step_id="custom_task_schedule_details",
+                        data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
+                        errors={"base": "invalid_annual_date"},
+                    )
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_schedule", "custom_task_instructions"
+            )
+        return self.async_show_form(
+            step_id="custom_task_schedule_details",
+            data_schema=self._custom_task_schedule_details_schema(schedule_type, self._custom_task_draft),
+        )
+
     @staticmethod
     def _custom_task_instructions_schema(current=None):
+        """Build the inspection and safety guidance form with preserved defaults."""
         current = current or {}
         return vol.Schema({
             vol.Optional("how_to_inspect", default=current.get("how_to_inspect", "")): vol.All(str, vol.Length(max=1200)),
@@ -794,13 +950,20 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         })
 
     async def async_step_custom_task_instructions(self, user_input=None):
-        """Collect optional inspection guidance and save the completed task."""
-        if user_input is None:
-            return self.async_show_form(
-                step_id="custom_task_instructions",
-                data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
+        """Collect inspection guidance and offer a final Back/Save choice."""
+        if user_input is not None:
+            self._custom_task_draft.update(user_input)
+            return self._async_show_custom_task_wizard_navigation(
+                "custom_task_schedule_details", "save"
             )
-        draft = {**self._custom_task_draft, **user_input}
+        return self.async_show_form(
+            step_id="custom_task_instructions",
+            data_schema=self._custom_task_instructions_schema(self._custom_task_draft),
+        )
+
+    async def async_step_custom_task_save(self, user_input=None):
+        """Validate and save the completed custom task."""
+        draft = self._custom_task_draft
         name = draft["name"].strip()
         slug = re.sub(r"[^a-z0-9]+", "_", name.casefold()).strip("_")
         task_id = f"custom_{slug}"
@@ -834,7 +997,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             **existing_record,
             "task_id": task_id,
             "name": name,
-            "category": draft["category"].strip().casefold() or "custom",
+            "category": (draft.get("category_name") if draft.get("category") == "other" else draft["category"]).strip().casefold() or "custom",
             "description": draft.get("description", "").strip(),
             "schedule_type": schedule_type,
             "recommended_interval_days": interval,
@@ -863,6 +1026,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             "safety_notes": draft.get("safety_notes", "").strip(),
             "is_custom": True,
         }
+        # Remove schedule fields that no longer apply when an existing task's
+        # recurrence type changes (for example, annual to interval).
+        if schedule_type != "annual":
+            custom_task.pop("annual_month", None)
+            custom_task.pop("annual_day", None)
+        if schedule_type != "monthly":
+            custom_task.pop("monthly_week", None)
+            custom_task.pop("monthly_weekday", None)
+
         if getattr(self, "_custom_task_editing", False):
             original_id = self._custom_task_original_id
             if task_id != original_id and (
@@ -946,11 +1118,10 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_edit_custom_task(self, user_input=None):
-        """Start editing a custom task with the same guided steps as creation."""
+        """Start or resume editing a custom task with the guided wizard."""
         custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
         current = next(
-            (item for item in custom_tasks
-             if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
+            (item for item in custom_tasks if item["task_id"] == getattr(self, "_selected_custom_task_id", None)),
             None,
         )
         if current is None:
@@ -961,45 +1132,18 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "category": user_input["category"],
                 "description": user_input.get("description", "").strip(),
             })
-            if user_input["category"] == "other":
-                return self.async_show_form(
-                    step_id="custom_task_category",
-                    data_schema=vol.Schema({
-                        vol.Required("category_name"): vol.All(str, vol.Length(min=1, max=40)),
-                    }),
-                )
-            return self.async_show_form(
-                step_id="custom_task_schedule",
-                data_schema=self._custom_task_schedule_type_schema(
-                    self._custom_task_draft.get("schedule_type", "interval")
-                ),
-            )
-        self._custom_task_editing = True
-        self._custom_task_original_id = current["task_id"]
-        self._custom_task_draft = dict(current)
-        self._custom_task_draft["how_to_inspect"] = "\n".join(current.get("how_to_inspect", []))
-        self._custom_task_draft["what_to_look_for"] = "\n".join(current.get("what_to_look_for", []))
-        library = await self.hass.async_add_executor_job(load_library)
-        categories = {
-            item.get("category", "").strip().casefold(): item.get("category", "").strip()
-            for item in library.values() if item.get("category", "").strip()
-        }
-        for item in custom_tasks:
-            category = item.get("category", "").strip()
-            if category:
-                categories[category.casefold()] = category
-        category_options = {key: value for key, value in sorted(categories.items())}
-        category_options["other"] = "Other / Create a new category"
-        if current.get("category", "").casefold() not in category_options:
-            category_options[current["category"].casefold()] = current["category"]
-        return self.async_show_form(
-            step_id="edit_custom_task",
-            data_schema=vol.Schema({
-                vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
-                vol.Required("category", default=current.get("category", "general").casefold()): vol.In(category_options),
-                vol.Optional("description", default=current.get("description", "")): vol.All(str, vol.Length(max=300)),
-            }),
-        )
+            self._custom_task_base_step = "edit_custom_task"
+            self._custom_task_category_is_custom = user_input["category"] == "other"
+            next_step = "custom_task_category" if user_input["category"] == "other" else "custom_task_schedule"
+            return self._async_show_custom_task_wizard_navigation(None, next_step)
+        if not getattr(self, "_custom_task_editing", False) or not getattr(self, "_custom_task_draft", None):
+            self._custom_task_editing = True
+            self._custom_task_original_id = current["task_id"]
+            self._custom_task_draft = dict(current)
+            self._custom_task_draft["how_to_inspect"] = "\n".join(current.get("how_to_inspect", []))
+            self._custom_task_draft["what_to_look_for"] = "\n".join(current.get("what_to_look_for", []))
+        self._custom_task_base_step = "edit_custom_task"
+        return await self._async_custom_task_basic_form("edit_custom_task")
 
     async def async_step_remove_custom_task(self, user_input=None):
         custom_tasks = list(self.config_entry.options.get("custom_tasks", []))
@@ -1083,10 +1227,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_add_equipment(self, user_input=None):
         """Start the guided equipment registration flow."""
         if user_input is None:
-            self._equipment_draft = {}
-            return self.async_show_form(step_id="add_equipment", data_schema=self._equipment_identity_schema())
-        self._equipment_draft = dict(user_input)
-        return await self.async_step_add_equipment_details()
+            if not hasattr(self, "_equipment_draft"):
+                self._equipment_draft = {}
+            return self.async_show_form(
+                step_id="add_equipment",
+                data_schema=self._equipment_identity_schema(self._equipment_draft),
+            )
+        self._equipment_draft.update(user_input)
+        return self._async_show_equipment_wizard_navigation(
+            previous=None, next_step="add_equipment_details", editing=False
+        )
 
     async def async_step_add_equipment_details(self, user_input=None):
         """Collect installation and lifespan details."""
@@ -1100,7 +1250,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
                     errors={"base": "invalid_date"},
                 )
-            return await self.async_step_add_equipment_tasks()
+            return self._async_show_equipment_wizard_navigation(
+                previous="add_equipment", next_step="add_equipment_tasks", editing=False
+            )
         return self.async_show_form(
             step_id="add_equipment_details",
             data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
@@ -1111,7 +1263,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         task_options = await self._async_equipment_task_options()
         if user_input is not None:
             self._equipment_draft.update(user_input)
-            return await self._async_save_equipment(editing=False)
+            return self._async_show_equipment_wizard_navigation(
+                previous="add_equipment_details", next_step="save", editing=False
+            )
         return self.async_show_form(step_id="add_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
 
     async def async_step_manage_equipment(self, user_input=None):
@@ -1135,10 +1289,13 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if current is None:
             return self.async_abort(reason="equipment_not_found")
         if user_input is None:
-            self._equipment_draft = dict(current)
-            return self.async_show_form(step_id="edit_equipment", data_schema=self._equipment_identity_schema(current))
+            if not hasattr(self, "_equipment_draft"):
+                self._equipment_draft = dict(current)
+            return self.async_show_form(step_id="edit_equipment", data_schema=self._equipment_identity_schema(self._equipment_draft))
         self._equipment_draft.update(user_input)
-        return await self.async_step_edit_equipment_details()
+        return self._async_show_equipment_wizard_navigation(
+            previous=None, next_step="edit_equipment_details", editing=True
+        )
 
     async def async_step_edit_equipment_details(self, user_input=None):
         """Collect updated installation and lifespan details."""
@@ -1152,7 +1309,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
                     errors={"base": "invalid_date"},
                 )
-            return await self.async_step_edit_equipment_tasks()
+            return self._async_show_equipment_wizard_navigation(
+                previous="edit_equipment", next_step="edit_equipment_tasks", editing=True
+            )
         return self.async_show_form(
             step_id="edit_equipment_details",
             data_schema=self._equipment_details_schema(self._equipment_draft, await self._async_equipment_task_options()),
@@ -1163,8 +1322,48 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         task_options = await self._async_equipment_task_options()
         if user_input is not None:
             self._equipment_draft.update(user_input)
-            return await self._async_save_equipment(editing=True)
+            return self._async_show_equipment_wizard_navigation(
+                previous="edit_equipment_details", next_step="save", editing=True
+            )
         return self.async_show_form(step_id="edit_equipment_tasks", data_schema=self._equipment_tasks_schema(task_options, self._equipment_draft))
+
+    def _async_show_equipment_wizard_navigation(self, previous, next_step, editing):
+        """Offer explicit Back and Continue actions between equipment forms."""
+        self._equipment_wizard_previous = previous
+        self._equipment_wizard_next = next_step
+        self._equipment_wizard_editing = editing
+        menu_options = ["equipment_wizard_continue"]
+        if previous:
+            menu_options.insert(0, "equipment_wizard_back")
+        return self.async_show_menu(
+            step_id="equipment_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_equipment_wizard_navigation(self, user_input=None):
+        """Re-display the current equipment wizard navigation choices."""
+        menu_options = ["equipment_wizard_continue"]
+        if self._equipment_wizard_previous:
+            menu_options.insert(0, "equipment_wizard_back")
+        return self.async_show_menu(
+            step_id="equipment_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_equipment_wizard_back(self, user_input=None):
+        """Return to the previous equipment step with its draft intact."""
+        return await getattr(
+            self, f"async_step_{self._equipment_wizard_previous}"
+        )()
+
+    async def async_step_equipment_wizard_continue(self, user_input=None):
+        """Continue the equipment wizard or save its completed draft."""
+        next_step = self._equipment_wizard_next
+        if next_step == "save":
+            return await self._async_save_equipment(
+                editing=self._equipment_wizard_editing
+            )
+        return await getattr(self, f"async_step_{next_step}")()
 
     def _get_selected_equipment(self):
         """Return the equipment record selected in the management flow."""
@@ -1354,5 +1553,5 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         """Build the linked maintenance tasks step."""
         current = current or {}
         return vol.Schema({
-            vol.Optional("task_ids", default=current.get("task_ids", [])): cv.multi_select(dict(task_options)),
+            vol.Optional("task_ids", default=current.get("task_ids", [])): _multi_select_checklist(task_options),
         })
