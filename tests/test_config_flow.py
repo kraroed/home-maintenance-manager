@@ -101,7 +101,7 @@ async def test_user_flow_uses_categorized_task_selection(hass, enable_custom_int
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "Primary Residence"
     assert result["data"]["property_name"] == "Primary Residence"
-    assert result["data"][CONF_ENABLED_TASK_IDS] == ["clean_gutters"]
+    assert result["data"][CONF_ENABLED_TASK_IDS] == ["test_smoke_alarms", "clean_gutters"]
 
 
 @pytest.mark.asyncio
