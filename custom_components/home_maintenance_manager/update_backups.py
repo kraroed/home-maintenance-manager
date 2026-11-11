@@ -10,6 +10,8 @@ from homeassistant.helpers.event import async_track_state_change_event
 from .backup import _backup_directory, _build_payload, _timestamp, _write_json_file
 from .const import DOMAIN
 
+_SAFE_FILENAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\\.json$")
+
 
 def _state_bucket(manager):
     """Return validated per-property update backup tracking state."""
@@ -77,6 +79,7 @@ def async_setup_update_backups(hass, entry, entry_data):
                     if isinstance(marker, dict)
                     and marker.get("version") == version
                     and isinstance(marker.get("filename"), str)
+                    and _SAFE_FILENAME.fullmatch(marker["filename"])
                     and await hass.async_add_executor_job(
                         (_backup_directory(hass, entry.entry_id) / marker["filename"]).is_file
                     )
@@ -129,6 +132,7 @@ def async_setup_update_backups(hass, entry, entry_data):
             isinstance(existing, dict)
             and existing.get("version") == version
             and isinstance(existing.get("filename"), str)
+            and _SAFE_FILENAME.fullmatch(existing["filename"])
             and await hass.async_add_executor_job(
                 (_backup_directory(hass, entry.entry_id) / existing["filename"]).is_file
             )
