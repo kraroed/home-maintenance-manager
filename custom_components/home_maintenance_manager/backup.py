@@ -1,7 +1,7 @@
 """Full JSON backup and guarded restore services for Home Maintenance Manager."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -69,6 +69,16 @@ def _read_json_file(path):
     return _validate_payload(payload)
 
 
+def _valid_iso_date(value):
+    """Return whether a value is a canonical, real YYYY-MM-DD date."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def _validate_payload(payload):
     if not isinstance(payload, dict):
         raise HomeAssistantError("Backup must contain a JSON object.")
@@ -97,8 +107,7 @@ def _validate_payload(payload):
     backlog_snapshots = data.get("backlog_snapshots", [])
     if not isinstance(backlog_snapshots, list) or not all(
         isinstance(item, dict)
-        and isinstance(item.get("date"), str)
-        and len(item["date"]) == 10
+        and _valid_iso_date(item.get("date"))
         and all(
             type(item.get(key, 0)) is int and item.get(key, 0) >= 0
             for key in ("overdue", "due_today", "due_soon", "scheduled",
