@@ -847,6 +847,75 @@ async def test_add_custom_monthly_task_saves_weekday_pattern(
     assert task["monthly_weekday"] == 1
     assert "annual_month" not in task
     assert "custom_monthly_alarm_test" not in result["data"]["task_intervals"]
+
+@pytest.mark.asyncio
+async def test_custom_task_wizard_back_preserves_draft_values(
+    hass, enable_custom_integrations
+):
+    """Back navigation returns to prior pages without losing custom task input."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id,
+        user_input={
+            "name": "Inspect Water Shutoff",
+            "category": "plumbing",
+            "description": "Locate and test the main shutoff.",
+        },
+    )
+    assert result["step_id"] == "custom_task_wizard_navigation"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
+    )
+    assert result["step_id"] == "add_custom_task"
+    defaults = {str(key): getattr(key, "default", None) for key in result["data_schema"].schema}
+    assert defaults["name"] == "Inspect Water Shutoff"
+    assert defaults["category"] == "plumbing"
+    assert defaults["description"] == "Locate and test the main shutoff."
+
+    result = await hass.config_entries.options.async_configure(
+        flow_id,
+        user_input={
+            "name": "Inspect Water Shutoff",
+            "category": "plumbing",
+            "description": "Locate and test the main shutoff.",
+        },
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "annual"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"annual_month": 5, "annual_day": 10}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    schedule_defaults = {
+        str(key): getattr(key, "default", None)
+        for key in result["data_schema"].schema
+    }
+    assert schedule_defaults["schedule_type"] == "annual"
+
+
+
 @pytest.mark.asyncio
 async def test_add_equipment_lifespan_designates_and_links_replacement_task(
     hass, enable_custom_integrations
