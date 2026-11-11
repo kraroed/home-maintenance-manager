@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.8
+
+### Improvements
+- Display selected maintenance tasks as individual bullet points grouped by category on the initial setup review page.
+
+### Testing
+- Add regression tests for single-category and multi-category setup review formatting.
+
 ## 0.9.7
 
 ### Configuration
@@ -37,6 +45,7 @@
 - Use the native Home Assistant icon selector so any available Home Assistant icon can be selected for custom equipment categories.
 - Preserve saved custom category icons when adding additional equipment that uses the same category.
 - Apply category icons consistently to equipment entities and refresh icons when equipment categories change.
+- Add reusable custom equipment categories with user-selectable icons; saved categories can be reused across equipment.
 
 ## 0.9.4
 
