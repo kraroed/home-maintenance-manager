@@ -863,10 +863,19 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
         result["flow_id"], user_input={"name": "Smoke Detector Hall", "category": "Safety and security"}
     )
     result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"installed_date": "", "lifespan_months": 120, "replacement_task_id": ""}
     )
     result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_ids": []}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "equipment_wizard_continue"}
     )
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "add_equipment_details"
