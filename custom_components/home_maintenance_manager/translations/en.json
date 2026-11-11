@@ -647,6 +647,14 @@
           "notification_wizard_back": "Back",
           "notification_wizard_continue": "Continue"
         }
+      },
+      "custom_task_wizard_navigation": {
+        "title": "Custom maintenance task",
+        "description": "Continue to the next step, or go back to review and change the information you entered.",
+        "menu_options": {
+          "custom_task_wizard_back": "Back",
+          "custom_task_wizard_continue": "Continue"
+        }
       }
     },
     "error": {
