@@ -840,7 +840,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             self._custom_task_draft["category_name"] = category
             self._custom_task_draft["category"] = category.casefold()
             return self._async_show_custom_task_wizard_navigation(
-                "custom_task_category", "custom_task_schedule"
+                self._custom_task_base_step, "custom_task_schedule"
             )
         return self.async_show_form(
             step_id="custom_task_category",
@@ -854,7 +854,8 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             self._custom_task_draft["schedule_type"] = user_input["schedule_type"]
             return self._async_show_custom_task_wizard_navigation(
-                "custom_task_schedule", "custom_task_schedule_details"
+                "custom_task_category" if getattr(self, "_custom_task_category_is_custom", False) else self._custom_task_base_step,
+                "custom_task_schedule_details",
             )
         return self.async_show_form(
             step_id="custom_task_schedule",
@@ -878,7 +879,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                         errors={"base": "invalid_annual_date"},
                     )
             return self._async_show_custom_task_wizard_navigation(
-                "custom_task_schedule_details", "custom_task_instructions"
+                "custom_task_schedule", "custom_task_instructions"
             )
         return self.async_show_form(
             step_id="custom_task_schedule_details",
@@ -890,7 +891,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             self._custom_task_draft.update(user_input)
             return self._async_show_custom_task_wizard_navigation(
-                "custom_task_instructions", "save"
+                "custom_task_schedule_details", "save"
             )
         return self.async_show_form(
             step_id="custom_task_instructions",
