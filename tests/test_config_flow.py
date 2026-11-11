@@ -1242,3 +1242,157 @@ async def test_notification_wizard_back_preserves_notification_choices(
     }
     assert defaults["individual_notifications_enabled"] is False
     assert defaults["daily_summary_enabled"] is True
+
+
+
+@pytest.mark.asyncio
+async def test_equipment_task_association_back_returns_to_details_with_draft(
+    hass, enable_custom_integrations
+):
+    """Back from equipment task associations restores the equipment details."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: ["clean_gutters"]},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_equipment"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"name": "Hall Smoke Detector", "category": "Safety and security"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"manufacturer": "Acme", "installed_date": "2024-03-12"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_continue"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"task_ids": ["clean_gutters"]}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "equipment_wizard_back"}
+    )
+    assert result["step_id"] == "add_equipment_details"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["manufacturer"] == "Acme"
+    assert defaults["installed_date"] == "2024-03-12"
+
+
+@pytest.mark.asyncio
+async def test_custom_task_category_back_restores_basic_task_draft(
+    hass, enable_custom_integrations
+):
+    """Back from custom category selection restores the basic task form."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: []},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "add_custom_task"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "name": "Inspect Main Water Shutoff",
+            "category": "other",
+            "description": "Locate and test the valve.",
+        }
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+    )
+    assert result["step_id"] == "custom_task_category"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"category_name": "Plumbing"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
+    )
+    assert result["step_id"] == "add_custom_task"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["name"] == "Inspect Main Water Shutoff"
+    assert defaults["category"] == "other"
+    assert defaults["description"] == "Locate and test the valve."
+
+
+@pytest.mark.asyncio
+async def test_edit_custom_task_back_restores_existing_schedule_values(
+    hass, enable_custom_integrations
+):
+    """Back during custom-task editing preserves the existing schedule draft."""
+    custom_task = {
+        "task_id": "custom_annual_gutter_check",
+        "name": "Annual gutter inspection",
+        "category": "exterior",
+        "description": "Inspect gutters each fall.",
+        "schedule_type": "annual",
+        "annual_month": 10,
+        "annual_day": 15,
+        "is_custom": True,
+        "how_to_inspect": [],
+        "what_to_look_for": [],
+        "what_to_do_if_issue": "",
+        "safety_notes": "",
+    }
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Primary Residence",
+        data={"property_name": "Primary Residence", CONF_ENABLED_TASK_IDS: ["custom_annual_gutter_check"]},
+        options={"custom_tasks": [custom_task]},
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "manage_custom_tasks"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"task_id": "custom_annual_gutter_check"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "edit_custom_task"}
+    )
+    assert result["step_id"] == "edit_custom_task"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={
+            "name": "Annual gutter inspection",
+            "category": "exterior",
+            "description": "Inspect gutters each fall.",
+        }
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"schedule_type": "annual"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_continue"}
+    )
+    assert result["step_id"] == "custom_task_schedule_details"
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"annual_month": 11, "annual_day": 20}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": "custom_task_wizard_back"}
+    )
+    assert result["step_id"] == "custom_task_schedule"
+    defaults = {
+        str(key): (key.default() if callable(key.default) else key.default)
+        for key in result["data_schema"].schema
+    }
+    assert defaults["schedule_type"] == "annual"
