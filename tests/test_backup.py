@@ -298,6 +298,8 @@ async def test_automatic_backup_schedule_and_retention(hass, tmp_path, monkeypat
     manager = SimpleNamespace(data=deepcopy(_payload()["data"]))
     entry = SimpleNamespace(
         entry_id="entry-one",
+        title="My Home",
+        data={"property_name": "My Home", "enabled_task_ids": ["clean_gutters"]},
         options={
             "automatic_backups_enabled": True,
             "automatic_backup_frequency": "weekly",
