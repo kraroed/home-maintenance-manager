@@ -10,7 +10,7 @@ from homeassistant.helpers.event import async_track_state_change_event
 from .backup import _backup_directory, _build_payload, _timestamp, _write_json_file
 from .const import DOMAIN
 
-_SAFE_FILENAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\\.json$")
+_SAFE_FILENAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}[.]json$")
 
 
 def _state_bucket(manager):
