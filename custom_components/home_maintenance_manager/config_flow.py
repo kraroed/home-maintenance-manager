@@ -259,6 +259,10 @@ class HomeMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"selected_tasks_summary": summary},
         )
 
+    async def async_step_review_setup(self, user_input=None):
+        """Re-display the initial setup review menu."""
+        return await self.async_step_finish_setup()
+
     async def async_step_back_to_setup_tasks(self, user_input=None):
         """Return to task selection without losing selected tasks."""
         return await self._async_show_setup_task_menu()
@@ -387,6 +391,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             menu_options=menu_options,
         )
 
+    async def async_step_notification_wizard_navigation(self, user_input=None):
+        """Re-display the current notification wizard navigation choices."""
+        menu_options = ["notification_wizard_continue"]
+        if self._notification_wizard_previous:
+            menu_options.insert(0, "notification_wizard_back")
+        return self.async_show_menu(
+            step_id="notification_wizard_navigation",
+            menu_options=menu_options,
+        )
+
     async def async_step_notification_wizard_back(self, user_input=None):
         """Return to notification type selection with choices preserved."""
         return await self.async_step_configure_notifications()
@@ -471,6 +485,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                     r"^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
                 ),
             }),
+        )
+
+    async def async_step_season_wizard_navigation(self, user_input=None):
+        """Re-display the current seasonal wizard navigation choices."""
+        menu_options = ["season_wizard_continue"]
+        if self._season_wizard_previous:
+            menu_options.insert(0, "season_wizard_back")
+        return self.async_show_menu(
+            step_id="season_wizard_navigation",
+            menu_options=menu_options,
         )
 
     async def async_step_season_wizard_back(self, user_input=None):
@@ -1291,6 +1315,16 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         self._equipment_wizard_editing = editing
         menu_options = ["equipment_wizard_continue"]
         if previous:
+            menu_options.insert(0, "equipment_wizard_back")
+        return self.async_show_menu(
+            step_id="equipment_wizard_navigation",
+            menu_options=menu_options,
+        )
+
+    async def async_step_equipment_wizard_navigation(self, user_input=None):
+        """Re-display the current equipment wizard navigation choices."""
+        menu_options = ["equipment_wizard_continue"]
+        if self._equipment_wizard_previous:
             menu_options.insert(0, "equipment_wizard_back")
         return self.async_show_menu(
             step_id="equipment_wizard_navigation",
