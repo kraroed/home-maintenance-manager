@@ -273,3 +273,82 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
     }
     assert len(list(directory.glob("home_maintenance_pre_restore_*.json"))) == 1
     coordinator.async_request_refresh.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_automatic_backup_schedule_and_retention(hass, tmp_path, monkeypatch):
+    """Scheduled backups run on the selected cadence and prune only auto backups."""
+    from datetime import datetime
+    from custom_components.home_maintenance_manager import backup
+
+    monkeypatch.setattr(
+        hass.config, "path",
+        lambda *parts: str(tmp_path.joinpath(*parts)),
+    )
+    callbacks = {}
+    monkeypatch.setattr(
+        "homeassistant.helpers.event.async_track_time_change",
+        lambda hass, action, **kwargs: callbacks.update(action=action, schedule=kwargs) or (lambda: None),
+    )
+    monkeypatch.setattr(
+        backup.persistent_notification,
+        "async_create",
+        lambda *args, **kwargs: None,
+    )
+    manager = SimpleNamespace(data=deepcopy(_payload()["data"]))
+    entry = SimpleNamespace(
+        entry_id="entry-one",
+        title="My Home",
+        data={"property_name": "My Home", "enabled_task_ids": ["clean_gutters"]},
+        options={
+            "automatic_backups_enabled": True,
+            "automatic_backup_frequency": "weekly",
+            "automatic_backup_time": "03:00",
+            "automatic_backup_retention": 2,
+        },
+    )
+    entry_data = {
+        "config_entry": entry,
+        "manager": manager,
+        "property_name": "My Home",
+    }
+    directory = tmp_path / "home_maintenance_manager_backups" / "entry-one"
+    directory.mkdir(parents=True)
+    for index in range(3):
+        path = directory / f"home_maintenance_auto_old{index}.json"
+        path.write_text("{}", encoding="utf-8")
+        import os
+        os.utime(path, (index + 1, index + 1))
+    manual = directory / "home_maintenance_backup_manual.json"
+    manual.write_text("{}", encoding="utf-8")
+    safety = directory / "home_maintenance_pre_restore_safety.json"
+    safety.write_text("{}", encoding="utf-8")
+
+    cancel = backup.async_setup_automatic_backup(hass, entry, entry_data)
+    assert callable(cancel)
+    assert callbacks["schedule"] == {"hour": 3, "minute": 0, "second": 0}
+
+    await callbacks["action"](datetime(2026, 11, 15, 3, 0))
+    automatic = list(directory.glob("home_maintenance_auto_*.json"))
+    assert len(automatic) == 2
+    assert manual.is_file()
+    assert safety.is_file()
+
+
+@pytest.mark.asyncio
+async def test_automatic_backups_can_be_disabled(hass, monkeypatch):
+    """Disabled automatic backups do not register a time listener."""
+    from custom_components.home_maintenance_manager import backup
+
+    def unexpected_listener(*args, **kwargs):
+        raise AssertionError("A listener must not be registered when backups are disabled.")
+
+    monkeypatch.setattr(
+        "homeassistant.helpers.event.async_track_time_change",
+        unexpected_listener,
+    )
+    entry = SimpleNamespace(
+        entry_id="entry-one",
+        options={"automatic_backups_enabled": False},
+    )
+    assert backup.async_setup_automatic_backup(hass, entry, {}) is not None
