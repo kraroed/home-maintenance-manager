@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.13.1
+
+### Reliability
+- Strengthen backup restore validation for task, equipment, schedule, area, notification, and backup settings.
+- Validate restored notification delivery state and remove obsolete delivery markers when tasks are deleted or their due dates change.
+- Preserve current notification delivery markers and avoid unnecessary state writes when no cleanup is needed.
+
+### Testing
+- Add regression coverage for malformed backup data, restore-state validation, and stale notification delivery markers.
+
+
 ## 0.13.0
 
 ### Area-aware maintenance organization
