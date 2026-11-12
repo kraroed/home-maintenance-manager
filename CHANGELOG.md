@@ -100,7 +100,7 @@
 
 ### Configuration
 - Show multi-select maintenance task choices as visible checklists instead of collapsed dropdowns.
-- Add a grouped review of selected maintenance tasks before completing setup, with a way to return to selection.
+- Add a grouped review of selected maintenance tasks before completing initial setup, with a way to return to selection.
 - Add Back and Continue navigation throughout equipment, seasonal scheduling, notification, and custom-task configuration wizards.
 - Preserve entered values and selections when navigating backward and forward through guided configuration.
 
