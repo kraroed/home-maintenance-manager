@@ -250,7 +250,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             **{
                 key: item.get(key)
                 for key in (
-                    "category", "area_id", "manufacturer", "model", "installed_date",
+                    "category", "area_id", "area_name", "manufacturer", "model", "installed_date",
                     "lifespan_months", "replacement_task_id", "replacement_due",
                     "notes", "task_ids",
                 )
