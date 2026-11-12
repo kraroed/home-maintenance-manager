@@ -410,6 +410,7 @@ class TaskManager:
             "history_id": f"{task_id}:{now.isoformat()}",
             "task_id": task_id,
             "task_name": task["name"],
+            "category": task.get("category", "Other"),
             "completed_at": now.isoformat(),
             "previous_due": previous_due,
             "next_due": next_due_value,
