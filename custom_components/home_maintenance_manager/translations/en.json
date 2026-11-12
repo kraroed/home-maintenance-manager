@@ -125,7 +125,8 @@
           "configure_notifications": "Configure maintenance notifications",
           "configure_season_windows": "Configure seasonal scheduling windows",
           "configure_automatic_backups": "Configure automatic JSON backups",
-          "configure_update_backups": "Configure update-triggered backups"
+          "configure_update_backups": "Configure update-triggered backups",
+          "manage_task_areas": "Assign task areas"
         }
       },
       "configure_notifications": {
@@ -771,6 +772,20 @@
           "update_install_tracking_enabled": "Record when a monitored update starts installing and send a persistent notification. This does not pause the update or guarantee a backup completes first.",
           "update_backup_entities": "Choose the Home Assistant update entities to monitor. Leave the selection empty to monitor all update entities."
         }
+      },
+      "manage_task_areas": {
+        "title": "Assign a task to an area",
+        "description": "Choose a maintenance task to assign to a Home Assistant area. Tasks linked to equipment automatically use the equipment areas.",
+        "data": {
+          "task_id": "Maintenance task"
+        }
+      },
+      "assign_task_area": {
+        "title": "Choose task area",
+        "description": "Choose an area for this task when it is not linked to equipment. If the task is linked to equipment, its effective areas come from that equipment.",
+        "data": {
+          "area_id": "Area"
+        }
       }
     },
     "error": {
@@ -789,7 +804,8 @@
       "equipment_not_found": "The selected equipment record could not be found.",
       "remove_cancelled": "Equipment removal was cancelled.",
       "no_custom_tasks": "No custom maintenance tasks have been created yet.",
-      "custom_task_not_found": "The selected custom maintenance task could not be found."
+      "custom_task_not_found": "The selected custom maintenance task could not be found.",
+      "no_tasks": "No maintenance tasks are currently enabled."
     }
   }
 }
