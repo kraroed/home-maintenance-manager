@@ -1,7 +1,7 @@
 """Tests for complete JSON backup and guarded restore behavior."""
 
-import json
 from datetime import date, timedelta
+import json
 from copy import deepcopy
 from types import MappingProxyType, SimpleNamespace
 from unittest.mock import AsyncMock
