@@ -1,6 +1,7 @@
 """Tests for complete JSON backup and guarded restore behavior."""
 
 import json
+from datetime import date, timedelta
 from copy import deepcopy
 from types import MappingProxyType, SimpleNamespace
 from unittest.mock import AsyncMock
@@ -192,15 +193,20 @@ def test_backlog_snapshot_merge_preserves_current_and_imports_missing_dates():
 
 def test_backlog_snapshot_merge_retains_only_newest_365_dates():
     """The merged snapshot history remains within the documented retention limit."""
+    first_day = date(2025, 1, 1)
     incoming = [
-        {"date": f"{year}-{month:02d}-01", "overdue": month}
-        for year in range(2024, 2027)
-        for month in range(1, 13)
+        {
+            "date": (first_day + timedelta(days=offset)).isoformat(),
+            "overdue": offset,
+        }
+        for offset in range(400)
     ]
+
     merged = _merge_backlog_snapshots([], incoming)
 
-    assert len(merged) == 36
-    assert merged == sorted(merged, key=lambda item: item["date"])
+    assert len(merged) == 365
+    assert merged[0]["date"] == (first_day + timedelta(days=35)).isoformat()
+    assert merged[-1]["date"] == (first_day + timedelta(days=399)).isoformat()
 
 
 def test_backup_file_round_trip_and_size_validation(tmp_path):
