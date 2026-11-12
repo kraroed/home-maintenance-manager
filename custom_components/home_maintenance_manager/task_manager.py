@@ -232,7 +232,7 @@ class TaskManager:
                         "monthly_week", "monthly_weekday",
                         "recommended_interval_days", "recommendation_note",
                         "how_to_inspect", "what_to_look_for",
-                        "what_to_do_if_issue", "safety_notes",
+                        "what_to_do_if_issue", "safety_notes", "area_id",
                     }:
                         task[key] = deepcopy(value)
                     else:
@@ -515,10 +515,10 @@ class TaskManager:
                 area_names[area_id] for area_id in area_ids
             ]
             tasks.append(task)
-        area_groups = build_area_groups(
-            tasks, equipment, area_names, valid_area_ids
-        )
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
+        area_groups = build_area_groups(
+            enabled_tasks, equipment, area_names, valid_area_ids
+        )
         history_by_task = {}
         for record in self.data.get("history", []):
             history_by_task.setdefault(record.get("task_id"), []).append({
