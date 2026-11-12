@@ -89,3 +89,19 @@ async def test_snapshot_limits_per_task_history_but_keeps_full_count(hass):
     assert records[0]["notes"] == "Completion 2"
     assert records[-1]["notes"] == "Completion 11"
     assert snapshot["history_count"] == 12
+
+
+@pytest.mark.asyncio
+async def test_backlog_snapshot_is_recorded_once_per_local_day(hass):
+    """Startup/reload on the same local date must not duplicate snapshots."""
+    manager = TaskManager(
+        hass,
+        "snapshot-backlog-dedup-test",
+        ["clean_gutters"],
+    )
+    await manager.async_load()
+
+    assert await manager.async_record_backlog_snapshot() is True
+    first = list(manager.data["backlog_snapshots"])
+    assert await manager.async_record_backlog_snapshot() is False
+    assert manager.data["backlog_snapshots"] == first

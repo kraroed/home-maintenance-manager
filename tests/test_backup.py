@@ -1,5 +1,6 @@
 """Tests for complete JSON backup and guarded restore behavior."""
 
+from datetime import date, timedelta
 import json
 from copy import deepcopy
 from types import MappingProxyType, SimpleNamespace
@@ -14,6 +15,7 @@ from custom_components.home_maintenance_manager.backup import (
     BACKUP_SCHEMA_VERSION,
     _build_payload,
     _merge_history,
+    _merge_backlog_snapshots,
     _read_json_file,
     _safe_filename,
     _validate_payload,
@@ -96,6 +98,40 @@ def test_backup_payload_accepts_complete_backup():
     assert _validate_payload(_payload())["property_name"] == "My Home"
 
 
+@pytest.mark.parametrize("snapshot_date", ["2026-99-99", "2026-02-30", "2026-1-01", "not-a-date"])
+def test_backup_rejects_invalid_backlog_snapshot_dates(snapshot_date):
+    """Backlog snapshot dates must be real canonical ISO calendar dates."""
+    payload = _payload()
+    payload["data"]["backlog_snapshots"] = [{
+        "date": snapshot_date,
+        "overdue": 0,
+        "due_today": 0,
+        "due_soon": 0,
+        "scheduled": 0,
+        "not_scheduled": 0,
+        "total": 0,
+    }]
+
+    with pytest.raises(HomeAssistantError, match="invalid backlog trend snapshots"):
+        _validate_payload(payload)
+
+
+def test_backup_accepts_valid_backlog_snapshot_date():
+    """A canonical calendar date is accepted for a backlog snapshot."""
+    payload = _payload()
+    payload["data"]["backlog_snapshots"] = [{
+        "date": "2026-11-11",
+        "overdue": 1,
+        "due_today": 0,
+        "due_soon": 2,
+        "scheduled": 3,
+        "not_scheduled": 0,
+        "total": 6,
+    }]
+
+    assert _validate_payload(payload)["data"]["backlog_snapshots"][0]["date"] == "2026-11-11"
+
+
 def test_backup_payload_rejects_wrong_format_and_malformed_history():
     """Wrong formats and malformed history are rejected before restore."""
     with pytest.raises(HomeAssistantError, match="not a Home Maintenance Manager backup"):
@@ -133,6 +169,44 @@ def test_history_merge_preserves_current_records_and_adds_missing_records():
         {"history_id": "same", "notes": "Current version"},
         {"history_id": "restored", "notes": "From backup"},
     ]
+
+
+def test_backlog_snapshot_merge_preserves_current_and_imports_missing_dates():
+    """Restore keeps current daily snapshots and adds dates missing from backup."""
+    current = [
+        {"date": "2026-11-10", "overdue": 4},
+        {"date": "2026-11-11", "overdue": 5},
+    ]
+    incoming = [
+        {"date": "2026-11-09", "overdue": 2},
+        {"date": "2026-11-10", "overdue": 99},
+    ]
+
+    merged = _merge_backlog_snapshots(current, incoming)
+
+    assert merged == [
+        {"date": "2026-11-09", "overdue": 2},
+        {"date": "2026-11-10", "overdue": 4},
+        {"date": "2026-11-11", "overdue": 5},
+    ]
+
+
+def test_backlog_snapshot_merge_retains_only_newest_365_dates():
+    """The merged snapshot history remains within the documented retention limit."""
+    first_day = date(2025, 1, 1)
+    incoming = [
+        {
+            "date": (first_day + timedelta(days=offset)).isoformat(),
+            "overdue": offset,
+        }
+        for offset in range(400)
+    ]
+
+    merged = _merge_backlog_snapshots([], incoming)
+
+    assert len(merged) == 365
+    assert merged[0]["date"] == (first_day + timedelta(days=35)).isoformat()
+    assert merged[-1]["date"] == (first_day + timedelta(days=399)).isoformat()
 
 
 def test_backup_file_round_trip_and_size_validation(tmp_path):
@@ -211,6 +285,12 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         lambda hass, message, title, notification_id=None: notifications.append(message),
     )
     current_history = [{"history_id": "new-local", "notes": "Keep this"}]
+    current_snapshots = [
+        {"date": "2026-11-10", "overdue": 4, "due_today": 0, "due_soon": 0,
+         "scheduled": 0, "not_scheduled": 0, "total": 4},
+        {"date": "2026-11-11", "overdue": 5, "due_today": 0, "due_soon": 0,
+         "scheduled": 0, "not_scheduled": 0, "total": 5},
+    ]
     manager = SimpleNamespace(
         storage=SimpleNamespace(
             store=SimpleNamespace(key="property-one"),
@@ -219,6 +299,7 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         data={
             **deepcopy(_payload()["data"]),
             "history": current_history,
+            "backlog_snapshots": current_snapshots,
         },
         enabled_ids={"old-task"},
         task_intervals={},
@@ -271,6 +352,7 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         "new-local",
         "clean_gutters:completion-1",
     }
+    assert manager.data["backlog_snapshots"] == current_snapshots
     assert len(list(directory.glob("home_maintenance_pre_restore_*.json"))) == 1
     coordinator.async_request_refresh.assert_awaited_once()
 

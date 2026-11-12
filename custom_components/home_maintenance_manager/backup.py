@@ -1,7 +1,7 @@
 """Full JSON backup and guarded restore services for Home Maintenance Manager."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -69,6 +69,16 @@ def _read_json_file(path):
     return _validate_payload(payload)
 
 
+def _valid_iso_date(value):
+    """Return whether a value is a canonical, real YYYY-MM-DD date."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def _validate_payload(payload):
     if not isinstance(payload, dict):
         raise HomeAssistantError("Backup must contain a JSON object.")
@@ -93,6 +103,19 @@ def _validate_payload(payload):
         isinstance(item, dict) for item in data["history"]
     ):
         raise HomeAssistantError("Backup contains an invalid completion history.")
+
+    backlog_snapshots = data.get("backlog_snapshots", [])
+    if not isinstance(backlog_snapshots, list) or not all(
+        isinstance(item, dict)
+        and _valid_iso_date(item.get("date"))
+        and all(
+            type(item.get(key, 0)) is int and item.get(key, 0) >= 0
+            for key in ("overdue", "due_today", "due_soon", "scheduled",
+                        "not_scheduled", "total")
+        )
+        for item in backlog_snapshots
+    ):
+        raise HomeAssistantError("Backup contains invalid backlog trend snapshots.")
     settings = data.get("settings")
     if not isinstance(settings, dict):
         raise HomeAssistantError("Backup is missing its settings.")
@@ -185,6 +208,21 @@ def _merge_history(current, incoming):
     return merged
 
 
+def _merge_backlog_snapshots(current, incoming):
+    """Merge daily snapshots, preferring current records for duplicate dates."""
+    by_date = {
+        item["date"]: deepcopy(item)
+        for item in incoming
+        if isinstance(item, dict) and _valid_iso_date(item.get("date"))
+    }
+    by_date.update({
+        item["date"]: deepcopy(item)
+        for item in current
+        if isinstance(item, dict) and _valid_iso_date(item.get("date"))
+    })
+    return [by_date[day] for day in sorted(by_date)[-365:]]
+
+
 def _matching_entries(hass, instance):
     entries = hass.data.get(DOMAIN, {})
     if instance:
@@ -239,13 +277,27 @@ async def async_setup_backup_services(hass):
         current_history = entry_data["manager"].data.get("history", [])
         incoming_history = data["history"]
         new_history = _merge_history(current_history, incoming_history)
+        current_snapshots = entry_data["manager"].data.get("backlog_snapshots", [])
+        incoming_snapshots = data.get("backlog_snapshots", [])
+        new_snapshots = _merge_backlog_snapshots(
+            current_snapshots, incoming_snapshots
+        )
+        merged_snapshot_dates = {snapshot["date"] for snapshot in new_snapshots}
+        preserved_snapshot_dates = {
+            item["date"] for item in current_snapshots
+            if isinstance(item, dict) and item.get("date") in merged_snapshot_dates
+        }
+        preserved_snapshots = len(preserved_snapshot_dates)
+        imported_snapshots = len(new_snapshots) - preserved_snapshots
         message = (
             f"Backup for **{payload.get('property_name', 'Unknown property')}** is valid.\n\n"
             f"- Tasks in backup: {len(data['tasks'])}\n"
             f"- Equipment records: {len(data['equipment'])}\n"
             f"- Completion records in backup: {len(incoming_history)}\n"
             f"- Existing completion records preserved: {len(current_history)}\n"
-            f"- Additional history records to import: {len(new_history) - len(current_history)}\n\n"
+            f"- Additional history records to import: {len(new_history) - len(current_history)}\n"
+            f"- Existing backlog snapshots preserved: {preserved_snapshots}\n"
+            f"- Additional backlog snapshots to import: {imported_snapshots}\n\n"
             "No data has been changed. To apply it, run **restore_backup** with the same "
             "filename and set **confirm** to true. Restore also creates an automatic "
             "pre-restore JSON backup."
@@ -271,6 +323,10 @@ async def async_setup_backup_services(hass):
         restored.setdefault("notification_state", {"individual": {}, "summary_date": None})
         restored["history"] = _merge_history(
             manager.data.get("history", []), restored["history"]
+        )
+        restored["backlog_snapshots"] = _merge_backlog_snapshots(
+            manager.data.get("backlog_snapshots", []),
+            restored.get("backlog_snapshots", []),
         )
 
         # Persist a safety copy of the current state before touching live storage.
