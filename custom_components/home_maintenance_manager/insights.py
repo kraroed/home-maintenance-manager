@@ -45,14 +45,18 @@ def completion_metrics(history, tasks=None, today=None):
     }
     by_category = {}
     for record in history:
+        completed = _local_date(record.get("completed_at"))
+        # A record without a valid completion date cannot be placed in the
+        # all-time reporting period, so exclude it from category totals too.
+        if completed is None:
+            continue
         # New records retain their category at completion time. Older records
         # without this field fall back to the task's current category.
         category = record.get("category") or task_categories.get(record.get("task_id"), "Other")
         bucket = by_category.setdefault(category, {"completed": 0, "completed_late": 0})
         bucket["completed"] += 1
         due = _local_date(record.get("previous_due"))
-        completed = _local_date(record.get("completed_at"))
-        if due is not None and completed is not None and completed > due:
+        if due is not None and completed > due:
             bucket["completed_late"] += 1
     for bucket in by_category.values():
         bucket["completed_on_time"] = bucket["completed"] - bucket["completed_late"]
