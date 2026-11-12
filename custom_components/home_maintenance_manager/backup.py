@@ -79,6 +79,16 @@ def _valid_iso_date(value):
         return False
 
 
+def _valid_month_day(value):
+    """Return whether a value is a real canonical MM-DD date (leap day allowed)."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return date(2000, int(value[:2]), int(value[3:])).strftime("%m-%d") == value
+    except (TypeError, ValueError):
+        return False
+
+
 def _validate_payload(payload):
     if not isinstance(payload, dict):
         raise HomeAssistantError("Backup must contain a JSON object.")
@@ -218,8 +228,7 @@ def _validate_payload(payload):
             isinstance(season, str)
             and isinstance(window, dict)
             and all(
-                isinstance(window.get(edge), str)
-                and re.fullmatch(r"(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])", window[edge])
+                _valid_month_day(window.get(edge))
                 for edge in ("start", "end")
             )
             for season, window in mapping.items()
@@ -230,7 +239,6 @@ def _validate_payload(payload):
         for item in options["equipment_categories"]
     ):
         raise HomeAssistantError("Backup contains invalid equipment categories.")
-    string_options = ("notification_target", "notification_lead_days", "daily_summary_time")
     if "notification_target" in options and (
         not isinstance(options["notification_target"], str)
         or len(options["notification_target"]) > 255
