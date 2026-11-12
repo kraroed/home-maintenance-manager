@@ -61,3 +61,14 @@ def test_unassigned_group_contains_unassigned_tasks_and_equipment():
     assert len(groups["unassigned"]["tasks"]) == 1
     assert len(groups["unassigned"]["equipment"]) == 1
     assert groups["unassigned"]["counts"]["due_today"] == 1
+
+def test_equipment_with_deleted_area_is_grouped_as_unassigned():
+    equipment = [{
+        "equipment_id": "pump",
+        "name": "Sump Pump",
+        "area_id": "deleted-area",
+    }]
+    groups = build_area_groups([], equipment, {}, {"basement"})
+    assert len(groups["unassigned"]["equipment"]) == 1
+    assert groups["unassigned"]["equipment"][0]["name"] == "Sump Pump"
+
