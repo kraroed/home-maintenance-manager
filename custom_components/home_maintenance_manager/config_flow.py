@@ -782,12 +782,21 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         current = self._custom_task_draft
         category = current.get("category", "hvac")
         options.setdefault(category, category.title())
+        area_options = {"": "No area"}
+        area_options.update({
+            area.id: area.name
+            for area in ar.async_get(self.hass).async_list_areas()
+        })
+        current_area_id = current.get("area_id") or ""
+        if current_area_id and current_area_id not in area_options:
+            area_options[current_area_id] = "Previously assigned area (unavailable)"
         return self.async_show_form(
             step_id=step_id,
             data_schema=vol.Schema({
                 vol.Required("name", default=current.get("name", "")): vol.All(str, vol.Length(min=1, max=80)),
                 vol.Required("category", default=category): vol.In(options),
                 vol.Optional("description", default=current.get("description", "")): vol.All(str, vol.Length(max=300)),
+                vol.Optional("area_id", default=current_area_id): vol.In(area_options),
             }),
         )
 
@@ -834,6 +843,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "name": user_input["name"].strip(),
                 "category": user_input["category"],
                 "description": user_input.get("description", "").strip(),
+                "area_id": user_input.get("area_id") or None,
             })
             self._custom_task_base_step = "add_custom_task"
             self._custom_task_category_is_custom = user_input["category"] == "other"
@@ -1004,6 +1014,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             "name": name,
             "category": (draft.get("category_name") if draft.get("category") == "other" else draft["category"]).strip().casefold() or "custom",
             "description": draft.get("description", "").strip(),
+            "area_id": draft.get("area_id") or None,
             "schedule_type": schedule_type,
             "recommended_interval_days": interval,
             **(
@@ -1136,6 +1147,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "name": user_input["name"].strip(),
                 "category": user_input["category"],
                 "description": user_input.get("description", "").strip(),
+                "area_id": user_input.get("area_id") or None,
             })
             self._custom_task_base_step = "edit_custom_task"
             self._custom_task_category_is_custom = user_input["category"] == "other"
