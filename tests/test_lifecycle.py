@@ -1,6 +1,7 @@
 """Regression tests for integration setup and unload lifecycle."""
 
 import pytest
+from unittest.mock import Mock
 
 from homeassistant.config_entries import ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -56,9 +57,15 @@ async def test_config_entry_setup_registers_platforms_and_services(
 
 @pytest.mark.asyncio
 async def test_unloading_final_config_entry_cleans_up_services(
-    hass, enable_custom_integrations
+    hass, enable_custom_integrations, monkeypatch
 ):
-    """Unloading the last property removes its services and runtime data."""
+    """Unloading the last property removes services and cancels scheduled work."""
+    cancel_backlog_snapshots = Mock()
+    track_time_change = Mock(return_value=cancel_backlog_snapshots)
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.async_track_time_change",
+        track_time_change,
+    )
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Primary Residence",
@@ -71,8 +78,10 @@ async def test_unloading_final_config_entry_cleans_up_services(
     entry.add_to_hass(hass)
 
     assert await hass.config_entries.async_setup(entry.entry_id)
+    track_time_change.assert_called_once()
     assert await hass.config_entries.async_unload(entry.entry_id)
 
+    cancel_backlog_snapshots.assert_called_once_with()
     assert entry.entry_id not in hass.data.get(DOMAIN, {})
     assert not hass.services.has_service(DOMAIN, SERVICE_COMPLETE_TASK)
     assert not hass.services.has_service(DOMAIN, SERVICE_RESCHEDULE_TASK)
