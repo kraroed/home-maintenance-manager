@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.13.0
+
+### Area-aware maintenance organization
+- Add Home Assistant area organization for household equipment and maintenance tasks.
+- Have maintenance tasks inherit the areas of their linked equipment, including tasks associated with equipment in multiple areas.
+- Allow standalone maintenance tasks to be assigned to an area or explicitly left unassigned.
+- Add an **Assign task areas** option for managing standalone task area assignments.
+- Expose effective area IDs and names on task sensors and include per-area equipment and task summaries in coordinator data.
+- Group equipment and tasks with missing, deleted, or unavailable areas under **Unassigned**.
+- Preserve custom task area assignments when editing tasks and when linked equipment is temporarily unavailable or later unlinked.
+- Exclude disabled tasks from area summaries.
+
+### Testing and documentation
+- Add regression coverage for standalone, linked, multi-area, unassigned, and unavailable-area behavior.
+- Document area inheritance and standalone task area assignment.
+
 ## 0.12.0
 
 ### Insights and reporting
@@ -84,7 +100,7 @@
 
 ### Configuration
 - Show multi-select maintenance task choices as visible checklists instead of collapsed dropdowns.
-- Add a grouped review of selected maintenance tasks before completing initial setup, with a way to return to selection.
+- Add a grouped review of selected maintenance tasks before completing setup, with a way to return to selection.
 - Add Back and Continue navigation throughout equipment, seasonal scheduling, notification, and custom-task configuration wizards.
 - Preserve entered values and selections when navigating backward and forward through guided configuration.
 
