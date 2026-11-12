@@ -152,6 +152,8 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "next_due": task.get("next_due"),
             "equipment_id": task.get("equipment_id"),
             "equipment_ids": task.get("equipment_ids", []),
+            "area_ids": task.get("area_ids", []),
+            "area_names": task.get("area_names", []),
             "completion_history": self.coordinator.data.get("history_by_task", {}).get(
                 self.task_id, []
             ),
@@ -248,7 +250,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             **{
                 key: item.get(key)
                 for key in (
-                    "category", "area_id", "manufacturer", "model", "installed_date",
+                    "category", "area_id", "area_name", "manufacturer", "model", "installed_date",
                     "lifespan_months", "replacement_task_id", "replacement_due",
                     "notes", "task_ids",
                 )

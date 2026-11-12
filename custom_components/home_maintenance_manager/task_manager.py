@@ -5,7 +5,9 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from homeassistant.util import dt as dt_util
+from homeassistant.helpers import area_registry as ar
 
+from .areas import build_area_groups, effective_task_area_ids
 from .storage import MaintenanceStorage
 from .insights import backlog_snapshot, completion_metrics, workload_metrics
 
@@ -136,7 +138,8 @@ def _next_season_due(task, reference, include_active=False, settings=None):
 class TaskManager:
     def __init__(
         self, hass, entry_id, enabled_ids, task_intervals=None,
-        custom_tasks=None, equipment_records=None, season_windows=None
+        custom_tasks=None, equipment_records=None, season_windows=None,
+        task_area_assignments=None
     ):
         self.hass = hass
         self.entry_id = entry_id
@@ -148,6 +151,7 @@ class TaskManager:
         self.enabled_ids = set(enabled_ids)
         self.task_intervals = task_intervals or {}
         self.season_windows = season_windows or {}
+        self.task_area_assignments = task_area_assignments or {}
 
     def _initial_due(self, task, now):
         if task.get("schedule_type") == "seasonal":
@@ -228,7 +232,7 @@ class TaskManager:
                         "monthly_week", "monthly_weekday",
                         "recommended_interval_days", "recommendation_note",
                         "how_to_inspect", "what_to_look_for",
-                        "what_to_do_if_issue", "safety_notes",
+                        "what_to_do_if_issue", "safety_notes", "area_id",
                     }:
                         task[key] = deepcopy(value)
                     else:
@@ -305,6 +309,10 @@ class TaskManager:
         for task_id, task in self.data["tasks"].items():
             task["equipment_ids"] = links.get(task_id, [])
             task["equipment_id"] = task["equipment_ids"][0] if task["equipment_ids"] else None
+            if not task["equipment_ids"]:
+                task["area_id"] = self.task_area_assignments.get(
+                    task_id, task.get("area_id")
+                )
 
         self._refresh_equipment_lifespan_due()
         await self.async_save()
@@ -485,12 +493,44 @@ class TaskManager:
         return True
 
     def snapshot(self):
+        equipment = list(self.data.get("equipment", {}).values())
+        area_registry = ar.async_get(self.hass)
+        area_names = {
+            area.id: area.name for area in area_registry.async_list_areas()
+        }
+        valid_area_ids = set(area_names)
+        equipment = [
+            {
+                **item,
+                "area_id": (
+                    item.get("area_id")
+                    if item.get("area_id") in valid_area_ids
+                    else None
+                ),
+                "area_name": area_names.get(item.get("area_id")),
+            }
+            for item in equipment
+        ]
+        equipment_by_id = {
+            item.get("equipment_id"): item for item in equipment
+            if item.get("equipment_id")
+        }
         tasks = []
         for stored_task in self.data.get("tasks", {}).values():
             task = deepcopy(stored_task)
             task["status"] = self.task_status(stored_task)
+            area_ids = effective_task_area_ids(
+                task, equipment_by_id, valid_area_ids
+            )
+            task["area_ids"] = area_ids
+            task["area_names"] = [
+                area_names[area_id] for area_id in area_ids
+            ]
             tasks.append(task)
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
+        area_groups = build_area_groups(
+            enabled_tasks, equipment, area_names, valid_area_ids
+        )
         history_by_task = {}
         for record in self.data.get("history", []):
             history_by_task.setdefault(record.get("task_id"), []).append({
@@ -513,7 +553,8 @@ class TaskManager:
                 task_id: records[-10:]
                 for task_id, records in history_by_task.items()
             },
-            "equipment": list(self.data.get("equipment", {}).values()),
+            "equipment": equipment,
+            "areas": area_groups,
             "equipment_count": len(self.data.get("equipment", {})),
             "total": len(enabled_tasks),
             "overdue": sum(t["status"] == "overdue" for t in enabled_tasks),

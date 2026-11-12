@@ -125,7 +125,8 @@
           "configure_notifications": "Configure maintenance notifications",
           "configure_season_windows": "Configure seasonal scheduling windows",
           "configure_automatic_backups": "Configure automatic JSON backups",
-          "configure_update_backups": "Configure update-triggered backups"
+          "configure_update_backups": "Configure update-triggered backups",
+          "manage_task_areas": "Assign task areas"
         }
       },
       "configure_notifications": {
@@ -183,11 +184,13 @@
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description"
+          "description": "Description",
+          "area_id": "Area"
         },
         "data_description": {
           "category": "Choose a built-in category or select Other to create a reusable custom category.",
-          "description": "A short explanation shown with this task in Home Maintenance Manager."
+          "description": "A short explanation shown with this task in Home Maintenance Manager.",
+          "area_id": "Optional Home Assistant area for this task when it is not linked to equipment. Linked tasks use their equipment areas instead."
         }
       },
       "add_equipment": {
@@ -277,7 +280,11 @@
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description"
+          "description": "Description",
+          "area_id": "Area"
+        },
+        "data_description": {
+          "area_id": "Optional Home Assistant area for this task when it is not linked to equipment. Linked tasks use their equipment areas instead."
         }
       },
       "remove_custom_task": {
@@ -765,6 +772,20 @@
           "update_install_tracking_enabled": "Record when a monitored update starts installing and send a persistent notification. This does not pause the update or guarantee a backup completes first.",
           "update_backup_entities": "Choose the Home Assistant update entities to monitor. Leave the selection empty to monitor all update entities."
         }
+      },
+      "manage_task_areas": {
+        "title": "Assign a task to an area",
+        "description": "Choose a maintenance task that is not linked to equipment. Tasks linked to equipment automatically inherit their equipment areas.",
+        "data": {
+          "task_id": "Maintenance task"
+        }
+      },
+      "assign_task_area": {
+        "title": "Choose task area",
+        "description": "Choose a Home Assistant area for this standalone task, or select No area. Tasks linked to equipment inherit the equipment areas instead.",
+        "data": {
+          "area_id": "Area"
+        }
       }
     },
     "error": {
@@ -783,7 +804,8 @@
       "equipment_not_found": "The selected equipment record could not be found.",
       "remove_cancelled": "Equipment removal was cancelled.",
       "no_custom_tasks": "No custom maintenance tasks have been created yet.",
-      "custom_task_not_found": "The selected custom maintenance task could not be found."
+      "custom_task_not_found": "The selected custom maintenance task could not be found.",
+      "no_tasks": "No enabled standalone maintenance tasks are available to assign."
     }
   }
 }

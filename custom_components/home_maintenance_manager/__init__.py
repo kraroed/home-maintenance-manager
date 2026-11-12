@@ -38,6 +38,7 @@ async def async_setup_entry(hass, entry):
         custom_tasks,
         equipment_records,
         entry.options.get("season_windows"),
+        entry.options.get("task_area_assignments", {}),
     )
     await manager.async_load()
     await manager.async_record_backlog_snapshot()
