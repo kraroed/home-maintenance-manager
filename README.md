@@ -16,7 +16,7 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Editable intervals for recurring built-in tasks.
 - Completion-based scheduling: completing a task restarts its schedule.
 - Task rescheduling without marking work complete, with a retained record of the previous due date, new due date, and optional reason.
-- Permanent completion history, including optional notes and linked equipment details.
+- Permanent completion history, including optional notes, linked equipment details, and the task category captured when completed.
 - Complete JSON backup and guarded restore for property configuration, tasks, equipment, settings, reminder state, and completion history.
 - Seasonal schedules with configurable date windows.
 - Monthly calendar patterns such as the first Saturday, second Tuesday, or last Sunday of each month.
