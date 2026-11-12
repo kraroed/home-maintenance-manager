@@ -151,6 +151,11 @@ async def test_reschedule_requires_instance_and_refreshes_only_selected_property
     second["manager"].async_reschedule_task.assert_not_awaited()
 
     for selected, other in ((first, second), (second, first)):
+        # Each iteration independently verifies that only the selected property
+        # receives this service call.
+        for prop in (first, second):
+            prop["manager"].async_reschedule_task.reset_mock()
+            prop["coordinator"].async_request_refresh.reset_mock()
         await hass.services.async_call(
             DOMAIN,
             SERVICE_RESCHEDULE_TASK,
@@ -186,6 +191,11 @@ async def test_complete_routes_to_each_selected_property(hass):
         )
 
     for selected, other in ((first, second), (second, first)):
+        # Reset between selections so the unselected property is checked only
+        # against the current service invocation.
+        for prop in (first, second):
+            prop["manager"].async_complete_task.reset_mock()
+            prop["coordinator"].async_request_refresh.reset_mock()
         await hass.services.async_call(
             DOMAIN,
             SERVICE_COMPLETE_TASK,
