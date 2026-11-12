@@ -1224,10 +1224,15 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             CONF_ENABLED_TASK_IDS,
             self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
         ))
+        equipment_task_ids = {
+            task_id
+            for record in self.config_entry.options.get("equipment_records", [])
+            for task_id in record.get("task_ids", [])
+        }
         options = {
             task_id: item.get("name", task_id)
             for task_id, item in library.items()
-            if task_id in enabled
+            if task_id in enabled and task_id not in equipment_task_ids
         }
         if not options:
             return self.async_abort(reason="no_tasks")
@@ -1249,7 +1254,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             item for item in self.config_entry.options.get("custom_tasks", [])
             if item.get("task_id") == task_id
         ), {})
-        current_area_id = assignments.get(task_id, custom_task.get("area_id") or "")
+        current_area_id = assignments.get(
+            task_id, custom_task.get("area_id")
+        ) or ""
         area_options = {"": "No area"}
         area_options.update({
             area.id: area.name
@@ -1259,10 +1266,9 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
             area_options[current_area_id] = "Previously assigned area (unavailable)"
         if user_input is not None:
             area_id = user_input.get("area_id") or None
-            if area_id:
-                assignments[task_id] = area_id
-            else:
-                assignments.pop(task_id, None)
+            # Keep an explicit None so clearing a custom task's area
+            # overrides the area_id stored in its custom task definition.
+            assignments[task_id] = area_id
             return self.async_create_entry(
                 title="",
                 data={
