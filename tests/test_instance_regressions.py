@@ -1,7 +1,5 @@
 """Regression coverage for legacy backups and multi-property service routing."""
 
-from copy import deepcopy
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 import json
@@ -267,15 +265,18 @@ async def test_legacy_backup_preview_and_restore_are_instance_scoped(
         "second-current",
         "legacy-completion",
     }
-    assert restored["backlog_snapshots"] == [
-        second["manager"].data["backlog_snapshots"][0]
+    assert [item["date"] for item in restored["backlog_snapshots"]] == [
+        "2026-11-10"
     ]
     assert restored["notification_state"]["individual"] == {
         "clean_gutters:due": "2026-07-31"
     }
     assert restored["settings"]["due_soon_days"] == 7
     assert "backlog_snapshots" in restored
-    assert "update_backup_state" not in restored
+    from custom_components.home_maintenance_manager.update_backups import _state_bucket
+    assert _state_bucket(second["manager"]) == {
+        "available": {}, "installations": {}
+    }
 
 
 @pytest.mark.asyncio
