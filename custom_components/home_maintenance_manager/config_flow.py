@@ -299,7 +299,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups", "configure_update_backups"],
+            menu_options=["manage_tasks", "manage_task_areas", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups", "configure_update_backups"],
         )
 
     async def async_step_configure_notifications(self, user_input=None):
@@ -1211,6 +1211,70 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 vol.Required("confirm", default=False): bool,
             }),
             description_placeholders={"task_name": current["name"]},
+        )
+
+    async def async_step_manage_task_areas(self, user_input=None):
+        """Choose a maintenance task to assign to a Home Assistant area."""
+        library = await self.hass.async_add_executor_job(load_library)
+        library.update({
+            item["task_id"]: item
+            for item in self.config_entry.options.get("custom_tasks", [])
+        })
+        enabled = set(self.config_entry.options.get(
+            CONF_ENABLED_TASK_IDS,
+            self.config_entry.data.get(CONF_ENABLED_TASK_IDS, []),
+        ))
+        options = {
+            task_id: item.get("name", task_id)
+            for task_id, item in library.items()
+            if task_id in enabled
+        }
+        if not options:
+            return self.async_abort(reason="no_tasks")
+        if user_input is not None:
+            self._area_assignment_task_id = user_input["task_id"]
+            return await self.async_step_assign_task_area()
+        return self.async_show_form(
+            step_id="manage_task_areas",
+            data_schema=vol.Schema({
+                vol.Required("task_id"): vol.In(options),
+            }),
+        )
+
+    async def async_step_assign_task_area(self, user_input=None):
+        """Assign or clear the selected task's standalone area."""
+        task_id = self._area_assignment_task_id
+        assignments = dict(self.config_entry.options.get("task_area_assignments", {}))
+        custom_task = next((
+            item for item in self.config_entry.options.get("custom_tasks", [])
+            if item.get("task_id") == task_id
+        ), {})
+        current_area_id = assignments.get(task_id, custom_task.get("area_id") or "")
+        area_options = {"": "No area"}
+        area_options.update({
+            area.id: area.name
+            for area in ar.async_get(self.hass).async_list_areas()
+        })
+        if current_area_id and current_area_id not in area_options:
+            area_options[current_area_id] = "Previously assigned area (unavailable)"
+        if user_input is not None:
+            area_id = user_input.get("area_id") or None
+            if area_id:
+                assignments[task_id] = area_id
+            else:
+                assignments.pop(task_id, None)
+            return self.async_create_entry(
+                title="",
+                data={
+                    **self.config_entry.options,
+                    "task_area_assignments": assignments,
+                },
+            )
+        return self.async_show_form(
+            step_id="assign_task_area",
+            data_schema=vol.Schema({
+                vol.Optional("area_id", default=current_area_id): vol.In(area_options),
+            }),
         )
 
     async def async_step_create_area(self, user_input=None):
