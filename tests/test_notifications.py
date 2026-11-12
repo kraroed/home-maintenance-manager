@@ -226,7 +226,7 @@ async def test_notifications_suppress_repeats_until_task_due_date_changes(
     assert len(reminders) == 2
     assert len(summaries) == 1
     assert "due in 1 day(s) (due " in reminders[1][1]
-    assert manager.async_save.await_count == 3
+    assert manager.async_save.await_count == 4
 
 
 
