@@ -138,7 +138,8 @@ def _next_season_due(task, reference, include_active=False, settings=None):
 class TaskManager:
     def __init__(
         self, hass, entry_id, enabled_ids, task_intervals=None,
-        custom_tasks=None, equipment_records=None, season_windows=None
+        custom_tasks=None, equipment_records=None, season_windows=None,
+        task_area_assignments=None
     ):
         self.hass = hass
         self.entry_id = entry_id
@@ -150,6 +151,7 @@ class TaskManager:
         self.enabled_ids = set(enabled_ids)
         self.task_intervals = task_intervals or {}
         self.season_windows = season_windows or {}
+        self.task_area_assignments = task_area_assignments or {}
 
     def _initial_due(self, task, now):
         if task.get("schedule_type") == "seasonal":
@@ -307,6 +309,10 @@ class TaskManager:
         for task_id, task in self.data["tasks"].items():
             task["equipment_ids"] = links.get(task_id, [])
             task["equipment_id"] = task["equipment_ids"][0] if task["equipment_ids"] else None
+            if not task["equipment_ids"]:
+                task["area_id"] = self.task_area_assignments.get(
+                    task_id, task.get("area_id")
+                )
 
         self._refresh_equipment_lifespan_due()
         await self.async_save()
