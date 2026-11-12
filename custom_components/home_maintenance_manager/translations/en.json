@@ -775,14 +775,14 @@
       },
       "manage_task_areas": {
         "title": "Assign a task to an area",
-        "description": "Choose a maintenance task to assign to a Home Assistant area. Tasks linked to equipment automatically use the equipment areas.",
+        "description": "Choose a maintenance task that is not linked to equipment. Tasks linked to equipment automatically inherit their equipment areas.",
         "data": {
           "task_id": "Maintenance task"
         }
       },
       "assign_task_area": {
         "title": "Choose task area",
-        "description": "Choose an area for this task when it is not linked to equipment. If the task is linked to equipment, its effective areas come from that equipment.",
+        "description": "Choose a Home Assistant area for this standalone task, or select No area. Tasks linked to equipment inherit the equipment areas instead.",
         "data": {
           "area_id": "Area"
         }
@@ -805,7 +805,7 @@
       "remove_cancelled": "Equipment removal was cancelled.",
       "no_custom_tasks": "No custom maintenance tasks have been created yet.",
       "custom_task_not_found": "The selected custom maintenance task could not be found.",
-      "no_tasks": "No maintenance tasks are currently enabled."
+      "no_tasks": "No enabled standalone maintenance tasks are available to assign."
     }
   }
 }
