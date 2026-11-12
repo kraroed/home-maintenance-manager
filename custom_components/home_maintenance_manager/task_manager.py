@@ -494,10 +494,6 @@ class TaskManager:
 
     def snapshot(self):
         equipment = list(self.data.get("equipment", {}).values())
-        equipment_by_id = {
-            item.get("equipment_id"): item for item in equipment
-            if item.get("equipment_id")
-        }
         area_registry = ar.async_get(self.hass)
         area_names = {
             area.id: area.name for area in area_registry.async_list_areas()
@@ -506,6 +502,11 @@ class TaskManager:
         equipment = [
             {
                 **item,
+                "area_id": (
+                    item.get("area_id")
+                    if item.get("area_id") in valid_area_ids
+                    else None
+                ),
                 "area_name": area_names.get(item.get("area_id")),
             }
             for item in equipment
