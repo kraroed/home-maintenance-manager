@@ -95,3 +95,33 @@ def test_overdue_backlog_sensor_uses_latest_snapshot():
     })
 
     assert sensor.native_value == 1
+
+
+
+def test_completion_category_totals_ignore_missing_or_malformed_completion_dates():
+    """Undated or malformed history records do not inflate all-time categories."""
+    history = [
+        {
+            "task_id": "filter",
+            "category": "HVAC",
+            "completed_at": "2026-11-10T12:00:00+00:00",
+            "previous_due": "2026-11-09T00:00:00+00:00",
+        },
+        {"task_id": "filter", "category": "HVAC", "previous_due": "2026-11-09"},
+        {
+            "task_id": "filter",
+            "category": "Plumbing",
+            "completed_at": "not-a-date",
+            "previous_due": "2026-11-09",
+        },
+    ]
+
+    result = completion_metrics(history, today=date(2026, 11, 11))
+
+    assert result["by_category"] == {
+        "HVAC": {
+            "completed": 1,
+            "completed_late": 1,
+            "completed_on_time": 0,
+        }
+    }
