@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 0.12.0
+
+### Insights and reporting
+- Add completion totals, on-time and late counts, and late-completion rates for rolling 30-, 90-, and 365-day periods.
+- Add all-time completion breakdowns by maintenance category, using the category recorded when each task was completed.
+- Add upcoming workload counts for the next 7, 30, and 90 days, with overdue and due-today tasks reported separately.
+- Add daily overdue-backlog snapshots and an historical backlog trend sensor, retaining up to 365 daily snapshots.
+- Include backlog snapshots in JSON backups and preserve existing snapshots when restoring a backup.
+- Add Home Assistant sensors and reporting attributes for maintenance insights.
+
+### Reliability and compatibility
+- Validate, sort, and deduplicate stored backlog snapshots, retaining the newest 365 dates.
+- Keep the backlog trend sensor unknown until its first snapshot is recorded rather than implying a zero backlog.
+- Cancel the daily snapshot scheduler when the integration unloads.
+- Preserve existing completion history and sensor identities; older completion records remain supported.
+
+### Testing and documentation
+- Add regression coverage for reporting calculations, historical category attribution, snapshot scheduling and storage, sensor states, and backup restore behavior.
+- Document the new maintenance insights and historical reporting features.
+
 ## 0.11.3
 
 ### Configuration
@@ -86,7 +106,7 @@
 - Organize recurring maintenance interval settings by task category.
 
 ### Improvements
-- Run maintenance task library reads outside Home Assistant's event loop to avoid blocking calls.
+- Run built-in task library reads outside Home Assistant's event loop to avoid blocking calls.
 - Improve custom task category creation and reuse.
 - Preserve existing equipment details, task associations, custom task identity, and completion history while editing.
 - Add regression coverage and translations for the guided configuration flows.
