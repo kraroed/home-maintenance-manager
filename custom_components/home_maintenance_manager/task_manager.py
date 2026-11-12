@@ -503,6 +503,17 @@ class TaskManager:
             area.id: area.name for area in area_registry.async_list_areas()
         }
         valid_area_ids = set(area_names)
+        equipment = [
+            {
+                **item,
+                "area_name": area_names.get(item.get("area_id")),
+            }
+            for item in equipment
+        ]
+        equipment_by_id = {
+            item.get("equipment_id"): item for item in equipment
+            if item.get("equipment_id")
+        }
         tasks = []
         for stored_task in self.data.get("tasks", {}).values():
             task = deepcopy(stored_task)
