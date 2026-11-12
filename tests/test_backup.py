@@ -131,6 +131,8 @@ def test_backup_rejects_invalid_backlog_snapshot_dates(snapshot_date):
         ("daily_summary_time", "25:99", "daily summary time"),
         ("automatic_backups_enabled", "yes", "boolean option"),
         ("automatic_backup_frequency", "yearly", "automatic backup frequency"),
+        ("automatic_backup_frequency", [], "automatic backup frequency"),
+        ("equipment_categories", {}, "equipment categories"),
         ("automatic_backup_time", "99:00", "automatic backup time"),
         ("automatic_backup_retention", 0, "automatic backup retention"),
         ("update_backup_entities", ["sensor.invalid"], "update backup entities"),
