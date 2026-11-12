@@ -90,15 +90,25 @@ class MaintenanceStorage:
 
         stored_snapshots = stored.get("backlog_snapshots")
         if isinstance(stored_snapshots, list):
+            # Deduplicate by local calendar date, keeping the latest stored
+            # record for a date, then normalize ordering and retention.
+            snapshots_by_date = {}
+            for item in stored_snapshots:
+                if (
+                    isinstance(item, dict)
+                    and _valid_iso_date(item.get("date"))
+                    and all(
+                        type(item.get(key, 0)) is int and item.get(key, 0) >= 0
+                        for key in (
+                            "overdue", "due_today", "due_soon", "scheduled",
+                            "not_scheduled", "total",
+                        )
+                    )
+                ):
+                    snapshots_by_date[item["date"]] = item
             data["backlog_snapshots"] = [
-                item for item in stored_snapshots[-365:]
-                if isinstance(item, dict)
-                and _valid_iso_date(item.get("date"))
-                and all(
-                    type(item.get(key, 0)) is int and item.get(key, 0) >= 0
-                    for key in ("overdue", "due_today", "due_soon", "scheduled",
-                                "not_scheduled", "total")
-                )
+                snapshots_by_date[day]
+                for day in sorted(snapshots_by_date)[-365:]
             ]
 
         stored_notifications = stored.get("notification_state")
