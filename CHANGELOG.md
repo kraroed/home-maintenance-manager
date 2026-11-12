@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 0.14.0
+
+### Configuration
+- Organize integration options into four sections: maintenance tasks and schedules, equipment and areas, notifications, and backups and update monitoring.
+- Add Back to main menu navigation from each options section.
+- Keep existing task, equipment, area, notification, and backup settings available within their related sections.
+
+### Documentation
+- Make HACS Marketplace the primary installation and update path.
+- Retain Custom repositories instructions as a fallback for manual repository setup.
+
+### Testing
+- Add regression coverage for navigation through the categorized options menus and their existing configuration steps.
+
 ## 0.13.1
 
 ### Reliability
