@@ -82,20 +82,27 @@ Open **Configure → Configure update-triggered backups** to optionally create a
 The Lovelace dashboard card is maintained separately from this integration so that frontend updates can be released independently.
 
 - **Standalone card repository:** https://github.com/kraroed/lovelace-home-maintenance-manager-card
-- Install and update the card through HACS as a Dashboard repository.
+- Install and update the card from **HACS → Marketplace → Dashboard** by searching for **Home Maintenance Manager Card**. If it is not listed, add the repository as a Dashboard custom repository.
 - The card requires this Home Maintenance Manager integration to be installed and configured.
 
 For card features, configuration, and installation instructions, see the standalone card repository's README.
 
 ## Installation
 
-1. In Home Assistant, open **HACS → Integrations**.
-2. Open the three-dot menu and choose **Custom repositories**.
-3. Add `https://github.com/kraroed/home-maintenance-manager` and select **Integration** as the category.
-4. Find **Home Maintenance Manager** in HACS and select **Download**.
-5. Restart Home Assistant, then go to **Settings → Devices & services → Add integration** and search for **Home Maintenance Manager**.
+### Install from the HACS Marketplace
 
-For updates, use HACS and restart Home Assistant when prompted. Back up your Home Assistant configuration before installing updates.
+1. In Home Assistant, open **HACS**.
+2. Open the **Marketplace** and select the **Integrations** category.
+3. Search for **Home Maintenance Manager**.
+4. Open the integration listing and select **Download**.
+5. Restart Home Assistant when prompted.
+6. Go to **Settings → Devices & services → Add integration**, search for **Home Maintenance Manager**, and complete the setup wizard.
+
+If the integration does not appear in Marketplace search, confirm that HACS is up to date and that the repository is available to your HACS installation. The custom-repository method is a fallback for installations where the listing is not available: add `https://github.com/kraroed/home-maintenance-manager` in HACS **Custom repositories** with the **Integration** category.
+
+### Update
+
+Open **HACS → Marketplace → Integrations**, find **Home Maintenance Manager**, and install the available update. Restart Home Assistant when prompted. Back up your Home Assistant configuration before installing updates.
 
 ## Recommendations and safety
 
