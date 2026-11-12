@@ -1147,7 +1147,7 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
                 "name": user_input["name"].strip(),
                 "category": user_input["category"],
                 "description": user_input.get("description", "").strip(),
-                "area_id": user_input.get("area_id") or None,
+                "area_id": user_input.get("area_id", current.get("area_id")) or None,
             })
             self._custom_task_base_step = "edit_custom_task"
             self._custom_task_category_is_custom = user_input["category"] == "other"
