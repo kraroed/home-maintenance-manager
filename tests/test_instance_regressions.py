@@ -401,3 +401,25 @@ async def test_history_export_writes_each_loaded_property_separately(
     assert first_schedule["schedule_history"][0]["reason"] == "First property"
     assert second_schedule["schedule_history"][0]["reason"] == "Second property"
     assert len(notifications) == 1
+
+
+def test_task_sensor_exposes_friendly_property_name():
+    """Task sensors publish the configured property label alongside instance ID."""
+    from custom_components.home_maintenance_manager.sensor import TaskStatusSensor
+
+    manager = SimpleNamespace(
+        storage=SimpleNamespace(store=SimpleNamespace(key="property-two")),
+        property_name="Primary Residence",
+    )
+    coordinator = SimpleNamespace(
+        manager=manager,
+        data={"tasks": [{
+            "task_id": "clean_gutters",
+            "status": "due_soon",
+            "enabled": True,
+        }], "history_by_task": {}},
+    )
+    sensor = TaskStatusSensor(coordinator, "clean_gutters", "Clean gutters")
+
+    assert sensor.extra_state_attributes["property_name"] == "Primary Residence"
+    assert sensor.extra_state_attributes["integration_instance"] == "property-two"
