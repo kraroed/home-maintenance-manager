@@ -17,6 +17,7 @@ from custom_components.home_maintenance_manager.backup import (
     async_setup_backup_services,
 )
 from custom_components.home_maintenance_manager.completion_service import (
+    SERVICE_COMPLETE_TASK,
     SERVICE_RESCHEDULE_TASK,
     async_setup_completion_service,
 )
@@ -149,23 +150,57 @@ async def test_reschedule_requires_instance_and_refreshes_only_selected_property
     first["manager"].async_reschedule_task.assert_not_awaited()
     second["manager"].async_reschedule_task.assert_not_awaited()
 
-    await hass.services.async_call(
-        DOMAIN,
-        SERVICE_RESCHEDULE_TASK,
-        {
-            "task_id": "clean_gutters",
-            "due_date": "2027-04-15",
-            "integration_instance": "property-two",
-        },
-        blocking=True,
-    )
+    for selected, other in ((first, second), (second, first)):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_RESCHEDULE_TASK,
+            {
+                "task_id": "clean_gutters",
+                "due_date": "2027-04-15",
+                "integration_instance": selected["config_entry"].entry_id,
+            },
+            blocking=True,
+        )
+        selected["manager"].async_reschedule_task.assert_awaited_once_with(
+            "clean_gutters", "2027-04-15", ""
+        )
+        selected["coordinator"].async_request_refresh.assert_awaited_once()
+        other["manager"].async_reschedule_task.assert_not_awaited()
+        other["coordinator"].async_request_refresh.assert_not_awaited()
 
-    first["manager"].async_reschedule_task.assert_not_awaited()
-    first["coordinator"].async_request_refresh.assert_not_awaited()
-    second["manager"].async_reschedule_task.assert_awaited_once_with(
-        "clean_gutters", "2027-04-15", ""
-    )
-    second["coordinator"].async_request_refresh.assert_awaited_once()
+
+@pytest.mark.asyncio
+async def test_complete_routes_to_each_selected_property(hass):
+    """Completion with either instance key affects only that property's manager."""
+    first = _property("property-one", "First Home")
+    second = _property("property-two", "Second Home")
+    hass.data[DOMAIN] = {"property-one": first, "property-two": second}
+    await async_setup_completion_service(hass)
+
+    with pytest.raises(HomeAssistantError, match="More than one matching task"):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_COMPLETE_TASK,
+            {"task_id": "clean_gutters"},
+            blocking=True,
+        )
+
+    for selected, other in ((first, second), (second, first)):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_COMPLETE_TASK,
+            {
+                "task_id": "clean_gutters",
+                "integration_instance": selected["config_entry"].entry_id,
+            },
+            blocking=True,
+        )
+        selected["manager"].async_complete_task.assert_awaited_once_with(
+            "clean_gutters", ""
+        )
+        selected["coordinator"].async_request_refresh.assert_awaited_once()
+        other["manager"].async_complete_task.assert_not_awaited()
+        other["coordinator"].async_request_refresh.assert_not_awaited()
 
 
 @pytest.mark.asyncio
