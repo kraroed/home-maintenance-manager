@@ -281,10 +281,12 @@ async def async_setup_backup_services(hass):
         new_snapshots = _merge_backlog_snapshots(
             current_snapshots, incoming_snapshots
         )
-        preserved_snapshots = sum(
-            1 for item in current_snapshots
-            if item.get("date") in {snapshot["date"] for snapshot in new_snapshots}
-        )
+        merged_snapshot_dates = {snapshot["date"] for snapshot in new_snapshots}
+        preserved_snapshot_dates = {
+            item["date"] for item in current_snapshots
+            if isinstance(item, dict) and item.get("date") in merged_snapshot_dates
+        }
+        preserved_snapshots = len(preserved_snapshot_dates)
         imported_snapshots = len(new_snapshots) - preserved_snapshots
         message = (
             f"Backup for **{payload.get('property_name', 'Unknown property')}** is valid.\n\n"
