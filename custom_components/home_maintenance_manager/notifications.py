@@ -69,8 +69,25 @@ async def async_setup_notifications(hass, entry, manager, coordinator=None):
             "notification_state", {"individual": {}, "summary_date": None}
         )
         individual_state = state.setdefault("individual", {})
+        all_tasks = manager.data.get("tasks", {})
+        # Delivery markers are keyed by task and due date. Keep only the current
+        # due-date marker for each task so reschedules, completions, and deleted
+        # tasks cannot leave an ever-growing notification-state dictionary.
+        active_due_keys = {
+            f"{task.get('task_id', task_id)}:{task['next_due']}"
+            for task_id, task in all_tasks.items()
+            if isinstance(task, dict) and isinstance(task.get("next_due"), str)
+            and task.get("next_due")
+        }
+        pruned = False
+        for due_key in list(individual_state):
+            if due_key not in active_due_keys:
+                individual_state.pop(due_key, None)
+                pruned = True
+        if pruned:
+            await manager.async_save()
         tasks = [
-            task for task in manager.data.get("tasks", {}).values()
+            task for task in all_tasks.values()
             if task.get("enabled", True) and task.get("next_due")
         ]
         equipment = manager.data.get("equipment", {})
