@@ -40,6 +40,7 @@ async def async_setup_entry(hass, entry):
         entry.options.get("season_windows"),
         entry.options.get("task_area_assignments", {}),
     )
+    manager.property_name = entry.data.get("property_name", entry.title)
     await manager.async_load()
     await manager.async_record_backlog_snapshot()
 
