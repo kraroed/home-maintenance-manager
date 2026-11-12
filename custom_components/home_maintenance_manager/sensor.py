@@ -53,6 +53,7 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
             "summary_key": self.value_key,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
         }
 
     @property
@@ -93,6 +94,7 @@ class InsightsSensor(CoordinatorEntity, SensorEntity):
         attributes = {
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
         }
         if self.path[0] == "windows":
             attributes["completion_windows"] = insights.get("windows", {})
@@ -134,6 +136,7 @@ class TaskStatusSensor(CoordinatorEntity, SensorEntity):
             "enabled": task.get("enabled", True),
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
             "category": task.get("category"),
             "description": task.get("description"),
             "how_to_inspect": task.get("how_to_inspect", []),
@@ -244,6 +247,7 @@ class EquipmentSensor(CoordinatorEntity, SensorEntity):
             "equipment_id": self.equipment_id,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
             "category_icon": item.get("category_icon") or self.CATEGORY_ICONS.get(
                 item.get("category"), "mdi:tools"
             ),
