@@ -68,9 +68,7 @@ async def test_create_area_returns_complete_options_menu(hass, enable_custom_int
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "create_area"}
-    )
+    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "create_area")
     assert result["step_id"] == "create_area"
 
     result = await hass.config_entries.options.async_configure(
@@ -81,3 +79,22 @@ async def test_create_area_returns_complete_options_menu(hass, enable_custom_int
     assert "manage_custom_tasks" in result["menu_options"]
     assert "configure_automatic_backups" in result["menu_options"]
     assert "configure_update_backups" in result["menu_options"]
+
+async def _open_options_step(hass, flow_id, target):
+    """Navigate through the categorized options menu to a selected action."""
+    parent = {
+        "manage_tasks": "tasks_and_schedules", "add_custom_task": "tasks_and_schedules",
+        "manage_custom_tasks": "tasks_and_schedules", "configure_season_windows": "tasks_and_schedules",
+        "add_equipment": "equipment_and_areas", "manage_equipment": "equipment_and_areas",
+        "create_area": "equipment_and_areas", "manage_task_areas": "equipment_and_areas",
+        "configure_notifications": "notifications_menu",
+        "configure_automatic_backups": "backups_and_updates", "configure_update_backups": "backups_and_updates",
+    }[target]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": parent}
+    )
+    assert result["step_id"] == parent
+    return await hass.config_entries.options.async_configure(
+        flow_id, user_input={"next_step_id": target}
+    )
+
