@@ -499,6 +499,7 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "name": "Replace filter",
         "category": "HVAC",
         "description": "Original description",
+        "area_id": "basement",
         "schedule_type": "interval",
         "recommended_interval_days": 90,
         "is_custom": True,
@@ -580,6 +581,7 @@ async def test_edit_custom_task_options_flow_keeps_stable_id_and_other_options(
         "name": "Replace upstairs HVAC filter",
         "category": "heating and cooling",
         "description": "Updated description",
+        "area_id": "basement",
         "recommended_interval_days": 120,
     }]
     # Enabled task selections live in config-entry data; editing options
