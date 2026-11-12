@@ -125,6 +125,7 @@ def test_backup_rejects_invalid_backlog_snapshot_dates(snapshot_date):
         ("task_intervals", {"clean_gutters": []}, "task intervals"),
         ("task_area_assignments", {"clean_gutters": []}, "task area assignments"),
         ("season_windows", {"spring": {"start": "bad", "end": "05-31"}}, "seasonal options"),
+        ("season_windows", {"spring": {"start": "02-31", "end": "05-31"}}, "seasonal options"),
         ("notification_target", [], "notification target"),
         ("notification_lead_days", "seven", "notification lead time"),
         ("daily_summary_time", "25:99", "daily summary time"),
