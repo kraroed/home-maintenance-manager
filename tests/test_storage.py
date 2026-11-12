@@ -1,5 +1,7 @@
 """Regression tests for maintenance storage defaults and compatibility."""
 
+from datetime import date, timedelta
+
 import pytest
 
 from custom_components.home_maintenance_manager.storage import MaintenanceStorage
@@ -223,3 +225,35 @@ async def test_storage_save_and_reload_round_trip(hass, monkeypatch):
     restored = await reader.async_load()
 
     assert restored == original
+
+
+
+@pytest.mark.asyncio
+async def test_storage_sorts_deduplicates_and_limits_backlog_snapshots(hass, monkeypatch):
+    """Stored snapshots are normalized by date and capped at the newest 365."""
+    first_day = date(2025, 1, 1)
+    snapshots = [
+        {
+            "date": (first_day + timedelta(days=offset)).isoformat(),
+            "overdue": offset,
+        }
+        for offset in reversed(range(400))
+    ]
+    latest_date = (first_day + timedelta(days=399)).isoformat()
+    snapshots.append({"date": latest_date, "overdue": 999})
+    snapshots.append({"date": "2026-02-30", "overdue": 50})
+    FakeStore.stored = {"backlog_snapshots": snapshots}
+    monkeypatch.setattr(
+        "custom_components.home_maintenance_manager.storage.Store", FakeStore
+    )
+
+    storage = MaintenanceStorage(hass, "backlog-snapshot-normalization")
+    data = await storage.async_load()
+    restored = data["backlog_snapshots"]
+
+    assert len(restored) == 365
+    assert [item["date"] for item in restored] == sorted(
+        item["date"] for item in restored
+    )
+    assert restored[0]["date"] == (first_day + timedelta(days=35)).isoformat()
+    assert restored[-1] == {"date": latest_date, "overdue": 999}
