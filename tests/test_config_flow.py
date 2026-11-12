@@ -4,6 +4,7 @@ import pytest
 import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_USER
+from homeassistant.helpers import area_registry as ar
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -1427,3 +1428,34 @@ async def test_edit_custom_task_back_restores_existing_schedule_values(
         for key in result["data_schema"].schema
     }
     assert defaults["schedule_type"] == "annual"
+
+@pytest.mark.asyncio
+async def test_assign_area_to_standalone_task_options_flow(hass, enable_custom_integrations):
+    """A standalone task can be assigned a Home Assistant area."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Primary Residence",
+        data={
+            "property_name": "Primary Residence",
+            CONF_ENABLED_TASK_IDS: ["clean_gutters"],
+        },
+        options={},
+    )
+    entry.add_to_hass(hass)
+    area = ar.async_get(hass).async_create("Basement")
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "manage_task_areas"}
+    )
+    assert result["step_id"] == "manage_task_areas"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"task_id": "clean_gutters"}
+    )
+    assert result["step_id"] == "assign_task_area"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"area_id": area.id}
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"]["task_area_assignments"]["clean_gutters"] == area.id
+
