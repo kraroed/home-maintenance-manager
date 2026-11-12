@@ -183,11 +183,13 @@
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description"
+          "description": "Description",
+          "area_id": "Area"
         },
         "data_description": {
           "category": "Choose a built-in category or select Other to create a reusable custom category.",
-          "description": "A short explanation shown with this task in Home Maintenance Manager."
+          "description": "A short explanation shown with this task in Home Maintenance Manager.",
+          "area_id": "Optional Home Assistant area for this task when it is not linked to equipment. Linked tasks use their equipment areas instead."
         }
       },
       "add_equipment": {
@@ -277,7 +279,11 @@
         "data": {
           "name": "Task name",
           "category": "Category",
-          "description": "Description"
+          "description": "Description",
+          "area_id": "Area"
+        },
+        "data_description": {
+          "area_id": "Optional Home Assistant area for this task when it is not linked to equipment. Linked tasks use their equipment areas instead."
         }
       },
       "remove_custom_task": {
