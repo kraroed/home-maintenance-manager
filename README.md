@@ -25,6 +25,8 @@ A Home Assistant custom integration for planning, tracking, and recording recurr
 - Equipment lifespan scheduling calculates a replacement due date from the installation date and expected lifespan. Only the designated replacement task is affected; routine maintenance schedules remain independent.
 - Completing a designated replacement task records the completion, resets that equipment item's installation date, and starts its next lifespan period.
 - Equipment sensors expose equipment details, associated task IDs, and calculated replacement due dates.
+- Area-aware maintenance organization using Home Assistant areas: equipment keeps its assigned area, linked tasks inherit the areas of their associated equipment, and standalone tasks can have an optional area assignment.
+- Task sensors expose effective area IDs and names; coordinator snapshots include per-area equipment and maintenance summaries, with unavailable or unassigned records grouped as Unassigned.
 - Home Assistant entities for task status and household maintenance summaries.
 - Individual due-soon and overdue reminders, plus a configurable daily summary.
 - Configurable reminder lead time and notification destination, with persistent notifications as the fallback. Mobile app reminders include actions to mark a task complete or snooze it until tomorrow or one week later.
@@ -46,6 +48,8 @@ Open the integration's **Configure** options and choose **Manage custom maintena
 Open the integration's **Configure** options, then choose **Add household equipment**. Enter an equipment name and category; manufacturer, model, installation date, lifespan, and notes are optional. Select any enabled maintenance tasks that apply to that equipment. To enable automatic replacement scheduling, enter all three of: an installation date, expected lifespan in months, and a designated replacement task. The designated task is automatically added to the equipment's task associations, and each equipment record must have its own replacement task. The calculated replacement date makes that task due through the normal dashboard and notification system; other associated routine tasks keep their own schedules. When you complete the replacement task, the equipment's installation date is reset to the completion date and the next replacement date is recalculated. One routine task can still be associated with multiple equipment records.
 
 Each registered item creates an equipment sensor. Its attributes include the equipment metadata and associated task IDs. A summary sensor reports the number of registered equipment records.
+
+To assign an area to a standalone maintenance task, open **Configure → Assign task areas**, select an enabled task, then choose a Home Assistant area or **No area**. Tasks associated with equipment automatically inherit the area of each linked equipment record; their standalone area assignment is not used while they remain linked. A task linked to equipment in multiple areas appears in each relevant area. Tasks and equipment without a valid area remain unassigned.
 
 Equipment can be added, edited, and removed through the integration options flow. To manage an existing record, open **Configure → Manage household equipment**, select the item, then choose whether to edit its details and task associations or remove it. Removing an equipment record does not delete maintenance tasks or completion history; historical records retain the equipment IDs captured when the task was completed.
 
