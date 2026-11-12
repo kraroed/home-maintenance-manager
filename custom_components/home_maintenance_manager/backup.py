@@ -207,6 +207,7 @@ def _merge_history(current, incoming):
                 known_ids.add(record_id)
     return merged
 
+
 def _merge_backlog_snapshots(current, incoming):
     """Merge daily snapshots, preferring current records for duplicate dates."""
     by_date = {
