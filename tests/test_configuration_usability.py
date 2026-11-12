@@ -76,9 +76,18 @@ async def test_create_area_returns_complete_options_menu(hass, enable_custom_int
     )
     assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "init"
+    assert result["menu_options"] == [
+        "tasks_and_schedules",
+        "equipment_and_areas",
+        "notifications_menu",
+        "backups_and_updates",
+    ]
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "tasks_and_schedules"}
+    )
+    assert result["step_id"] == "tasks_and_schedules"
     assert "manage_custom_tasks" in result["menu_options"]
-    assert "configure_automatic_backups" in result["menu_options"]
-    assert "configure_update_backups" in result["menu_options"]
 
 async def _open_options_step(hass, flow_id, target):
     """Navigate through the categorized options menu to a selected action."""
