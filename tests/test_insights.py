@@ -13,7 +13,8 @@ from custom_components.home_maintenance_manager.insights import (
 
 def test_completion_metrics_reports_late_and_category_counts():
     history = [
-        {"task_id": "filter", "completed_at": "2026-11-10T12:00:00+00:00",
+        {"task_id": "filter", "category": "Plumbing",
+         "completed_at": "2026-11-10T12:00:00+00:00",
          "previous_due": "2026-11-08T00:00:00+00:00"},
         {"task_id": "filter", "completed_at": "2026-11-11T12:00:00+00:00",
          "previous_due": "2026-11-12T00:00:00+00:00"},
@@ -26,7 +27,9 @@ def test_completion_metrics_reports_late_and_category_counts():
     assert result["windows"]["30_days"]["completed_late"] == 1
     assert result["windows"]["30_days"]["completed_on_time"] == 1
     assert result["windows"]["30_days"]["late_rate"] == 50
-    assert result["by_category"]["HVAC"]["completed_late"] == 1
+    assert result["by_category"]["Plumbing"]["completed_late"] == 1
+    # Legacy history without a stored category falls back to the current task category.
+    assert result["by_category"]["HVAC"]["completed_on_time"] == 1
 
 
 def test_workload_metrics_keeps_overdue_and_due_today_separate():
