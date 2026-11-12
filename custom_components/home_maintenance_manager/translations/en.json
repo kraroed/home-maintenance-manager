@@ -114,19 +114,12 @@
     "step": {
       "init": {
         "title": "Home Maintenance Manager",
-        "description": "Manage maintenance tasks, add custom tasks, or register household equipment.",
+        "description": "Choose a section to manage maintenance tasks, equipment, notifications, or backups.",
         "menu_options": {
-          "manage_tasks": "Manage enabled tasks and intervals",
-          "add_custom_task": "Add a custom maintenance task",
-          "add_equipment": "Add household equipment",
-          "manage_equipment": "Manage household equipment",
-          "create_area": "Create a Home Assistant area",
-          "manage_custom_tasks": "Manage custom maintenance tasks",
-          "configure_notifications": "Configure maintenance notifications",
-          "configure_season_windows": "Configure seasonal scheduling windows",
-          "configure_automatic_backups": "Configure automatic JSON backups",
-          "configure_update_backups": "Configure update-triggered backups",
-          "manage_task_areas": "Assign task areas"
+          "tasks_and_schedules": "Maintenance tasks and schedules",
+          "equipment_and_areas": "Equipment and areas",
+          "notifications_menu": "Notifications",
+          "backups_and_updates": "Backups and update monitoring"
         }
       },
       "configure_notifications": {
@@ -786,6 +779,49 @@
         "data": {
           "area_id": "Area"
         }
+      },
+      "tasks_and_schedules": {
+        "title": "Maintenance tasks and schedules",
+        "description": "Manage enabled tasks, custom tasks, maintenance intervals, and seasonal scheduling.",
+        "menu_options": {
+          "manage_tasks": "Manage enabled tasks and intervals",
+          "add_custom_task": "Add a custom maintenance task",
+          "manage_custom_tasks": "Manage custom maintenance tasks",
+          "configure_season_windows": "Configure seasonal scheduling windows",
+          "back_to_options": "Back to main menu"
+        }
+      },
+      "equipment_and_areas": {
+        "title": "Equipment and areas",
+        "description": "Register and manage household equipment, create Home Assistant areas, and assign standalone tasks to areas.",
+        "menu_options": {
+          "add_equipment": "Add household equipment",
+          "manage_equipment": "Manage household equipment",
+          "create_area": "Create a Home Assistant area",
+          "manage_task_areas": "Assign task areas",
+          "back_to_options": "Back to main menu"
+        }
+      },
+      "notifications_menu": {
+        "title": "Notifications",
+        "description": "Configure individual maintenance reminders and daily summaries.",
+        "menu_options": {
+          "configure_notifications": "Configure maintenance notifications",
+          "back_to_options": "Back to main menu"
+        }
+      },
+      "backups_and_updates": {
+        "title": "Backups and update monitoring",
+        "description": "Configure scheduled JSON backups and optional backups or notifications triggered by Home Assistant updates.",
+        "menu_options": {
+          "configure_automatic_backups": "Configure automatic JSON backups",
+          "configure_update_backups": "Configure update-triggered backups",
+          "back_to_options": "Back to main menu"
+        }
+      },
+      "back_to_options": {
+        "title": "Return to main menu",
+        "description": "Go back to the Home Maintenance Manager options menu."
       }
     },
     "error": {
