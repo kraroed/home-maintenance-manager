@@ -14,6 +14,7 @@ from custom_components.home_maintenance_manager.backup import (
     BACKUP_SCHEMA_VERSION,
     _build_payload,
     _merge_history,
+    _merge_backlog_snapshots,
     _read_json_file,
     _safe_filename,
     _validate_payload,
@@ -169,6 +170,39 @@ def test_history_merge_preserves_current_records_and_adds_missing_records():
     ]
 
 
+def test_backlog_snapshot_merge_preserves_current_and_imports_missing_dates():
+    """Restore keeps current daily snapshots and adds dates missing from backup."""
+    current = [
+        {"date": "2026-11-10", "overdue": 4},
+        {"date": "2026-11-11", "overdue": 5},
+    ]
+    incoming = [
+        {"date": "2026-11-09", "overdue": 2},
+        {"date": "2026-11-10", "overdue": 99},
+    ]
+
+    merged = _merge_backlog_snapshots(current, incoming)
+
+    assert merged == [
+        {"date": "2026-11-09", "overdue": 2},
+        {"date": "2026-11-10", "overdue": 4},
+        {"date": "2026-11-11", "overdue": 5},
+    ]
+
+
+def test_backlog_snapshot_merge_retains_only_newest_365_dates():
+    """The merged snapshot history remains within the documented retention limit."""
+    incoming = [
+        {"date": f"{year}-{month:02d}-01", "overdue": month}
+        for year in range(2024, 2027)
+        for month in range(1, 13)
+    ]
+    merged = _merge_backlog_snapshots([], incoming)
+
+    assert len(merged) == 36
+    assert merged == sorted(merged, key=lambda item: item["date"])
+
+
 def test_backup_file_round_trip_and_size_validation(tmp_path):
     """JSON files can be written and parsed through the same validator."""
     path = tmp_path / "backup.json"
@@ -245,6 +279,12 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         lambda hass, message, title, notification_id=None: notifications.append(message),
     )
     current_history = [{"history_id": "new-local", "notes": "Keep this"}]
+    current_snapshots = [
+        {"date": "2026-11-10", "overdue": 4, "due_today": 0, "due_soon": 0,
+         "scheduled": 0, "not_scheduled": 0, "total": 4},
+        {"date": "2026-11-11", "overdue": 5, "due_today": 0, "due_soon": 0,
+         "scheduled": 0, "not_scheduled": 0, "total": 5},
+    ]
     manager = SimpleNamespace(
         storage=SimpleNamespace(
             store=SimpleNamespace(key="property-one"),
@@ -253,6 +293,7 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         data={
             **deepcopy(_payload()["data"]),
             "history": current_history,
+            "backlog_snapshots": current_snapshots,
         },
         enabled_ids={"old-task"},
         task_intervals={},
@@ -305,6 +346,7 @@ async def test_restore_requires_confirmation_and_preserves_newer_history(
         "new-local",
         "clean_gutters:completion-1",
     }
+    assert manager.data["backlog_snapshots"] == current_snapshots
     assert len(list(directory.glob("home_maintenance_pre_restore_*.json"))) == 1
     coordinator.async_request_refresh.assert_awaited_once()
 
