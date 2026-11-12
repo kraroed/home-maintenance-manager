@@ -297,10 +297,64 @@ class HomeMaintenanceOptionsFlow(config_entries.OptionsFlow):
         self._selected_task_ids = []
 
     async def async_step_init(self, user_input=None):
+        """Show the top-level options menu with related settings grouped."""
         return self.async_show_menu(
             step_id="init",
-            menu_options=["manage_tasks", "manage_task_areas", "add_custom_task", "manage_custom_tasks", "add_equipment", "manage_equipment", "create_area", "configure_notifications", "configure_season_windows", "configure_automatic_backups", "configure_update_backups"],
+            menu_options=[
+                "tasks_and_schedules",
+                "equipment_and_areas",
+                "notifications_menu",
+                "backups_and_updates",
+            ],
         )
+
+    async def async_step_tasks_and_schedules(self, user_input=None):
+        """Open maintenance task and scheduling options."""
+        return self.async_show_menu(
+            step_id="tasks_and_schedules",
+            menu_options=[
+                "manage_tasks",
+                "add_custom_task",
+                "manage_custom_tasks",
+                "configure_season_windows",
+                "back_to_options",
+            ],
+        )
+
+    async def async_step_equipment_and_areas(self, user_input=None):
+        """Open equipment and Home Assistant area options."""
+        return self.async_show_menu(
+            step_id="equipment_and_areas",
+            menu_options=[
+                "add_equipment",
+                "manage_equipment",
+                "create_area",
+                "manage_task_areas",
+                "back_to_options",
+            ],
+        )
+
+    async def async_step_notifications_menu(self, user_input=None):
+        """Open notification settings."""
+        return self.async_show_menu(
+            step_id="notifications_menu",
+            menu_options=["configure_notifications", "back_to_options"],
+        )
+
+    async def async_step_backups_and_updates(self, user_input=None):
+        """Open backup and update-monitoring settings."""
+        return self.async_show_menu(
+            step_id="backups_and_updates",
+            menu_options=[
+                "configure_automatic_backups",
+                "configure_update_backups",
+                "back_to_options",
+            ],
+        )
+
+    async def async_step_back_to_options(self, user_input=None):
+        """Return to the top-level options menu."""
+        return await self.async_step_init()
 
     async def async_step_configure_notifications(self, user_input=None):
         """Choose which maintenance notifications should be sent."""
