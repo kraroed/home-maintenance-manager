@@ -53,6 +53,8 @@ class SummarySensor(CoordinatorEntity, SensorEntity):
             "summary_key": self.value_key,
             "integration_domain": DOMAIN,
             "integration_instance": self.integration_instance,
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
+            "property_name": getattr(self.coordinator.manager, "property_name", self.integration_instance),
         }
 
     @property
