@@ -148,7 +148,7 @@ async def test_add_equipment_options_flow_saves_task_associations(hass, enable_c
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] == FlowResultType.MENU
 
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "add_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "add_equipment")
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "add_equipment"
 
@@ -223,7 +223,7 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "add_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "add_equipment")
     result = await _submit_equipment_wizard(
         hass, result["flow_id"],
         {"name": "Standby Generator", "category": "Other",
@@ -245,7 +245,7 @@ async def test_custom_equipment_category_is_reusable_with_saved_icon(
     )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "add_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "add_equipment")
     result = await _submit_equipment_wizard(
         hass, result["flow_id"], {"name": "Portable Generator", "category": "Generator"}
     )
@@ -274,7 +274,7 @@ async def test_season_window_options_use_one_step_per_season(
     )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "configure_season_windows")
+    result = await _open_options_step(hass, result["flow_id"], "configure_season_windows")
     assert result["step_id"] == "season_window_spring"
     invalid = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"start": "02-30", "end": "05-25"}
@@ -347,7 +347,7 @@ async def test_edit_equipment_options_flow_updates_record_and_task_links(
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "manage_equipment")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"equipment_id": "equipment_main_hvac"}
     )
@@ -415,7 +415,7 @@ async def test_remove_equipment_options_flow_removes_only_selected_equipment(
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "manage_equipment")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"equipment_id": "equipment_main_hvac"}
     )
@@ -483,7 +483,7 @@ async def test_remove_custom_task_clears_active_links_and_preserves_other_option
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_custom_tasks")
+    result = await _open_options_step(hass, result["flow_id"], "manage_custom_tasks")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_id": "custom_replace_filter"}
     )
@@ -885,7 +885,7 @@ async def test_custom_task_wizard_back_preserves_draft_values(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "add_custom_task")
+    result = await _open_options_step(hass, flow_id, "add_custom_task")
     result = await hass.config_entries.options.async_configure(
         flow_id,
         user_input={
@@ -937,7 +937,7 @@ async def test_add_equipment_lifespan_designates_and_links_replacement_task(
     )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "add_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "add_equipment")
     result = await _submit_equipment_wizard(
         hass, result["flow_id"],
         {"name": "Smoke Detector Hall", "category": "Safety and security"},
@@ -966,7 +966,7 @@ async def test_add_equipment_rejects_incomplete_lifespan_configuration(
     )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "add_equipment")
+    result = await _open_options_step(hass, result["flow_id"], "add_equipment")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"name": "Smoke Detector Hall", "category": "Safety and security"}
     )
@@ -1001,7 +1001,7 @@ async def test_notification_options_use_guided_steps(hass, enable_custom_integra
     )
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "configure_notifications")
+    result = await _open_options_step(hass, result["flow_id"], "configure_notifications")
     assert result["step_id"] == "configure_notifications"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
@@ -1049,7 +1049,7 @@ async def test_manage_tasks_supports_bulk_actions_and_category_selection(
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_tasks")
+    result = await _open_options_step(hass, result["flow_id"], "manage_tasks")
     assert result["type"] == FlowResultType.MENU
     assert result["menu_options"][:2] == ["select_all_tasks", "clear_all_tasks"]
     assert "task_category_hvac" in result["menu_options"]
@@ -1130,7 +1130,7 @@ async def test_manage_tasks_clear_all_removes_every_enabled_task(
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_tasks")
+    result = await _open_options_step(hass, result["flow_id"], "manage_tasks")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "select_all_tasks"}
     )
@@ -1156,7 +1156,7 @@ async def test_equipment_wizard_back_preserves_identity(hass, enable_custom_inte
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "add_equipment")
+    result = await _open_options_step(hass, flow_id, "add_equipment")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Hall Smoke Detector", "category": "Safety and security"}
     )
@@ -1189,7 +1189,7 @@ async def test_season_wizard_back_preserves_dates(hass, enable_custom_integratio
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "configure_season_windows")
+    result = await _open_options_step(hass, flow_id, "configure_season_windows")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"start": "03-20", "end": "05-25"}
     )
@@ -1226,7 +1226,7 @@ async def test_notification_wizard_back_preserves_notification_choices(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "configure_notifications")
+    result = await _open_options_step(hass, flow_id, "configure_notifications")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={
             "individual_notifications_enabled": False,
@@ -1284,7 +1284,7 @@ async def test_equipment_task_association_back_returns_to_details_with_draft(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "add_equipment")
+    result = await _open_options_step(hass, flow_id, "add_equipment")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"name": "Hall Smoke Detector", "category": "Safety and security"}
     )
@@ -1324,7 +1324,7 @@ async def test_custom_task_category_back_restores_basic_task_draft(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "add_custom_task")
+    result = await _open_options_step(hass, flow_id, "add_custom_task")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={
             "name": "Inspect Main Water Shutoff",
@@ -1379,7 +1379,7 @@ async def test_edit_custom_task_back_restores_existing_schedule_values(
     entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(entry.entry_id)
     flow_id = result["flow_id"]
-    result = await hass.config_entries.options._open_options_step(hass, flow_id, "manage_custom_tasks")
+    result = await _open_options_step(hass, flow_id, "manage_custom_tasks")
     result = await hass.config_entries.options.async_configure(
         flow_id, user_input={"task_id": "custom_annual_gutter_check"}
     )
@@ -1434,7 +1434,7 @@ async def test_assign_area_to_standalone_task_options_flow(hass, enable_custom_i
     area = ar.async_get(hass).async_create("Basement")
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "manage_task_areas")
+    result = await _open_options_step(hass, result["flow_id"], "manage_task_areas")
     assert result["step_id"] == "manage_task_areas"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"task_id": "clean_gutters"}
