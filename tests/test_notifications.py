@@ -231,6 +231,61 @@ async def test_notifications_suppress_repeats_until_task_due_date_changes(
 
 
 @pytest.mark.asyncio
+async def test_notification_delivery_state_prunes_old_due_dates_and_deleted_tasks(
+    hass, monkeypatch
+):
+    """Only the current due-date marker per task is retained."""
+    from custom_components.home_maintenance_manager import notifications
+
+    monkeypatch.setattr(
+        notifications, "async_track_time_interval", lambda hass, action, interval: lambda: None
+    )
+    monkeypatch.setattr(
+        notifications.persistent_notification, "async_create",
+        lambda *args, **kwargs: None,
+    )
+    now = dt_util.now()
+    current_due = now.isoformat()
+    manager = SimpleNamespace(
+        data={
+            "tasks": {
+                "clean_gutters": {
+                    "task_id": "clean_gutters", "name": "Clean gutters",
+                    "enabled": True, "next_due": current_due,
+                },
+                "disabled_task": {
+                    "task_id": "disabled_task", "name": "Disabled",
+                    "enabled": False, "next_due": current_due,
+                },
+            },
+            "notification_state": {
+                "individual": {
+                    f"clean_gutters:{current_due}": now.isoformat(),
+                    "clean_gutters:old-due-date": now.isoformat(),
+                    "deleted_task:old-due-date": now.isoformat(),
+                    f"disabled_task:{current_due}": now.isoformat(),
+                },
+                "summary_date": now.date().isoformat(),
+            },
+        },
+        async_save=AsyncMock(),
+    )
+    entry = SimpleNamespace(options={
+        "individual_notifications_enabled": True,
+        "daily_summary_enabled": False,
+        "notification_lead_days": 7,
+    })
+
+    await async_setup_notifications(hass, entry, manager)
+
+    assert manager.data["notification_state"]["individual"] == {
+        f"clean_gutters:{current_due}": now.isoformat(),
+        f"disabled_task:{current_due}": now.isoformat(),
+    }
+    manager.async_save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_mobile_reminder_includes_complete_and_snooze_actions(hass, monkeypatch):
     """Mobile reminders expose complete, tomorrow, and one-week actions."""
     from custom_components.home_maintenance_manager import notifications
