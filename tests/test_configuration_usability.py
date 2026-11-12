@@ -68,7 +68,7 @@ async def test_create_area_returns_complete_options_menu(hass, enable_custom_int
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options._open_options_step(hass, result["flow_id"], "create_area")
+    result = await _open_options_step(hass, result["flow_id"], "create_area")
     assert result["step_id"] == "create_area"
 
     result = await hass.config_entries.options.async_configure(
