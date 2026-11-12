@@ -262,6 +262,7 @@ async def test_legacy_backup_preview_and_restore_are_instance_scoped(
     assert restored["tasks"]["clean_gutters"]["name"] == "Clean gutters"
     assert restored["equipment"]["hvac"]["name"] == "HVAC system"
     assert {item["history_id"] for item in restored["history"]} == {
+        "property-two-history",
         "second-current",
         "legacy-completion",
     }
