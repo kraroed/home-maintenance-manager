@@ -5,7 +5,9 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from homeassistant.util import dt as dt_util
+from homeassistant.helpers import area_registry as ar
 
+from .areas import build_area_groups, effective_task_area_ids
 from .storage import MaintenanceStorage
 from .insights import backlog_snapshot, completion_metrics, workload_metrics
 
@@ -485,11 +487,31 @@ class TaskManager:
         return True
 
     def snapshot(self):
+        equipment = list(self.data.get("equipment", {}).values())
+        equipment_by_id = {
+            item.get("equipment_id"): item for item in equipment
+            if item.get("equipment_id")
+        }
+        area_registry = ar.async_get(self.hass)
+        area_names = {
+            area.id: area.name for area in area_registry.async_list_areas()
+        }
+        valid_area_ids = set(area_names)
         tasks = []
         for stored_task in self.data.get("tasks", {}).values():
             task = deepcopy(stored_task)
             task["status"] = self.task_status(stored_task)
+            area_ids = effective_task_area_ids(
+                task, equipment_by_id, valid_area_ids
+            )
+            task["area_ids"] = area_ids
+            task["area_names"] = [
+                area_names[area_id] for area_id in area_ids
+            ]
             tasks.append(task)
+        area_groups = build_area_groups(
+            tasks, equipment, area_names, valid_area_ids
+        )
         enabled_tasks = [task for task in tasks if task.get("enabled", True)]
         history_by_task = {}
         for record in self.data.get("history", []):
@@ -513,7 +535,8 @@ class TaskManager:
                 task_id: records[-10:]
                 for task_id, records in history_by_task.items()
             },
-            "equipment": list(self.data.get("equipment", {}).values()),
+            "equipment": equipment,
+            "areas": area_groups,
             "equipment_count": len(self.data.get("equipment", {})),
             "total": len(enabled_tasks),
             "overdue": sum(t["status"] == "overdue" for t in enabled_tasks),
