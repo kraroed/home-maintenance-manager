@@ -79,6 +79,16 @@ def _valid_iso_date(value):
         return False
 
 
+def _valid_month_day(value):
+    """Return whether a value is a real canonical MM-DD date (leap day allowed)."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return date(2000, int(value[:2]), int(value[3:])).strftime("%m-%d") == value
+    except (TypeError, ValueError):
+        return False
+
+
 def _validate_payload(payload):
     if not isinstance(payload, dict):
         raise HomeAssistantError("Backup must contain a JSON object.")
@@ -182,6 +192,109 @@ def _validate_payload(payload):
     for option in ("enabled_task_ids", "custom_tasks", "equipment_records"):
         if option in options and not isinstance(options[option], list):
             raise HomeAssistantError(f"Backup contains invalid {option.replace('_', ' ')}.")
+    if not all(
+        isinstance(task_id, str) for task_id in entry_data.get("enabled_task_ids", [])
+    ):
+        raise HomeAssistantError("Backup contains invalid enabled task IDs.")
+    if "enabled_task_ids" in options and not all(
+        isinstance(task_id, str) for task_id in options["enabled_task_ids"]
+    ):
+        raise HomeAssistantError("Backup contains invalid enabled task IDs.")
+    if "custom_tasks" in options and not all(
+        isinstance(item, dict) and isinstance(item.get("task_id"), str)
+        for item in options["custom_tasks"]
+    ):
+        raise HomeAssistantError("Backup contains invalid custom task records.")
+    if "equipment_records" in options and not all(
+        isinstance(item, dict) and isinstance(item.get("equipment_id"), str)
+        for item in options["equipment_records"]
+    ):
+        raise HomeAssistantError("Backup contains invalid equipment records.")
+    for mapping_key in ("task_intervals", "task_area_assignments"):
+        mapping = options.get(mapping_key, {})
+        if not isinstance(mapping, dict) or not all(
+            isinstance(key, str)
+            and (
+                type(value) is int and 1 <= value <= 3650
+                if mapping_key == "task_intervals"
+                else value is None or isinstance(value, str)
+            )
+            for key, value in mapping.items()
+        ):
+            raise HomeAssistantError(f"Backup contains invalid {mapping_key.replace('_', ' ')}.")
+    for mapping_key in ("season_windows",):
+        mapping = options.get(mapping_key, {})
+        if not isinstance(mapping, dict) or not all(
+            isinstance(season, str)
+            and isinstance(window, dict)
+            and all(
+                _valid_month_day(window.get(edge))
+                for edge in ("start", "end")
+            )
+            for season, window in mapping.items()
+        ):
+            raise HomeAssistantError("Backup contains invalid seasonal options.")
+    if "equipment_categories" in options and (
+        not isinstance(options["equipment_categories"], list)
+        or not all(
+            isinstance(item, dict) and isinstance(item.get("name"), str)
+            for item in options["equipment_categories"]
+        )
+    ):
+        raise HomeAssistantError("Backup contains invalid equipment categories.")
+    if "notification_target" in options and (
+        not isinstance(options["notification_target"], str)
+        or len(options["notification_target"]) > 255
+    ):
+        raise HomeAssistantError("Backup contains an invalid notification target.")
+    if "notification_lead_days" in options and (
+        type(options["notification_lead_days"]) is not int
+        or not 0 <= options["notification_lead_days"] <= 90
+    ):
+        raise HomeAssistantError("Backup contains an invalid notification lead time.")
+    if "daily_summary_time" in options and (
+        not isinstance(options["daily_summary_time"], str)
+        or not re.fullmatch(r"([01][0-9]|2[0-3]):[0-5][0-9]", options["daily_summary_time"])
+    ):
+        raise HomeAssistantError("Backup contains an invalid daily summary time.")
+    boolean_options = (
+        "individual_notifications_enabled", "daily_summary_enabled",
+        "automatic_backups_enabled", "update_backup_on_available",
+        "update_install_tracking_enabled",
+    )
+    if any(
+        key in options and type(options[key]) is not bool
+        for key in boolean_options
+    ):
+        raise HomeAssistantError("Backup contains an invalid boolean option.")
+    if "automatic_backup_frequency" in options and (
+        not isinstance(options["automatic_backup_frequency"], str)
+        or options["automatic_backup_frequency"] not in {"daily", "weekly", "monthly"}
+    ):
+        raise HomeAssistantError("Backup contains an invalid automatic backup frequency.")
+    if "automatic_backup_time" in options and (
+        not isinstance(options["automatic_backup_time"], str)
+        or not re.fullmatch(r"([01][0-9]|2[0-3]):[0-5][0-9]", options["automatic_backup_time"])
+    ):
+        raise HomeAssistantError("Backup contains an invalid automatic backup time.")
+    if "automatic_backup_retention" in options and (
+        type(options["automatic_backup_retention"]) is not int
+        or not 1 <= options["automatic_backup_retention"] <= 100
+    ):
+        raise HomeAssistantError("Backup contains an invalid automatic backup retention value.")
+    if "update_backup_entities" in options and (
+        not isinstance(options["update_backup_entities"], list)
+        or not all(isinstance(item, str) and item.startswith("update.") for item in options["update_backup_entities"])
+    ):
+        raise HomeAssistantError("Backup contains invalid update backup entities.")
+    if any(
+        not isinstance(key, str) or not isinstance(value, str)
+        for key, value in notification_state.get("individual", {}).items()
+    ):
+        raise HomeAssistantError("Backup contains invalid reminder delivery records.")
+    summary_date = notification_state.get("summary_date")
+    if summary_date is not None and not _valid_iso_date(summary_date):
+        raise HomeAssistantError("Backup contains an invalid notification summary date.")
     return payload
 
 

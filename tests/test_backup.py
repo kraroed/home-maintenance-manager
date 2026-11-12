@@ -116,6 +116,49 @@ def test_backup_rejects_invalid_backlog_snapshot_dates(snapshot_date):
         _validate_payload(payload)
 
 
+@pytest.mark.parametrize(
+    ("option_key", "bad_value", "message"),
+    [
+        ("enabled_task_ids", [None], "enabled task IDs"),
+        ("custom_tasks", [{"name": "Missing ID"}], "custom task records"),
+        ("equipment_records", [{"name": "Missing ID"}], "equipment records"),
+        ("task_intervals", {"clean_gutters": []}, "task intervals"),
+        ("task_area_assignments", {"clean_gutters": []}, "task area assignments"),
+        ("season_windows", {"spring": {"start": "bad", "end": "05-31"}}, "seasonal options"),
+        ("season_windows", {"spring": {"start": "02-31", "end": "05-31"}}, "seasonal options"),
+        ("notification_target", [], "notification target"),
+        ("notification_lead_days", "seven", "notification lead time"),
+        ("daily_summary_time", "25:99", "daily summary time"),
+        ("automatic_backups_enabled", "yes", "boolean option"),
+        ("automatic_backup_frequency", "yearly", "automatic backup frequency"),
+        ("automatic_backup_frequency", [], "automatic backup frequency"),
+        ("equipment_categories", {}, "equipment categories"),
+        ("automatic_backup_time", "99:00", "automatic backup time"),
+        ("automatic_backup_retention", 0, "automatic backup retention"),
+        ("update_backup_entities", ["sensor.invalid"], "update backup entities"),
+    ],
+)
+def test_backup_rejects_malformed_restore_options(option_key, bad_value, message):
+    """Malformed option values are rejected before they can reach live config."""
+    payload = _payload()
+    payload["options"][option_key] = bad_value
+
+    with pytest.raises(HomeAssistantError, match=message):
+        _validate_payload(payload)
+
+
+def test_backup_rejects_malformed_notification_delivery_state():
+    """Malformed delivery markers and summary dates cannot be restored."""
+    payload = _payload()
+    payload["data"]["notification_state"] = {
+        "individual": {"clean_gutters:due": []},
+        "summary_date": "not-a-date",
+    }
+
+    with pytest.raises(HomeAssistantError, match="invalid reminder delivery records"):
+        _validate_payload(payload)
+
+
 def test_backup_accepts_valid_backlog_snapshot_date():
     """A canonical calendar date is accepted for a backlog snapshot."""
     payload = _payload()
