@@ -45,7 +45,9 @@ def completion_metrics(history, tasks=None, today=None):
     }
     by_category = {}
     for record in history:
-        category = task_categories.get(record.get("task_id"), "Other")
+        # New records retain their category at completion time. Older records
+        # without this field fall back to the task's current category.
+        category = record.get("category") or task_categories.get(record.get("task_id"), "Other")
         bucket = by_category.setdefault(category, {"completed": 0, "completed_late": 0})
         bucket["completed"] += 1
         due = _local_date(record.get("previous_due"))
