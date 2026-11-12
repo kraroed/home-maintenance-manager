@@ -234,9 +234,12 @@ def _validate_payload(payload):
             for season, window in mapping.items()
         ):
             raise HomeAssistantError("Backup contains invalid seasonal options.")
-    if "equipment_categories" in options and not all(
-        isinstance(item, dict) and isinstance(item.get("name"), str)
-        for item in options["equipment_categories"]
+    if "equipment_categories" in options and (
+        not isinstance(options["equipment_categories"], list)
+        or not all(
+            isinstance(item, dict) and isinstance(item.get("name"), str)
+            for item in options["equipment_categories"]
+        )
     ):
         raise HomeAssistantError("Backup contains invalid equipment categories.")
     if "notification_target" in options and (
@@ -264,9 +267,10 @@ def _validate_payload(payload):
         for key in boolean_options
     ):
         raise HomeAssistantError("Backup contains an invalid boolean option.")
-    if "automatic_backup_frequency" in options and options["automatic_backup_frequency"] not in {
-        "daily", "weekly", "monthly"
-    }:
+    if "automatic_backup_frequency" in options and (
+        not isinstance(options["automatic_backup_frequency"], str)
+        or options["automatic_backup_frequency"] not in {"daily", "weekly", "monthly"}
+    ):
         raise HomeAssistantError("Backup contains an invalid automatic backup frequency.")
     if "automatic_backup_time" in options and (
         not isinstance(options["automatic_backup_time"], str)
