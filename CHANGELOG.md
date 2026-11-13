@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.15.1
+
+### Fixes
+- Align the integration manifest version with the published release sequence.
+- Include the configured property name in completion and schedule-history CSV exports.
+
+### Testing
+- Add regression coverage for property names in both CSV export files.
+
+
 ## 0.14.0
 
 ### Configuration
