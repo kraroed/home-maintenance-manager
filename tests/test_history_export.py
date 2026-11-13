@@ -45,6 +45,7 @@ def test_history_export_writes_csv_and_json_with_completion_details(tmp_path):
         rows = list(csv.DictReader(handle))
 
     assert len(rows) == 1
+    assert rows[0]["property_name"] == "Primary Residence"
     assert rows[0]["task_name"] == "Replace HVAC filter"
     assert rows[0]["notes"] == "Installed a new filter"
     assert json.loads(rows[0]["equipment_ids"]) == history[0]["equipment_ids"]
@@ -87,6 +88,7 @@ def test_schedule_history_export_includes_schedule_definitions_and_due_dates(tmp
     ) as handle:
         rows = list(csv.DictReader(handle))
     assert len(rows) == 1
+    assert rows[0]["property_name"] == "Primary Residence"
     assert rows[0]["reason"] == "Schedule configuration changed"
     assert rows[0]["previous_due"] == "2026-12-01T00:00:00+00:00"
     assert json.loads(rows[0]["previous_schedule"]) == {
