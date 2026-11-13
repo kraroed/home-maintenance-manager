@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## 0.15.1
+
+### Fixes
+- Align the integration manifest version with the published release sequence.
+- Include the configured property name in completion and schedule-history CSV exports.
+
+### Testing
+- Add regression coverage for property names in both CSV export files.
+
+
+## 0.15.0
+
+### Improvements
+- Expose the configured property name on summary, insights, task status, and equipment sensors.
+- Preserve the technical integration instance identifier for service routing and troubleshooting.
+
+### Testing
+- Add regression coverage for friendly property-name sensor attributes.
+
 ## 0.14.0
 
 ### Configuration
