@@ -35,7 +35,7 @@ def _write_history_files(
     if export_format in ("csv", "both"):
         filename = "maintenance_history.csv"
         fields = [
-            "history_id", "task_id", "task_name", "completed_at",
+            "property_name", "history_id", "task_id", "task_name", "completed_at",
             "previous_due", "next_due", "notes", "equipment_ids",
         ]
         with (directory / filename).open("w", encoding="utf-8-sig", newline="") as handle:
@@ -43,13 +43,14 @@ def _write_history_files(
             writer.writeheader()
             for record in history:
                 row = _clean_record(record)
+                row["property_name"] = property_name
                 row["equipment_ids"] = json.dumps(row.get("equipment_ids", []))
                 writer.writerow(row)
         filenames.append(filename)
 
         filename = "maintenance_schedule_history.csv"
         fields = [
-            "task_id", "task_name", "adjusted_at", "change_type", "reason",
+            "property_name", "task_id", "task_name", "adjusted_at", "change_type", "reason",
             "previous_due", "next_due", "previous_schedule", "new_schedule",
         ]
         with (directory / filename).open("w", encoding="utf-8-sig", newline="") as handle:
@@ -57,6 +58,7 @@ def _write_history_files(
             writer.writeheader()
             for record in schedule_history:
                 row = _clean_record(record)
+                row["property_name"] = property_name
                 for key in ("previous_schedule", "new_schedule"):
                     row[key] = json.dumps(row.get(key, {}), ensure_ascii=False)
                 writer.writerow(row)
